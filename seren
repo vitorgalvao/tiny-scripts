@@ -1,0 +1,59 @@
+#!/bin/bash
+
+IFS=$'\n'
+
+# Instructions on how to use the script
+# Shown with '-h', or when no arguments are given
+# -----------------------------------------------
+usage() {
+echo "usage: $0 [-s] [-n] [-p] [-a] [-h] <files>
+
+options:
+   -h   Show this message
+   -s   Sets starting number for the sequence (defaults to 1)
+   -n   Sets sequence length (defaults to what'll accomodate the number of files)
+   -p   Sets name to prepend to the sequence number (defaults to nothing)
+   -a   Sets name to append to the sequence number (defaults to nothing)"
+}
+
+if [[ -z ${1} ]]; then
+	usage
+	exit 1
+fi
+
+# If no sequence length is given,
+# it will be set according to the number of files
+# -----------------------------------------------
+leadingZeros=$(echo -n "$#" | wc -c | tr -d ' ')
+
+# Available flags to use with the script
+# --------------------------------------
+while getopts hs:n:p:a:v OPTION
+do
+        case "${OPTION}"
+        in
+          h) usage ; exit 1;;
+          s) startingNum=${OPTARG};;
+          n) leadingZeros=${OPTARG};;
+          p) stringToPrepend=${OPTARG};;
+          a) stringToAppend=${OPTARG};;
+          v) beVerbose="v"
+        esac
+done
+shift $((OPTIND-1))
+
+# For when a starting number is picked
+# ------------------------------------
+if [[ ${startingNum} ]]; then
+	num=$((${startingNum}-1))
+fi
+
+# The actual renaming part
+# “#10” is necessary for using base10
+# -----------------------------------
+for fileToRename in $@; do
+
+  num=$(printf "%.${leadingZeros}d" "$((10#${num}+1))")
+
+	mv -n${beVerbose} "${fileToRename}" "$(dirname ${fileToRename})/${stringToPrepend}${num}${stringToAppend}.${fileToRename##*.}"
+done

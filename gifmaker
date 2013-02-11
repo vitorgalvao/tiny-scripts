@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# This script depends on ImageMagick for the conversion
+# -----------------------------------------------------
+if ! hash convert 2>/dev/null; then
+  echo >&2 "\033[00;31m\nThis script requires ImageMagick. Please install it first.\n\033[00m"
+  exit 1
+fi
+
+# Instructions on how to use the script
+# Shown with '-h', or when no arguments are given
+# -----------------------------------------------
+usage() {
+echo "usage: $0 [-h] [-b] [-e] <input_files> <output_file>
+
+options:
+   -h   Show this message
+   -b   The original frame rate of the movie that had the images (defaults to 60)
+   -e   The new frame rate the gif should have, so it's not slowed down (defaults to 10)"
+}
+
+if [[ -z ${1} ]]; then
+  usage
+  exit 1
+fi
+
+# Set some defaults
+# -----------------
+beginRate="60"
+endRate="10"
+
+# Available flags to use with the script
+# --------------------------------------
+while getopts hb:e: OPTION
+do
+        case "${OPTION}"
+        in
+          h) usage ; exit 1;;
+          b) beginRate=${OPTARG};;
+          e) endRate=${OPTARG};;
+        esac
+done
+shift $((OPTIND-1))
+
+# Calculate the frame drop rate
+# -----------------------------
+rateCalculation="$((${beginRate} / ${endRate}))"
+
+# Add only the necessary images to an array
+# -----------------------------------------
+for (( i = 1; i < $#; i += ${rateCalculation} )); do
+  imagesArray+=("${!i}")
+done
+
+# Make the animated gif, and then optimize its size
+# -------------------------------------------------
+convert "${imagesArray[@]}" "/tmp/tmpGif.gif"
+convert -layers Optimize "/tmp/tmpGif.gif" "${!#}"
