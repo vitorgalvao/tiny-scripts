@@ -24,7 +24,7 @@ while [[ ${short_url_is_available} == "False" ]]; do
 	if [[ ${is_available} != "" ]]; then
 		short_url_is_available="True"
 	else
-		echo -e "\033[00;31m\nThat short URL is already taken, please pick another one\n\033[00m"
+		echo -e "\n$(tput setaf 1)That short URL is already taken, please pick another one.$(tput sgr0)\n"
 		read -p "Desired URL → " desired_url
 	fi
 done
@@ -40,4 +40,4 @@ short_url=$(curl --silent "http://is.gd/create.php?format=simple&url=${ctt_url}&
 # Copy the short URL to the clipboard and print a success message
 # ---------------------------------------------------------------
 echo ${short_url} | pbcopy
-echo -e "\033[00;32m\nThe short URL was copied to the clipboard\n\033[00m"
+echo -e "\n$(tput setaf 2)The short URL was copied to the clipboard.$(tput sgr0)\n"
