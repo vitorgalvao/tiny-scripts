@@ -93,5 +93,5 @@ do
 	launchctl remove ${label}"
 	
 	echo "${script}" | tr -d '\t' > ${appDirectory}/.DeleteScripts/${label}.sh
-	chmod +x ${appDirectory}/.DeleteScripts/${label}
+	chmod +x ${appDirectory}/.DeleteScripts/${label}.sh
 done
