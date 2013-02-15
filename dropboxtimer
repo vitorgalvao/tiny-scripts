@@ -65,7 +65,7 @@ do
 	<key>Label</key>
 	<string>${label}</string>
 	<key>Program</key>
-	<string>${appDirectory}/.DeleteScripts/${label}</string>
+	<string>${appDirectory}/.DeleteScripts/${label}.sh</string>
 	<key>StartCalendarInterval</key>
 	<array>
 	<dict>
