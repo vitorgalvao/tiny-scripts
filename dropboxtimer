@@ -17,8 +17,8 @@ fi
 
 # Make sure the directories exist
 # -------------------------------
-appDirectory="${HOME}/Dropbox/Apps/DropboxTimer/"
-mkdir -p ${appDirectory}/.DeleteScripts/
+appDirectory="${HOME}/Dropbox/Apps/DropboxTimer"
+mkdir -p "${appDirectory}/.DeleteScripts/"
 
 
 # Use first argument as number of days to wait
