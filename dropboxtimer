@@ -56,6 +56,17 @@ do
 
 	cp -R "${originalFile}" "${appDirectory}/${newFile}"
 
+	# Prepare the script that'll delete the file (and itself)
+	scriptLocation="${appDirectory}/.DeleteScripts/${label}.sh"
+	script="#!/bin/bash
+	mv $(printf '%q' ${appDirectory}/${newFile}) ${HOME}/.Trash/
+	rm ${scriptLocation}
+	rm ${agent}
+	launchctl remove ${label}"
+	
+	echo "${script}" | tr -d '\t' > ${scriptLocation}
+	chmod +x ${scriptLocation}
+
 	# Make the plist and load it
 	plist="<?xml version='1.0' encoding='UTF-8'?>
 	<!DOCTYPE plist PUBLIC -//Apple Computer//DTD PLIST 1.0//EN
@@ -65,7 +76,7 @@ do
 	<key>Label</key>
 	<string>${label}</string>
 	<key>Program</key>
-	<string>${appDirectory}/.DeleteScripts/${label}.sh</string>
+	<string>${scriptLocation}</string>
 	<key>StartCalendarInterval</key>
 	<array>
 	<dict>
@@ -84,14 +95,4 @@ do
 
 	echo "${plist}" | tr -d '\t' > ${agent}
 	launchctl load ${agent}
-
-	# Prepare the script that'll delete the file (and itself)
-	script="#!/bin/bash
-	mv $(printf '%q' ${appDirectory}/${newFile}) ${HOME}/.Trash/
-	rm ${appDirectory}/.DeleteScripts/${label}
-	rm ${agent}
-	launchctl remove ${label}"
-	
-	echo "${script}" | tr -d '\t' > ${appDirectory}/.DeleteScripts/${label}.sh
-	chmod +x ${appDirectory}/.DeleteScripts/${label}.sh
 done
