@@ -82,7 +82,7 @@ do
 	</dict>
 	</plist>"
 
-	echo "${plist}" | tr -d 'tr' > ${agent}
+	echo "${plist}" | tr -d '\t' > ${agent}
 	launchctl load ${agent}
 
 	# Prepare the script that'll delete the file (and itself)
@@ -92,6 +92,6 @@ do
 	rm ${agent}
 	launchctl remove ${label}"
 	
-	echo "${script}" | tr -d 'tr' > ${appDirectory}/.DeleteScripts/${label}
+	echo "${script}" | tr -d '\t' > ${appDirectory}/.DeleteScripts/${label}.sh
 	chmod +x ${appDirectory}/.DeleteScripts/${label}
 done
