@@ -45,9 +45,9 @@ do
 	if [[ -f "${appDirectory}/${newFile}" ]]; then
 		fileExtension="${originalFile##*.}"
 		fileNoExtension="${originalFile%.*}"
-		newFile=$(basename ${originalFile})_$(date -v +"$daysFromNow"d +"%Y-%m-%d_%Hh%M").${fileExtension}
+		newFile="$(basename ${fileNoExtension})_$(date -v +"$daysFromNow"d +"%Y-%m-%d_%Hh%M").${fileExtension}"
 
-		echo "There's already a file named $(basename ${originalFile}) in the directory, the new file will be renamed to ${newfile}"
+		echo "There's already a file named $(basename ${originalFile}) in the directory, the new file will be renamed to ${newFile}"
 	fi
 
 	# Set variables need for launchd, and copy the file to the directory
