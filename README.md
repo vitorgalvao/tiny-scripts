@@ -9,6 +9,9 @@ Script to add files to your dropbox, and delete them a set number of days later.
 ### gifmaker
 Script to make animated gifs from sequences of images, with more control over FPS.
 
+### labelcolor
+Script to change label color of files in OSX
+
 ### strongpassword
 Script to get a strong password from https://www.grc.com/passwords.htm
 

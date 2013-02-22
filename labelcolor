@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Instructions on how to use the script
+# Shown with when no arguments are given
+# --------------------------------------
+usage() {
+echo "usage: $0 <color> <files>
+
+Available color options:
+remove (to remove label), orange, red, yellow, blue, purple, green, gray"
+}
+
+if [[ -z ${1} ]]; then
+  usage
+  exit 1
+fi
+
+# Use first argument as color
+# ---------------------------
+color=${1}
+shift
+
+# Covert color name to appropriate number
+# ---------------------------------------
+colorArray=('remove' 'orange' 'red' 'yellow' 'blue' 'purple' 'green' 'gray')
+
+for (( i = 0; i < ${#colorArray[@]}; i++ )); do
+	if [[ "${colorArray[$i]}" = "${color}" ]]; then
+		color=${i}
+	fi
+done
+
+# Set the label
+# -------------
+osascript - "${color}" "$@" << EOF &>/dev/null
+	on run argv
+		set labelIndex to (item 1 of argv as number)
+		repeat with i from 2 to (count of argv)
+			tell application "Finder"
+				set theFile to POSIX file (item i of argv) as alias
+				set label index of theFile to labelIndex
+			end tell
+		end repeat
+	end run
+EOF
