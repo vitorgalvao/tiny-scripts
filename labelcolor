@@ -21,14 +21,24 @@ color=${1}
 shift
 
 # Covert color name to appropriate number
+# Check if color is valid
 # ---------------------------------------
+isValidColor="False"
+
 colorArray=('remove' 'orange' 'red' 'yellow' 'blue' 'purple' 'green' 'gray')
 
 for (( i = 0; i < ${#colorArray[@]}; i++ )); do
 	if [[ "${colorArray[$i]}" = "${color}" ]]; then
-		color=${i}
+		color="${i}"
+		isValidColor="True"
 	fi
 done
+
+if [[ "${isValidColor}" = "False" ]]; then
+	echo "Please choose a valid color"
+	usage
+	exit 1
+fi
 
 # Set the label
 # -------------
