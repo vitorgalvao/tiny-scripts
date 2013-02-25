@@ -7,7 +7,7 @@ usage() {
 echo "usage: $0 <color> <files>
 
 Available color options:
-remove (to remove label), orange, red, yellow, blue, purple, green, gray"
+none (to remove label), orange, red, yellow, blue, purple, green, gray"
 }
 
 if [[ -z ${1} ]]; then
@@ -25,7 +25,7 @@ shift
 # ---------------------------------------
 isValidColor="False"
 
-colorArray=('remove' 'orange' 'red' 'yellow' 'blue' 'purple' 'green' 'gray')
+colorArray=('none' 'orange' 'red' 'yellow' 'blue' 'purple' 'green' 'gray')
 
 for (( i = 0; i < ${#colorArray[@]}; i++ )); do
 	if [[ "${colorArray[$i]}" = "${color}" ]]; then
