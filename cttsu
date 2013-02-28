@@ -16,6 +16,13 @@ fi
 object_id=${1}
 desired_url=${2}
 
+# is.gd does not allow the url to be longer than 30 characters
+# ------------------------------------------------------------
+if [[ ${#desired_url} -ge 30 ]]; then
+	echo -e "\n$(tput setaf 1)Short URLs must be a maximum of 30 characters long.$(tput sgr0)\n"
+	exit 1
+fi
+
 # Check if desired short url is available, and if not, ask for a different one
 # ----------------------------------------------------------------------------
 short_url_is_available="False"
