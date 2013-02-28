@@ -25,7 +25,7 @@ while [[ ${short_url_is_available} == "False" ]]; do
 		short_url_is_available="True"
 	else
 		echo -e "\n$(tput setaf 1)That short URL is already taken, please pick another one.$(tput sgr0)\n"
-		read -p "Desired URL → " desired_url
+		exit 1
 	fi
 done
 
