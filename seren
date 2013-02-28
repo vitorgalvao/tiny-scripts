@@ -21,11 +21,6 @@ if [[ -z ${1} ]]; then
 	exit 1
 fi
 
-# If no sequence length is given,
-# it will be set according to the number of files
-# -----------------------------------------------
-leadingZeros=$(echo -n "$#" | wc -c | tr -d ' ')
-
 # Available flags to use with the script
 # --------------------------------------
 while getopts hs:n:p:a:v OPTION
@@ -41,6 +36,11 @@ do
         esac
 done
 shift $((OPTIND-1))
+
+# If no sequence length is given,
+# it will be set according to the number of files
+# -----------------------------------------------
+leadingZeros=$(echo -n "$#" | wc -c | tr -d ' ')
 
 # For when a starting number is picked
 # ------------------------------------
