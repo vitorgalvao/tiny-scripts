@@ -40,7 +40,9 @@ shift $((OPTIND-1))
 # If no sequence length is given,
 # it will be set according to the number of files
 # -----------------------------------------------
-leadingZeros=$(echo -n "$#" | wc -c | tr -d ' ')
+if [[ -z ${leadingZeros} ]]; then
+	leadingZeros=$(echo -n "$#" | wc -c | tr -d ' ')
+fi
 
 # For when a starting number is picked
 # ------------------------------------
