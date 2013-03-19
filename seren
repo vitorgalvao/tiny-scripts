@@ -37,17 +37,21 @@ do
 done
 shift $((OPTIND-1))
 
-# If no sequence length is given,
-# it will be set according to the number of files
-# -----------------------------------------------
-if [[ -z ${leadingZeros} ]]; then
-	leadingZeros=$(echo -n "$#" | wc -c | tr -d ' ')
+# Determines the starting number, depending on if one was picked
+# --------------------------------------------------------------
+if [[ "${startingNum}" ]]; then
+	num=$((${startingNum}-1))
+else
+	num=0
 fi
 
-# For when a starting number is picked
-# ------------------------------------
-if [[ ${startingNum} ]]; then
-	num=$((${startingNum}-1))
+# If no sequence length is given,
+# it will be set accordingly to what the last number
+# in the sequence is (depending on the starting number)
+# -----------------------------------------------------
+if [[ -z "${leadingZeros}" ]]; then
+  sequenceEnd=$(($(echo -n "$#")+${num}))
+  leadingZeros=$(echo -n "${sequenceEnd}" | wc -c | tr -d ' ')
 fi
 
 # The actual renaming part
