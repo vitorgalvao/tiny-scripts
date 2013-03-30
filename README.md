@@ -12,6 +12,9 @@ Script to make animated gifs from sequences of images, with more control over FP
 ### labelcolor
 Script to change label color of files in OSX
 
+### lovecolor
+Script to get color palette from colourlovers and format it to use in processing
+
 ### strongpassword
 Script to get a strong password from https://www.grc.com/passwords.htm
 
