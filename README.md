@@ -1,5 +1,8 @@
 # Collection of small bash scripts
 
+### casks
+Script to help me manage and edit Casks from homebrew-cask
+
 ### dropboxtimer
 Script to add files to your dropbox, and delete them a set number of days later.
 
