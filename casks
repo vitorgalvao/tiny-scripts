@@ -32,7 +32,7 @@ else
 # Copy casks to the casktapdir and audit them
 	for caskfile in $@; do
 		cask=$(echo $(basename "${caskfile}") | sed 's/\.rb$//')
-		cp "${caskfile}" "${casktapdir}"/Casks/
+		cp "${caskfile}" "${casktapdir}/Casks/"
 		brew cask audit "${cask}"
 		# Install (and remove after) to see if everything is really working
 		brew cask install "${cask}"
