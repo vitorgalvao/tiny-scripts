@@ -17,10 +17,14 @@ if [[ -z ${1} ]]; then
 fi
 
 # Default location of the casktapdir
+caskroom="/opt/homebrew-cask/Caskroom"
 casktapdir="$(brew --prefix)/Library/Taps/phinze-cask"
 
 # If called with the '--new' option, copy a base file for editing
-if [[ ${1} == "--new" ]]; then
+if [[ ${1} == "--uninstall" ]]; then
+	brew cask uninstall $(ls "${caskroom}/")
+	rm -r ${caskroom}/*
+elif [[ ${1} == "--new" ]]; then
 	shift
 	for cask in $@; do
 		cp "${casktapdir}/Casks/Acorn.rb" "${cask}.rb"
@@ -36,8 +40,6 @@ else
 		brew cask audit "${cask}"
 		# Install (and remove after) to see if everything is really working
 		brew cask install "${cask}"
-		brew cask uninstall "${cask}"
-		rm -r "/opt/homebrew-cask/Caskroom/${cask}"
 	done
 	# Revert the casktapdir to its original state
 	git --git-dir="${casktapdir}/.git/" --work-tree="${casktapdir}" reset --hard head
