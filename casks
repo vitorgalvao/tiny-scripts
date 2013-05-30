@@ -33,6 +33,8 @@ elif [[ ${1} == "--new" ]]; then
 		$0 ${cask}.rb
 	done
 else
+# Edit the casks
+	vim $@
 # Copy casks to the casktapdir and audit them
 	for caskfile in $@; do
 		cask=$(echo $(basename "${caskfile}") | sed 's/\.rb$//')
