@@ -1,0 +1,13 @@
+#!/bin/bash
+
+caskroom="/opt/homebrew-cask/Caskroom"
+apps="$@"
+
+brew cask install "${apps}"
+
+for app in "$(readlink ${HOME}/Applications/*)"; do
+	cp -r "${app}" "/Applications/"
+done
+
+brew cask uninstall "${apps}"
+rm -r "${caskroom}/*"

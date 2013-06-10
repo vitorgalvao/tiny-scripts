@@ -1,7 +1,10 @@
 # Collection of small bash scripts
 
+### casker
+Script to easily install apps from homebrew-cask directly to /Applications/
+
 ### casks
-Script to help me manage and edit Casks from homebrew-cask
+Script to help manage and edit Casks from homebrew-cask
 
 ### dropboxtimer
 Script to add files to your dropbox, and delete them a set number of days later.
