@@ -22,7 +22,7 @@ casktapdir="$(brew --prefix)/Library/Taps/phinze-cask"
 
 # If called with the '--new' option, copy a base file for editing
 if [[ ${1} == "--uninstall" ]]; then
-	brew cask uninstall $(ls "${caskroom}/")
+	brew cask uninstall $(ls "${caskroom}")
 	rm -r ${caskroom}/*
 elif [[ ${1} == "--new" ]]; then
 	shift
@@ -33,9 +33,9 @@ elif [[ ${1} == "--new" ]]; then
 		$0 ${cask}.rb
 	done
 else
-# Edit the casks
+	# Edit the casks
 	vim $@
-# Copy casks to the casktapdir and audit them
+	# Copy casks to the casktapdir and audit them
 	for caskfile in $@; do
 		cask=$(echo $(basename "${caskfile}") | sed 's/\.rb$//')
 		cp "${caskfile}" "${casktapdir}/Casks/"
