@@ -3,9 +3,9 @@
 caskroom="/opt/homebrew-cask/Caskroom"
 apps="$@"
 
-brew cask install "${apps}"
+brew cask install ${apps}
 
 readlink ${HOME}/Applications/* | xargs -I {} cp -R {} /Applications/
 
-brew cask uninstall "${apps}"
-rm -r "${caskroom}/*"
+brew cask uninstall ${apps}
+rm -r ${caskroom}/*
