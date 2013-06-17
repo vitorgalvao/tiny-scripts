@@ -5,9 +5,7 @@ apps="$@"
 
 brew cask install "${apps}"
 
-for app in "$(readlink ${HOME}/Applications/*)"; do
-	cp -r "${app}" "/Applications/"
-done
+readlink ${HOME}/Applications/* | xargs -I {} cp -R {} /Applications/
 
 brew cask uninstall "${apps}"
 rm -r "${caskroom}/*"
