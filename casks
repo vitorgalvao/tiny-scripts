@@ -44,6 +44,7 @@ else
 		brew cask install "${cask}"
 	done
 	# Revert the casktapdir to its original state
+	git --git-dir="${casktapdir}/.git/" --work-tree="${casktapdir}" clean --force
 	git --git-dir="${casktapdir}/.git/" --work-tree="${casktapdir}" reset HEAD --hard
 fi
 
