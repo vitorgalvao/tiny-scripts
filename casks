@@ -20,6 +20,7 @@ fi
 caskroom="/opt/homebrew-cask/Caskroom"
 casktapdir="$(brew --prefix)/Library/Taps/phinze-cask"
 
+# If cakked with the '--uninstall' option, remove all cask-intalled apps
 # If called with the '--new' option, copy a base file for editing
 if [[ ${1} == "--uninstall" ]]; then
 	brew cask uninstall $(ls "${caskroom}")
