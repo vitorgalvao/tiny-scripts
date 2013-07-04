@@ -54,5 +54,4 @@ done
 
 # Make the animated gif, and then optimize its size
 # -------------------------------------------------
-convert "${imagesArray[@]}" "/tmp/tmpGif.gif"
-convert -layers Optimize "/tmp/tmpGif.gif" "${!#}"
+convert "${imagesArray[@]}" -layers Optimize "${!#}"
