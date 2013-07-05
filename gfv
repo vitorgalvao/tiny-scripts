@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# This script depends on imagemagick and ffmpeg for the conversion
+# ----------------------------------------------------------------
+if ! hash convert 2>/dev/null; then
+  echo -e >&2 "\n$(tput setaf 1)This script requires imagemagick. Please install it first.$(tput sgr0)\n"
+  exit 1
+fi
+if ! hash ffmpeg 2>/dev/null; then
+  echo -e >&2 "\n$(tput setaf 1)This script requires ffmpeg. Please install it first.$(tput sgr0)\n"
+  exit 1
+fi
+
+# Instructions on how to use the script
+# Shown when no arguments are given
+# -------------------------------------
+usage() {
+echo "usage: $0 <input_file> <output_file>"
+}
+
+if [[ -z ${1} ]]; then
+  usage
+  exit 1
+fi
+
+# Make the animated gif
+# ---------------------
+ffmpeg -i "${1}" -r 10 -f image2pipe -vcodec ppm - | convert - -layers Optimize "${2}"
