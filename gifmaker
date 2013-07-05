@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# This script depends on ImageMagick for the conversion
+# This script depends on imagemagick for the conversion
 # -----------------------------------------------------
 if ! hash convert 2>/dev/null; then
-  echo -e >&2 "\n$(tput setaf 1)This script requires ImageMagick. Please install it first.$(tput sgr0)\n"
+  echo -e >&2 "\n$(tput setaf 1)This script requires imagemagick. Please install it first.$(tput sgr0)\n"
   exit 1
 fi
 
@@ -52,6 +52,6 @@ for (( i = 1; i < $#; i += ${rateCalculation} )); do
   imagesArray+=("${!i}")
 done
 
-# Make the animated gif, and then optimize its size
-# -------------------------------------------------
+# Make the animated gif
+# ---------------------
 convert "${imagesArray[@]}" -layers Optimize "${!#}"
