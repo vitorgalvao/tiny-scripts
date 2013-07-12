@@ -26,3 +26,6 @@ Script to get a strong password from https://www.grc.com/passwords.htm
 
 ### seren
 Script to rename files in a numerical sequence.
+
+#### License
+The Unlicense (Public Domain, essentially)
