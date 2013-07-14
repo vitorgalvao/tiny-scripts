@@ -4,11 +4,14 @@
 usage() {
 echo "usage:
 
-You can either use this to check/audit altered casks by issuing
+You can either use this to audit altered casks by issuing
 $0 /path/to/a-cask.rb /path/to/another-cask.rb
 
-Or create (and audit) new ones by doing
-$0 --new cask-name abother-cask-name"
+Create (and audit) new ones by doing
+$0 --new cask-name abother-cask-name
+
+Or remove all installed
+$0 --remove"
 }
 
 if [[ -z ${1} ]]; then
@@ -20,10 +23,9 @@ fi
 caskroom="/opt/homebrew-cask/Caskroom"
 casktapdir="$(brew --prefix)/Library/Taps/phinze-cask"
 
-# If called with the '--uninstall' option, remove all cask-intalled apps
+# If called with the '--remove' option, remove all cask-intalled apps
 # If called with the '--new' option, copy a base file for editing
-if [[ ${1} == "--uninstall" ]]; then
-	brew cask uninstall $(ls "${caskroom}")
+if [[ ${1} == "--remove" ]]; then
 	rm -r ${caskroom}/*
 elif [[ ${1} == "--new" ]]; then
 	shift
