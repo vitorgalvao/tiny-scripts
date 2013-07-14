@@ -26,6 +26,7 @@ casktapdir="$(brew --prefix)/Library/Taps/phinze-cask"
 # If called with the '--remove' option, remove all cask-intalled apps
 # If called with the '--new' option, copy a base file for editing
 if [[ ${1} == "--remove" ]]; then
+	brew cask unlinkapps
 	rm -r ${caskroom}/*
 elif [[ ${1} == "--new" ]]; then
 	shift
@@ -41,7 +42,7 @@ else
 		cask=$(echo $(basename "${caskfile}") | sed 's/\.rb$//')
 		cp "${caskfile}" "${casktapdir}/Casks/"
 		brew cask audit "${cask}"
-		# Install (and remove after) to see if everything is really working
+		# Install, to see if everything is really working
 		brew cask install "${cask}"
 	done
 	# Revert the casktapdir to its original state
