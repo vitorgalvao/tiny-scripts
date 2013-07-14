@@ -30,7 +30,7 @@ if [[ ${1} == "--remove" ]]; then
 elif [[ ${1} == "--new" ]]; then
 	shift
 	for cask in $@; do
-		cp "${casktapdir}/Casks/Acorn.rb" "${cask}.rb"
+		cp "${casktapdir}/Casks/adapter.rb" "${cask}.rb"
 		vim -c "nmap <space> /'<cr>nci'" -c "normal wcW" "${cask}.rb"
 		# After creating casks, audit them with the script
 		$0 ${cask}.rb
