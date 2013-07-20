@@ -1,11 +1,27 @@
 #!/bin/bash
 
+IFS=$'\n'
+
 caskroom="/opt/homebrew-cask/Caskroom"
-apps="$@"
 
-brew cask install ${apps}
+# temporary directory for the links created by homebrew-cask
+tmplinkdir="/tmp/homebrewcasktmp"
+mkdir "${tmplinkdir}"
+export HOMEBREW_CASK_OPTS="--appdir=${tmplinkdir}"
 
-readlink ${HOME}/Applications/* | xargs -I {} cp -R {} /Applications/
+brew cask install $@
 
-brew cask uninstall ${apps}
+# remove the old app from /Applications/, if it's there, before moving the new version
+for app in $(readlink ${tmplinkdir}/*); do
+	appname="$(basename ${app})"
+	if [[ -d "/Applications/${appname}" ]]; then
+		mv "/Applications/${appname}" "${HOME}/.Trash/"
+	fi
+	mv "${app}" "/Applications/"
+done
+
+echo "==> Moved to /Applications/"
+
+# clean
+rm -r "${tmplinkdir}"
 rm -r ${caskroom}/*
