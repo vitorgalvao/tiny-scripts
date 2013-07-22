@@ -9,11 +9,11 @@ usage() {
 echo "usage: $0 [-s] [-n] [-p] [-a] [-h] <files>
 
 options:
-   -h   Show this message
-   -s   Sets starting number for the sequence (defaults to 1)
-   -n   Sets sequence length (defaults to what'll accomodate the number of files)
-   -p   Sets name to prepend to the sequence number (defaults to nothing)
-   -a   Sets name to append to the sequence number (defaults to nothing)"
+	-h   Show this message
+	-s   Sets starting number for the sequence (defaults to 1)
+	-n   Sets sequence length (defaults to what'll accomodate the number of files)
+	-p   Sets name to prepend to the sequence number (defaults to nothing)
+	-a   Sets name to append to the sequence number (defaults to nothing)"
 }
 
 if [[ -z ${1} ]]; then
@@ -25,15 +25,15 @@ fi
 # --------------------------------------
 while getopts hs:n:p:a:v OPTION
 do
-        case "${OPTION}"
-        in
-          h) usage ; exit 1;;
-          s) startingNum=${OPTARG};;
-          n) leadingZeros=${OPTARG};;
-          p) stringToPrepend=${OPTARG};;
-          a) stringToAppend=${OPTARG};;
-          v) beVerbose="v"
-        esac
+		case "${OPTION}"
+		in
+			h) usage ; exit 1;;
+			s) startingNum=${OPTARG};;
+			n) leadingZeros=${OPTARG};;
+			p) stringToPrepend=${OPTARG};;
+			a) stringToAppend=${OPTARG};;
+			v) beVerbose="v"
+		esac
 done
 shift $((OPTIND-1))
 
@@ -50,16 +50,15 @@ fi
 # in the sequence is (depending on the starting number)
 # -----------------------------------------------------
 if [[ -z "${leadingZeros}" ]]; then
-  sequenceEnd=$(($(echo -n "$#")+${num}))
-  leadingZeros=$(echo -n "${sequenceEnd}" | wc -c | tr -d ' ')
+	sequenceEnd=$(($(echo -n "$#")+${num}))
+	leadingZeros=$(echo -n "${sequenceEnd}" | wc -c | tr -d ' ')
 fi
 
 # The actual renaming part
 # “#10” is necessary for using base10
 # -----------------------------------
 for fileToRename in $@; do
-
-  num=$(printf "%.${leadingZeros}d" "$((10#${num}+1))")
+	num=$(printf "%.${leadingZeros}d" "$((10#${num}+1))")
 
 	mv -n${beVerbose} "${fileToRename}" "$(dirname ${fileToRename})/${stringToPrepend}${num}${stringToAppend}.${fileToRename##*.}"
 done
