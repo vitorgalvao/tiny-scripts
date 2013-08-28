@@ -50,7 +50,7 @@ do
 		echo "There's already a file named $(basename ${originalFile}) in the directory, the new file will be renamed to ${newFile}"
 	fi
 
-	# Set variables need for launchd, and copy the file to the directory
+	# Set variables needed for launchd, and copy the file to the directory
 	label="com.DropboxTimer.${newFile//[^a-zA-Z-0-9_]/}"
 	agent="${HOME}/Library/LaunchAgents/${label}.plist"
 
