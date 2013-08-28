@@ -25,15 +25,15 @@ fi
 # --------------------------------------
 while getopts hs:n:p:a:v OPTION
 do
-		case "${OPTION}"
-		in
-			h) usage ; exit 1;;
-			s) startingNum=${OPTARG};;
-			n) leadingZeros=${OPTARG};;
-			p) stringToPrepend=${OPTARG};;
-			a) stringToAppend=${OPTARG};;
-			v) beVerbose="v"
-		esac
+	case "${OPTION}"
+	in
+		h) usage ; exit 1;;
+		s) startingNum=${OPTARG};;
+		n) leadingZeros=${OPTARG};;
+		p) stringToPrepend=${OPTARG};;
+		a) stringToAppend=${OPTARG};;
+		v) beVerbose="v"
+	esac
 done
 shift $((OPTIND-1))
 
