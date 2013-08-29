@@ -27,5 +27,8 @@ Script to get a strong password from https://www.grc.com/passwords.htm
 ### seren
 Script to rename files in a numerical sequence.
 
+### unsplashdownload
+Script to download images from http://unsplash.com/
+
 #### License
 The Unlicense (Public Domain, essentially)
