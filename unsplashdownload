@@ -1,12 +1,10 @@
 #!/bin/bash
 
-# show usage if no week number was input
-if [[ -z ${1} ]]; then
-	echo "usage: $0 <week_number>"
-fi
+# calculate which week (batch) unsplash is on
+batch=$(echo "$(( ($(date '+%s') - $(date -j -f '%Y-%m-%d' '2013-05-21' '+%s')) / (10 * 24 * 3600) ))")
 
 # set week number with four digits, default download dir
-week=$(printf '%.4d' ${1})
+week=$(printf '%.4d' ${batch})
 downloadDir="${HOME}/Desktop/unsplash"
 num=01
 
