@@ -27,7 +27,7 @@ casktapdir="$(brew --prefix)/Library/Taps/phinze-cask"
 # If called with the '--new' option, copy a base file for editing
 if [[ ${1} == "--remove" ]]; then
 	brew cask unlinkapps
-	rm -r ${caskroom}/*
+	rm -rf ${caskroom}/*
 elif [[ ${1} == "--new" ]]; then
 	shift
 	for cask in $@; do
