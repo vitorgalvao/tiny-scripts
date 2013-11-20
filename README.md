@@ -6,6 +6,9 @@ Script to easily install apps from homebrew-cask directly to /Applications/
 ### casks
 Script to help manage and edit Casks from homebrew-cask
 
+### customise-terminal-notifier
+Script to setup terminal-notifier with a custom icon
+
 ### dropboxtimer
 Script to add files to your dropbox, and delete them a set number of days later.
 
