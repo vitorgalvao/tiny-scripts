@@ -1,6 +1,6 @@
 # Collection of small bash scripts
 
-### casks
+### casks-audit
 Script to help manage and edit Casks from homebrew-cask
 
 ### customise-terminal-notifier
