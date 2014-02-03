@@ -1,5 +1,7 @@
 # Collection of small bash scripts
 
+The easiest way to get these is via [this tap](https://github.com/vitorgalvao/homebrew-tinyscripts), as the install will take care of any eventual dependencies that are not already available on your system.
+
 ### casks-audit
 Script to help manage and edit Casks from homebrew-cask
 
