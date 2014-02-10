@@ -56,14 +56,18 @@ vcrafts() {
   fi
 
   # copy files and directories
-  for line in $(cat "${CRAFTSCOPYFILE}"); do
-    cp -Rv "${line}" "${craftsOutDir}"
-  done
+  if [[ -f "${CRAFTSCOPYFILE}" ]]; then
+    for line in $(cat "${CRAFTSCOPYFILE}"); do
+      cp -Rv "${line}" "${craftsOutDir}"
+    done
+  fi
 
   # move files and directories
-  for line in $(cat "${CRAFTSCUTFILE}"); do
-    mv -v "${line}" "${craftsOutDir}"
-  done
+  if [[ -f "${CRAFTSCOPYFILE}" ]]; then
+    for line in $(cat "${CRAFTSCUTFILE}"); do
+      mv -v "${line}" "${craftsOutDir}"
+    done
+  fi
 
   # reset files and options
   rm "${CRAFTSCOPYFILE}" "${CRAFTSCUTFILE}" 2>/dev/null
