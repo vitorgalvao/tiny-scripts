@@ -1,0 +1,77 @@
+# temporary files
+CRAFTSCOPYFILE="/tmp/crafts-copyfile"
+CRAFTSCUTFILE="/tmp/crafts-cutfile"
+
+# usage
+crafts() {
+echo "usage:
+
+  ccrafts <input>    # files and directories to copy (takes multiple arguments)
+  xcrafts <input>    # files and directories to move (takes multiple arguments)
+  vcrafts <output>   # directory to move and copy files and directories to
+                       (if no argument is give, it uses the current directory)
+  ecrafts            # edits copy and move lists"
+}
+
+ccrafts() {
+  # show usage if no argument is given
+  if [[ -z "$1" ]]; then
+    crafts
+    kill -INT $$
+  fi
+
+  # make sure directory names don't end in '/'
+  for arg; do
+    echo "$PWD/${arg#./}" | sed 's/\/$//' >> "${CRAFTSCOPYFILE}"
+  done
+}
+
+xcrafts() {
+  # show usage if no argument is given
+  if [[ -z "$1" ]]; then
+    crafts
+    kill -INT $$
+  fi
+
+  for arg; do
+    echo "$PWD/${arg#./}" >> "${CRAFTSCUTFILE}"
+  done
+}
+
+vcrafts() {
+  OLDIFS=$IFS
+  IFS=$'\n'
+
+  # show usage if more than one argument is given
+  if [[ -n "$2" ]]; then
+    crafts
+    kill -INT $$
+  fi
+
+  # set output location
+  if [[ -n "$1" ]]; then
+    craftsOutDir="$1"
+  else
+    craftsOutDir="."
+  fi
+
+  # copy files and directories
+  for line in $(cat "${CRAFTSCOPYFILE}"); do
+    cp -Rv "${line}" "${craftsOutDir}"
+  done
+
+  # move files and directories
+  for line in $(cat "${CRAFTSCUTFILE}"); do
+    mv -v "${line}" "${craftsOutDir}"
+  done
+
+  # reset files and options
+  rm "${CRAFTSCOPYFILE}" "${CRAFTSCUTFILE}" 2>/dev/null
+  unset craftsOutDir
+  IFS=$OLDIFS
+}
+
+ecrafts() {
+  touch "${CRAFTSCOPYFILE}" "${CRAFTSCUTFILE}"
+  open -t "${CRAFTSCOPYFILE}" "${CRAFTSCUTFILE}"
+}
