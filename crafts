@@ -63,7 +63,7 @@ vcrafts() {
   fi
 
   # move files and directories
-  if [[ -f "${CRAFTSCOPYFILE}" ]]; then
+  if [[ -f "${CRAFTSCUTFILE}" ]]; then
     for line in $(cat "${CRAFTSCUTFILE}"); do
       mv -v "${line}" "${craftsOutDir}"
     done
