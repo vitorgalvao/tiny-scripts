@@ -5,6 +5,9 @@ The easiest way to get these is via [this repository](https://github.com/vitorga
 ### casks-audit
 Script to help manage and edit Casks from homebrew-cask
 
+### crafts
+Script to allow copy/cut/paste between different terminal windows (it’s meant to be sourced from the shell, not called directly)
+
 ### customise-terminal-notifier
 Script to setup terminal-notifier with a custom icon
 
