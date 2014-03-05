@@ -26,6 +26,9 @@ Script to change label color of files in OSX
 ### lovecolor
 Script to get color palette from colourlovers and format it to use in processing
 
+### pinboardlinkcheck
+Script to check the status code of links saved in your [pinboard](https://pinboard.in/) account
+
 ### strongpassword
 Script to get a strong password from https://www.grc.com/passwords.htm
 
