@@ -28,7 +28,7 @@ while getopts hs:n:p:a:v OPTION
 do
 	case "${OPTION}"
 	in
-		h) usage ; exit 1;;
+		h) usage ; exit 0;;
 		s) startingNum=${OPTARG};;
 		n) leadingZeros=${OPTARG};;
 		p) stringToPrepend=${OPTARG};;

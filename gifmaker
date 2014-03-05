@@ -39,7 +39,7 @@ while getopts hb:e: OPTION
 do
         case "${OPTION}"
         in
-          h) usage ; exit 1;;
+          h) usage ; exit 0;;
           b) beginRate=${OPTARG};;
           e) endRate=${OPTARG};;
         esac

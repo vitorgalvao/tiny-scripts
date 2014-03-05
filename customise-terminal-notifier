@@ -15,7 +15,7 @@ while getopts hi:b: OPTION
 do
 	case "${OPTION}"
 	in
-		h) usage; exit 1;;
+		h) usage; exit 0;;
 		i) icon=${OPTARG};;
 		b) id=${OPTARG};;
 	esac
