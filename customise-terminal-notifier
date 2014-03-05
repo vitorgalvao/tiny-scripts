@@ -2,7 +2,7 @@
 
 # instructions
 usage() {
-echo "usage: $0 [-h] [-i] [-d]
+echo "usage: $0 [-h] [-i file] [-d bundleID]
 
 options:
 	-h Show this message

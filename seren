@@ -6,7 +6,7 @@ IFS=$'\n'
 # Shown with '-h', or when no arguments are given
 # -----------------------------------------------
 usage() {
-echo "usage: $0 [-s] [-n] [-p] [-a] [-h] <files>
+echo "usage: $0 [-h] [-s num] [-n num] [-p string] [-a string] [-v] <files>
 
 options:
 	-h   Show this message

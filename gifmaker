@@ -15,7 +15,7 @@ dependsOn convert
 # Shown with '-h', or when no arguments are given
 # -----------------------------------------------
 usage() {
-echo "usage: $0 [-h] [-b] [-e] <input_files> <output_file>
+echo "usage: $0 [-h] [-b num] [-e num] <input_files> <output_file>
 
 options:
    -h   Show this message
