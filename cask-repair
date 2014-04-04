@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# exit if not inside the a '/homebrew-cask/Casks' directory
+casksDir=$(pwd | perl -pe 's|.*(/homebrew-cask/Casks)$|\1|')
+if [[ "${casksDir}" != "/homebrew-cask/Casks" ]]; then
+  echo -e "\n$(tput setaf 1)You need to be inside a '/homebrew-cask/Casks' directory$(tput sgr0)\n"
+  exit 1
+fi
+
+# exit if no argument is given
+if [[ -z "$1" ]]; then
+  echo "You need to specify a cask name"
+  exit 1
+fi
+
+# define abort function, that will reset the state
+abort() {
+    git reset HEAD --hard
+    git checkout master
+    git branch -D "${caskBranch}"
+    echo -e "\n$(tput setaf 1)$1$(tput sgr0)\n"
+    exit 1
+}
+
+# set divider function
+divide() {
+  if [[ $(which hr) ]]; then
+    hr -
+  else
+    echo "--------------------"
+  fi
+}
+
+# clean the cask's name
+caskName="$1"
+[[ "${caskName}" == *".rb" ]] && caskName=$(echo "${caskName}" | sed 's|\.rb$||')
+caskFile="${caskName}.rb"
+caskBranch="update-${caskName}"
+
+# initial tasks
+git pull upstream master
+git checkout -b "${caskBranch}"
+divide
+brew cask home "${caskName}"
+cat "${caskFile}"
+divide
+
+read -p "Paste the new URL and version, separated by a space
+> " caskInfo 
+IFS=' ' read caskUrl caskVersion <<< "${caskInfo}"
+
+# check if the URL sends a 200 HTTP code, else abort
+caskStatus=$(curl -sIL "${caskUrl}" | head -1 | perl -pe 's|.* (\d{3}) .*|\1|')
+if [[ "${caskStatus}" != "200" ]]; then
+  abort "Download URL returned ${caskStatus}"
+fi
+
+# calculate new sha256
+caskSha=$(curl -#L "${caskUrl}" | shasum -a 256 | sed 's| .*||' | tr -d '\n')
+
+# modify url, version, and sha256
+sed -i '' "s|url '.*|url '${caskUrl}'|;s|version '.*|version '${caskVersion}'|;s|sha256 '.*|sha256 '${caskSha}'|" "${caskFile}"
+
+# check if everything is alright, else abort
+git diff
+caskUpdated="not checked"
+while [[ "${caskUpdated}" =~ [^y|^n] ]]; do
+  read -p "Is everything correct? (y/n) " caskUpdated 
+
+  if [[ "${caskUpdated}" == "y" ]]; then
+    break
+  elif [[ "${caskUpdated}" == "n" ]]; then
+    abort "You decided to abort"
+  fi
+done
+
+# commit, push, clean
+git commit "${caskFile}" -m "updated ${caskFile}"
+git checkout master
+git push origin "${caskBranch}"
+git branch -D "${caskBranch}"
