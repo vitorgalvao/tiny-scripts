@@ -3,10 +3,10 @@
 # This script depends on imagemagick and ffmpeg for the conversion
 # ----------------------------------------------------------------
 dependsOn() {
-if ! hash ${1} 2>/dev/null; then
-  echo -e >&2 "\n$(tput setaf 1)This script requires ${1}. Please install it first.$(tput sgr0)\n"
-  exit 1
-fi
+  if [[ ! $(which "${1}") ]]; then
+    echo -e >&2 "\n$(tput setaf 1)This script requires ${1}. Please install it first.$(tput sgr0)\n"
+    exit 1
+  fi
 }
 
 dependsOn convert
