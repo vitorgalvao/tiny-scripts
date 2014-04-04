@@ -31,11 +31,12 @@ divide() {
   fi
 }
 
-# clean the cask's name
+# clean the cask's name, and check if it is valid
 caskName="$1"
 [[ "${caskName}" == *".rb" ]] && caskName=$(echo "${caskName}" | sed 's|\.rb$||')
 caskFile="${caskName}.rb"
 caskBranch="update-${caskName}"
+[[ ! -f "${caskFile}" ]] && abort "There is no such cask"
 
 # initial tasks
 git pull upstream master
