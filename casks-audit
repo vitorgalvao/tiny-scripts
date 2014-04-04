@@ -12,8 +12,8 @@ $0 --new a-cask another-cask"
 }
 
 if [[ -z ${1} ]]; then
-	usage
-	exit 1
+  usage
+  exit 1
 fi
 
 # Location of the casktapdir
@@ -21,16 +21,16 @@ casktapdir="$(brew --prefix)/Library/Taps/phinze-cask"
 
 # If called with the '--new' option, create new casks for editing
 if [[ ${1} == "--new" ]]; then
-	shift
-	for cask in $@; do
-		brew cask create "${cask}"
-		vim -c "nmap <space> /'<cr>nci'" -c "normal wcW" "${cask}.rb"
-	done
-	# After creating casks, audit them with the script
-	$0 $@
+  shift
+  for cask in $@; do
+    brew cask create "${cask}"
+    vim -c "nmap <space> /'<cr>nci'" -c "normal wcW" "${cask}.rb"
+  done
+  # After creating casks, audit them with the script
+  $0 $@
 else
-	cp $@ "${casktapdir}/Casks/"
-	brew cask audit $@
+  cp $@ "${casktapdir}/Casks/"
+  brew cask audit $@
 fi
 
 # Revert the casktapdir to its original state
