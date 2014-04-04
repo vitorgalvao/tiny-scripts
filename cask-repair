@@ -59,7 +59,7 @@ fi
 caskSha=$(curl -#L "${caskUrl}" | shasum -a 256 | sed 's| .*||' | tr -d '\n')
 
 # modify url, version, and sha256
-sed -i '' "s|url '.*|url '${caskUrl}'|;s|version '.*|version '${caskVersion}'|;s|sha256 '.*|sha256 '${caskSha}'|" "${caskFile}"
+sed -i '' "s|url '.*'|url '${caskUrl}'|;s|version '.*'|version '${caskVersion}'|;s|sha256 '.*'|sha256 '${caskSha}'|" "${caskFile}"
 
 # check if everything is alright, else abort
 git diff
