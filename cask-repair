@@ -46,9 +46,9 @@ brew cask home "${caskName}"
 cat "${caskFile}"
 divide
 
-read -p "Paste the new URL and version, separated by a space
-> " caskInfo 
-IFS=' ' read caskUrl caskVersion <<< "${caskInfo}"
+read -p "Save the new download URL to your clipboard, and type the version
+> " caskVersion
+caskUrl="$(pbpaste)"
 
 # check if the URL sends a 200 HTTP code, else abort
 caskStatus=$(curl -sIL "${caskUrl}" | head -1 | perl -pe 's|.* (\d{3}) .*|\1|')
