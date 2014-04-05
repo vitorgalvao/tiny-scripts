@@ -30,7 +30,7 @@ if [[ ${1} == "--new" ]]; then
   $0 $@
 else
   cp $@ "${casktapdir}/Casks/"
-  brew cask audit $@
+  brew cask audit --download $@
 fi
 
 # Revert the casktapdir to its original state
