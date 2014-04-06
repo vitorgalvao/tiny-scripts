@@ -76,7 +76,7 @@ while [[ "${caskUpdated}" =~ [^y|^n] ]]; do
 done
 
 # commit, push, clean
-git commit "${caskFile}" -m "updated ${caskFile}"
+git commit "${caskFile}" -m "updated ${caskName}"
 git checkout master
 git push origin "${caskBranch}"
 git branch -D "${caskBranch}"
