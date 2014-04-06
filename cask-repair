@@ -63,13 +63,16 @@ caskSha=$(curl -#L "${caskUrl}" | shasum -a 256 | sed 's| .*||' | tr -d '\n')
 sed -i '' "s|url '.*'|url '${caskUrl}'|;s|version '.*'|version '${caskVersion}'|;s|sha256 '.*'|sha256 '${caskSha}'|" "${caskFile}"
 
 # check if everything is alright, else abort
-git diff
 caskUpdated="not checked"
-while [[ "${caskUpdated}" =~ [^y|^n] ]]; do
-  read -p "Is everything correct? (y/n) " caskUpdated 
+while [[ "${caskUpdated}" =~ [^y|^n|^e] ]]; do
+  git diff
+  read -p "Is everything correct? You can also make further manual edits (y/n/e) " caskUpdated 
 
   if [[ "${caskUpdated}" == "y" ]]; then
     break
+  elif [[ "${caskUpdated}" == "e" ]]; then
+    vim "${caskFile}"
+    caskUpdated="check again"
   elif [[ "${caskUpdated}" == "n" ]]; then
     abort "You decided to abort"
   fi
