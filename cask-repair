@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# location of homebrew-cask tap
+caskTap="$(brew --prefix)/Library/Taps/phinze-cask"
+
 # exit if not inside the a '/homebrew-cask/Casks' directory
 casksDir=$(pwd | perl -pe 's|.*(/homebrew-cask/Casks)$|\1|')
 if [[ "${casksDir}" != "/homebrew-cask/Casks" ]]; then
@@ -66,8 +69,13 @@ sed -i '' "s|url '.*'|url '${caskUrl}'|;s|version '.*'|version '${caskVersion}'|
 # check if everything is alright, else abort
 caskUpdated="not checked"
 while [[ "${caskUpdated}" =~ [^y|^n|^e] ]]; do
+  # audit cask
+  cp "${caskFile}" "${caskTap}/Casks/"
+  brew cask audit --download "${caskName}"
+
   git diff
-  read -p "Is everything correct? You can also make further manual edits (y/n/e) " caskUpdated 
+
+  read -p "Is everything correct? You can also make further manual edits (y/n/e) " caskUpdated
 
   if [[ "${caskUpdated}" == "y" ]]; then
     break
@@ -84,3 +92,8 @@ git commit "${caskFile}" -m "updated ${caskName}"
 git checkout master
 git push origin "${caskBranch}"
 git branch -D "${caskBranch}"
+
+# revert state of caskTap
+git --git-dir="${caskTap}/.git/" --work-tree="${caskTap}" clean --force
+git --git-dir="${caskTap}/.git/" --work-tree="${caskTap}" reset HEAD --hard
+
