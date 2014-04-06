@@ -51,13 +51,14 @@ read -p "Save the new download URL to your clipboard, and type the version
 caskUrl="$(pbpaste)"
 
 # check if the URL sends a 200 HTTP code, else abort
-caskStatus=$(curl -sIL "${caskUrl}" | head -1 | perl -pe 's|.* (\d{3}) .*|\1|')
+browserHeaders="-H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'"
+caskStatus=$(curl -sIL "${browserHeaders}" "${caskUrl}" | head -1 | perl -pe 's|.* (\d{3}) .*|\1|')
 if [[ "${caskStatus}" != "200" ]]; then
   abort "Download URL returned ${caskStatus}"
 fi
 
 # calculate new sha256
-caskSha=$(curl -#L "${caskUrl}" | shasum -a 256 | sed 's| .*||' | tr -d '\n')
+caskSha=$(curl -#L "${browserHeaders}" "${caskUrl}" | shasum -a 256 | sed 's| .*||' | tr -d '\n')
 
 # modify url, version, and sha256
 sed -i '' "s|url '.*'|url '${caskUrl}'|;s|version '.*'|version '${caskVersion}'|;s|sha256 '.*'|sha256 '${caskSha}'|" "${caskFile}"
