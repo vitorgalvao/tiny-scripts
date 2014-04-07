@@ -17,12 +17,23 @@ if [[ -z "$1" ]]; then
 fi
 
 # define abort function, that will reset the state
-abort() {
+finish() {
     git reset HEAD --hard
     git checkout master
     git branch -D "${caskBranch}"
-    echo -e "\n$(tput setaf 1)$1$(tput sgr0)\n"
-    exit 1
+    # revert state of caskTap
+    git --git-dir="${caskTap}/.git/" --work-tree="${caskTap}" clean --force
+    git --git-dir="${caskTap}/.git/" --work-tree="${caskTap}" reset HEAD --hard
+
+    # show message
+    if [[ "$1" == "abort" ]]; then
+      shift
+      echo -e "\n$(tput setaf 1)$1$(tput sgr0)\n"
+      exit 1
+    elif [[ "$1" == "success" ]]; then
+      echo -e "\n$(tput setaf 2)Submitted$(tput sgr0)\n"
+      exit 0
+    fi
 }
 
 # set divider function
@@ -39,7 +50,7 @@ caskName="$1"
 [[ "${caskName}" == *".rb" ]] && caskName=$(echo "${caskName}" | sed 's|\.rb$||')
 caskFile="${caskName}.rb"
 caskBranch="update-${caskName}"
-[[ ! -f "${caskFile}" ]] && abort "There is no such cask"
+[[ ! -f "${caskFile}" ]] && finish abort "There is no such cask"
 
 # initial tasks
 git pull upstream master
@@ -57,7 +68,11 @@ caskUrl="$(pbpaste)"
 browserHeaders="-H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'"
 caskStatus=$(curl -sIL "${browserHeaders}" "${caskUrl}" | grep '^HTTP' | tail -1 | perl -pe 's|.* (\d{3}) .*|\1|')
 if [[ "${caskStatus}" != "200" ]]; then
-  abort "Download URL returned ${caskStatus}"
+  if [[ -z "${caskStatus}" ]]; then
+    finish abort "You need to have a valid URL in your clipboard"
+  else
+    finish abort "Download URL returned ${caskStatus}"
+  fi
 fi
 
 # calculate new sha256
@@ -89,11 +104,7 @@ done
 
 # commit, push, clean
 git commit "${caskFile}" -m "updated ${caskName}"
-git checkout master
 git push origin "${caskBranch}"
-git branch -D "${caskBranch}"
 
-# revert state of caskTap
-git --git-dir="${caskTap}/.git/" --work-tree="${caskTap}" clean --force
-git --git-dir="${caskTap}/.git/" --work-tree="${caskTap}" reset HEAD --hard
-
+# cleanup
+finish success
