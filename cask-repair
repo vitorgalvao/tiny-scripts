@@ -98,7 +98,7 @@ while [[ "${caskUpdated}" =~ [^y|^n|^e] ]]; do
     vim "${caskFile}"
     caskUpdated="check again"
   elif [[ "${caskUpdated}" == "n" ]]; then
-    abort "You decided to abort"
+    finish abort "You decided to abort"
   fi
 done
 
