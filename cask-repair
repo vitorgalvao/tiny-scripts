@@ -87,7 +87,7 @@ caskUpdated="not checked"
 while [[ "${caskUpdated}" =~ [^y|^n|^e] ]]; do
   # audit cask
   cp "${caskFile}" "${caskTap}/Casks/"
-  brew cask audit --download "${caskName}"
+  brew cask audit "${caskName}"
 
   git diff
 
