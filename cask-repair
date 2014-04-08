@@ -60,9 +60,9 @@ brew cask home "${caskName}"
 cat "${caskFile}"
 divide
 
-read -p "Save the new download URL to your clipboard, and type the version (or 'abort', to stop here)
+read -p "Save the new download URL to your clipboard, and type the version (or leave blank to abort)
 > " caskVersion
-[[ "${caskVersion}" == "abort" ]] && finish abort "You decided to abort"
+[[ -z "${caskVersion}" ]] && finish abort "You decided to abort"
 caskUrl="$(pbpaste)"
 
 # check if the URL sends a 200 HTTP code, else abort
