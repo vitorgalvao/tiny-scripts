@@ -26,4 +26,4 @@ fi
 
 # Make the animated gif
 # ---------------------
-ffmpeg -i "${1}" -r 10 -f image2pipe -vcodec ppm - | convert - -layers Optimize "${2}"
+ffmpeg -i "${1}" -r 10 -f image2pipe -vcodec ppm - | convert -dispose Background - -layers Optimize "${2}"

@@ -58,4 +58,4 @@ done
 
 # Make the animated gif
 # ---------------------
-convert "${imagesArray[@]}" -layers Optimize "${!#}"
+convert -dispose Background "${imagesArray[@]}" -layers Optimize "${!#}"
