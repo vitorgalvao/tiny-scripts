@@ -5,9 +5,6 @@ The easiest way to get these is via [this repository](https://github.com/vitorga
 ### cask-repair
 Script to quickly repair outdated/broken Casks from homebrew-cask
 
-### casks-audit
-Script to help manage and edit Casks from homebrew-cask
-
 ### crafts
 Script to allow copy/cut/paste between different terminal windows (it’s meant to be sourced from the shell, not called directly)
 
