@@ -1,0 +1,107 @@
+#!/bin/bash
+
+IFS=$'\n'
+
+# usage instructions
+usage() {
+echo "usage: $0 [-h] [-i dropboxID] [-t podcastTitle] [-d podcastDescription]
+
+options:
+  -h  Show this message
+  -i  Set your dropbox Public diretory ID
+  -t  Set the podcast's title
+  -d  Set the podcast's description"
+}
+
+# options to use
+while getopts hi:t:d: OPTION
+do
+  case "${OPTION}"
+  in
+    h) usage; exit 0;;
+    i) dropboxId=${OPTARG};;
+    t) podcastTitle=${OPTARG};;
+    d) podcastDescription=${OPTARG};;
+  esac
+done
+shift $((OPTIND-1))
+
+# files
+dropboxIdFile="${HOME}/.podbook"
+podcastFile=$(echo -n "${podcastTitle}.rss" | tr -d ' ')
+
+# check for dropboxId
+if [[ -z "${dropboxId}" ]]; then
+  if [[ -f "${dropboxIdFile}" ]]; then
+    dropboxId=$(cat "${dropboxIdFile}")
+  else
+    echo -e "You need to set your Dropbox Public directory ID, via the '-i' flag.\nAlternatively, put a '.podbook' file inside your home diretory, with your id in a single line"
+    exit 1
+  fi
+fi
+
+# exit if title is missing
+if [[ -z "${podcastTitle}" ]]; then
+  echo "You need to set a podcast title"
+  exit 1
+fi
+
+# check if inside Dropbox/Public
+publicDir=$(pwd | perl -pe 's|.*(Dropbox/Public).*|\1|')
+if [[ -z "${publicDir}" ]]; then
+  echo "You need to be inside your 'Dropbox/Public' directory (or a subdirectory of it)"
+  exit 1
+fi
+
+# current subdirectory inside Dropbox/Public
+currentDir=$(pwd | perl -pe 's|.*(Dropbox/Public)(.*)|\2|')
+# if not a subdirectory, set it accordingly
+[[ -z "${currentDir}" ]] && currentDir="/"
+
+currentTime=$(date "+%a, %b %d %T %Z %Y")
+
+fileTypes() {
+  find . -depth 1 -type f -name '*.m4a' -or -name '*.mp3' -or -name '*.mov' -or -name '*.mp4' -or -name '*.m4v' -or -name '*.pdf' -or -name '*.epub'
+}
+
+# get fist jpg of png in the directory for the artwork
+artwork=$(find . -depth 1 -type f -name '*jpg' -or -name '*jpeg' -or -name '*png' | head -1 | xargs basename | perl -MHTML::Entities -CS -pe'$_ = encode_entities($_, "&<")')
+
+# functions to write the xml
+xmlStart() {
+podcastXml="<?xml version='1.0' encoding='utf-8'?>
+<rss version='2.0'>
+<channel>
+<title>${podcastTitle}</title>
+<description>${podcastDescription}</description>
+<image><url>https://dl.dropboxusercontent.com/u/${dropboxId}${currentDir}/${artwork}</url></image>
+<pubDate>${currentTime}</pubDate>"
+}
+
+xmlEnd() {
+podcastXml+="</channel>
+</rss>"
+}
+
+xmlItem() {
+fileName=$(echo "$1" | sed 's|\./||' | perl -MHTML::Entities -CS -pe'$_ = encode_entities($_, "&<")')
+itemTitle="${fileName%.*}"
+itemURL="https://dl.dropboxusercontent.com/u/${dropboxId}${currentDir}/${fileName}"
+
+podcastXml+="<item>
+<title>${itemTitle}</title>
+<enclosure url=\"${itemURL}\"/>
+</item>"
+}
+
+# write the xml
+xmlStart
+for file in "$(fileTypes)"; do
+  xmlItem "${file}"
+done
+xmlEnd
+
+echo "${podcastXml}" > "${podcastFile}"
+
+# copy the url of podcastFile to the clipboard
+echo -n "https://dl.dropboxusercontent.com/u/${dropboxId}${currentDir}/${podcastFile}" | pbcopy
