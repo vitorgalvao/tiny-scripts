@@ -29,6 +29,9 @@ Script to get color palette from colourlovers and format it to use in processing
 ### pinboardlinkcheck
 Script to check the status code of links saved in your [pinboard](https://pinboard.in/) account
 
+### podbook
+Script to generate a podcast RSS feed for audiobooks
+
 ### strongpassword
 Script to get a strong password from https://www.grc.com/passwords.htm
 
