@@ -85,7 +85,7 @@ else
 fi
 
 # modify url, version, and sha256
-sed -i '' "s|url '.*'|url '${caskUrl}'|;s|version '.*'|version '${caskVersion}'|;s|sha256 '.*'|${caskSubstitution}|" "${caskFile}"
+sed -i '' "s|url '.*'|url '${caskUrl}'|;s|version '.*'|version '${caskVersion}'|;s|sha256 '.*'|${shaSubstitution}|" "${caskFile}"
 
 # check if everything is alright, else abort
 caskUpdated="not checked"
