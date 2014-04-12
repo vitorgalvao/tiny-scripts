@@ -76,11 +76,15 @@ if [[ "${caskStatus}" != "200" ]]; then
   fi
 fi
 
-# calculate new sha256
-caskSha=$(curl -#L "${browserHeaders}" "${caskUrl}" | shasum -a 256 | sed 's| .*||' | tr -d '\n')
+# calculate new sha256, if not using 'latest' version
+if [[ "${caskVersion}" == 'latest' ]]; then
+  shaSubstitution="no_checksum"
+else
+  caskSha=$(curl -#L "${browserHeaders}" "${caskUrl}" | shasum -a 256 | sed 's| .*||' | tr -d '\n')
+  shaSubstitution="sha256 '${caskSha}'"
+fi
 
 # modify url, version, and sha256
-[[ "${caskVersion}" == 'latest' ]] && shaSubstitution="no_checksum" || shaSubstitution="sha256 '${caskSha}'"
 sed -i '' "s|url '.*'|url '${caskUrl}'|;s|version '.*'|version '${caskVersion}'|;s|sha256 '.*'|${caskSubstitution}|" "${caskFile}"
 
 # check if everything is alright, else abort
