@@ -21,7 +21,7 @@ Script to make animated gifs from sequences of images, with more control over FP
 Script to make animated gifs from a video file
 
 ### labelcolor
-Script to change label color of files in OSX
+Script to change label color of files in OS X
 
 ### lovecolor
 Script to get color palette from colourlovers and format it to use in processing
