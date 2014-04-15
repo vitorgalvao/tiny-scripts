@@ -43,6 +43,7 @@ fi
 # exit if title is missing
 if [[ -z "${podcastTitle}" ]]; then
   echo "You need to set a podcast title"
+  usage
   exit 1
 fi
 
