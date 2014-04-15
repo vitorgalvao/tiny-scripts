@@ -106,3 +106,4 @@ echo "${podcastXml}" > "${podcastFile}"
 
 # copy the url of podcastFile to the clipboard
 echo -n "https://dl.dropboxusercontent.com/u/${dropboxId}${currentDir}/${podcastFile}" | pbcopy
+echo "Podcast feed url copied to clipboard"
