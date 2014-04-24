@@ -97,7 +97,7 @@ podcastXml+="<item>
 
 # write the xml
 xmlStart
-for file in "$(fileTypes)"; do
+for file in $(fileTypes); do
   xmlItem "${file}"
 done
 xmlEnd
