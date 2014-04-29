@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # location of homebrew-cask tap
-caskTap="$(brew --prefix)/Library/Taps/phinze-cask"
+caskTap="$(brew --prefix)/Library/Taps/phinze/homebrew-cask"
 
 # exit if not inside the a '/homebrew-cask/Casks' directory
 casksDir=$(pwd | perl -pe 's|.*(/homebrew-cask/Casks)$|\1|')
