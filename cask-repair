@@ -109,7 +109,7 @@ while [[ "${caskUpdated}" =~ [^y|^n|^e] ]]; do
 done
 
 # commit, push, clean
-git commit "${caskFile}" -m "updated ${caskName}"
+git commit "${caskFile}" -m "updated ${caskName} (${caskVersion})"
 git push origin "${caskBranch}"
 
 # cleanup
