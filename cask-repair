@@ -68,6 +68,10 @@ caskUrl="$(pbpaste)"
 # check if the URL sends a 200 HTTP code, else abort
 browserHeaders="-H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'"
 caskStatus=$(curl -sIL "${browserHeaders}" "${caskUrl}" | grep '^HTTP' | tail -1 | perl -pe 's|.* (\d{3}) .*|\1|')
+
+# if the download URL is from github, fake the status code
+[[ "${caskUrl}" == *"github.com"* ]] && caskStatus="200"
+
 if [[ "${caskStatus}" != "200" ]]; then
   if [[ -z "${caskStatus}" ]]; then
     finish abort "You need to have a valid URL in your clipboard"
@@ -77,7 +81,7 @@ if [[ "${caskStatus}" != "200" ]]; then
 fi
 
 # calculate new sha256, if not using 'latest' version
-if [[ "${caskVersion}" == 'latest' ]]; then
+if [[ "${caskVersion}" == "latest" ]]; then
   shaSubstitution="no_checksum"
 else
   caskSha=$(curl -#L "${browserHeaders}" "${caskUrl}" | shasum -a 256 | sed 's| .*||' | tr -d '\n')
