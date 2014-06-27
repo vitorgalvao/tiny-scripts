@@ -1,0 +1,63 @@
+#!/bin/bash
+
+commit_hash_file="/tmp/prfix_hash_save"
+
+usage() {
+  echo "
+  usage: $0 [-h] [-c] <github_pull_request_url>
+
+  Every option should be used on its own, without the others.
+    <github_pull_request_url>
+      Should be the complete url. Use this first, to apply the pull request as a patch.
+    -c
+      Use after making your fixes. If you use it with uncommitted changes, they'll all be squashed (fixup) into the original patch; else your commits will be preserved.
+    -h
+      Show this help.
+  " | sed -E 's/^ {2}//'
+}
+
+apply_patch() {
+  url=$(echo "$1" | perl -pe 's/(.*\d).*/\1/') # clean url of extraneous information
+  issue_number=$(echo "${url}" | sed 's|.*/||')
+  patch_url="${url}.patch" # github pull request url, ending in '.patch'
+  branch_name="fix-${issue_number}"
+
+  git checkout -b "${branch_name}"
+  curl --silent "${patch_url}" | git am # get and apply patch
+
+  git rev-parse HEAD > "${commit_hash_file}" # save hash from current commit
+
+  echo "
+    Make your necessary changes, and run
+      $0 -c
+
+    If you have uncommitted changes, they'll be squashed into the original parch.
+    If you have new commits, they’ll be included separately
+  " | sed -E 's/^ {2}//'
+}
+
+push_changes() {
+  original_commit=$(cat "${commit_hash_file}")
+  branch_name="$(git rev-parse --abbrev-ref HEAD)"
+  uncommitted_changes="$(git status --porcelain)"
+
+  # squash your fixes into the original patch, if there are uncommitted changes
+  if [[ "${uncommitted_changes}" ]]; then
+    git commit --all --allow-empty-message --message ''
+    git reset --soft ${original_commit}
+    git commit --amend --no-edit
+  fi
+
+  # push and delete branch
+  git push origin "${branch_name}"
+  git checkout master
+  git branch -D "${branch_name}"
+}
+
+if [[ "$1" =~ https://github.com/* ]]; then
+  apply_patch "$1"
+elif [[ "$1" == '-c' ]]; then
+  push_changes
+else
+  usage
+fi
