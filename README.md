@@ -41,6 +41,9 @@ Script to get a strong password by leveraging multiple sources
 ### seren
 Script to rename files in a numerical sequence
 
+### ubuntu-usb
+Script to facilitate installing ubuntu on a USB stick, from OS X
+
 ### unsplashdownload
 Script to download images from http://unsplash.com/
 
