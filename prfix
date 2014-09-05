@@ -10,8 +10,8 @@ usage() {
   Every option should be used on its own, without the others.
     <github_pull_request_url>
       Should be the complete url. Use this first, to apply the pull request as a patch.
-    -c
-      Use after making your fixes. If you use it with uncommitted changes, they'll all be squashed (fixup) into the original patch; else your commits will be preserved.
+    -c [remote]
+      Use after making your fixes. If you use it with uncommitted changes, they'll all be squashed (fixup) into the original patch; else your commits will be preserved. Takes an optional remote to push to (defaults to \"origin\").
     -h
       Show this help.
   " | sed -E 's/^ {2}//'
@@ -54,7 +54,7 @@ push_changes() {
   fi
 
   # push and delete branch
-  git push origin "${branch_name}"
+  git push "${remote}" "${branch_name}"
   git checkout master
   git branch -D "${branch_name}"
 }
@@ -62,6 +62,8 @@ push_changes() {
 if [[ "$1" =~ https://github.com/* ]]; then
   apply_patch "$1"
 elif [[ "$1" == '-c' ]]; then
+  # if called with an argument, use that as the remote to push to; else use 'origin'
+  [[ -z "$2" ]] && remote="origin" || remote="$1"
   push_changes
 else
   usage
