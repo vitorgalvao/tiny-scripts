@@ -1,6 +1,7 @@
 #!/bin/bash
 
 commit_hash_file="/tmp/prfix_hash_save"
+issue_number_file="/tmp/issue_number_save"
 
 usage() {
   echo "
@@ -26,6 +27,7 @@ apply_patch() {
   curl --silent "${patch_url}" | git am # get and apply patch
 
   git rev-parse HEAD > "${commit_hash_file}" # save hash from current commit
+  echo "${issue_number}" > "${issue_number_file}" # save issue number
 
   echo "
     Make your necessary changes, and run
@@ -37,7 +39,8 @@ apply_patch() {
 }
 
 push_changes() {
-  original_commit=$(cat "${commit_hash_file}")
+  original_commit="$(cat ${commit_hash_file})"
+  original_issue="#$(cat ${issue_number_file})"
   branch_name="$(git rev-parse --abbrev-ref HEAD)"
   uncommitted_changes="$(git status --porcelain)"
 
@@ -47,7 +50,7 @@ push_changes() {
     git reset --soft "${original_commit}"
     # add message to close the original pull request
     original_commit_message="$(git log --oneline -1 | cat - | sed -E 's/^[^ ]* //')"
-    git commit --amend --message "${original_commit_message}" --message "Closes #${issue_number}."
+    git commit --amend --message "${original_commit_message}" --message "Closes ${original_issue}."
   fi
 
   # push and delete branch
