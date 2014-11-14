@@ -82,8 +82,10 @@ fi
 
 # calculate new sha256, if not using 'latest' version
 if [[ "${caskVersion}" == "latest" ]]; then
+  caskVersion=":latest"
   caskSha=":no_check"
 else
+  caskVersion="'${caskVersion}'"
   caskSha=$(curl -#L "${browserHeaders}" "${caskUrl}" | shasum -a 256 | tr -d ' -\n' | sed -E "s|(.*)|'\1'|")
 fi
 
@@ -92,7 +94,7 @@ caskOldUrlStanza=$(grep "url '.*'" "${caskFile}" | sed -E "s|.*url '(.*)'.*|\1|"
 [[ caskOldUrlStanza == *"#{version"* ]] && caskUrl="${caskOldUrlStanza}"
 
 # modify url, version, and sha256
-sed -i '' "s|url '.*'|url '${caskUrl}'|;s|version '.*'|version '${caskVersion}'|;s|sha256 '.*'|sha256 ${caskSha}|" "${caskFile}"
+sed -i '' "s|url '.*'|url '${caskUrl}'|;s|version '.*'|version ${caskVersion}|;s|sha256 '.*'|sha256 ${caskSha}|" "${caskFile}"
 
 # check if everything is alright, else abort
 caskUpdated="not checked"
