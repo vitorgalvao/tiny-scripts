@@ -1,49 +1,66 @@
 #!/bin/bash
 
+readonly program="$(basename "$0")"
+
 IFS=$'\n'
 
 # Instructions on how to use the script
 # Shown with '-h', or when no arguments are given
 # -----------------------------------------------
 usage() {
-echo "usage: $0 [-h] [-s num] [-n num] [-p string] [-a string] [-v] <files>
+echo "usage: $program [-h] [-s <num>] [-l <num>] [-p <string>] [-a <string>] [-v] <files>
 
 options:
-	-h   Show this message
-	-s   Sets starting number for the sequence (defaults to 1)
-	-n   Sets sequence length (defaults to what'll accomodate the number of files)
-	-p   Sets name to prepend to the sequence number (defaults to nothing)
-	-a   Sets name to append to the sequence number (defaults to nothing)
-	-v   Be verbose"
+  -h, --help              Show this message
+  -s, --starting-number   Sets starting number for the sequence (defaults to 1)
+  -l, --sequence-length   Sets sequence length (defaults to what'll accomodate the number of files)
+  -p, --prepend           Sets name to prepend to the sequence number (defaults to nothing)
+  -a, --append            Sets name to append to the sequence number (defaults to nothing)
+  -v, --verbose           Be verbose"
 }
 
 if [[ -z ${1} ]]; then
-	usage
-	exit 1
+  usage
+  exit 1
 fi
 
 # Available flags to use with the script
 # --------------------------------------
-while getopts hs:n:p:a:v OPTION
-do
-	case "${OPTION}"
-	in
-		h) usage ; exit 0;;
-		s) startingNum=${OPTARG};;
-		n) leadingZeros=${OPTARG};;
-		p) stringToPrepend=${OPTARG};;
-		a) stringToAppend=${OPTARG};;
-		v) beVerbose="v"
-	esac
+while [[ "$1" ]] do
+  case "$1" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -s | starting-number)
+      startingNum="$2"
+      shift
+      ;;
+    -l | --sequence-length)
+      leadingZeros="$2"
+      shift
+      ;;
+    -p | --prepend)
+      stringToPrepend="$2"
+      shift
+      ;;
+    -a | --append)
+      stringToAppend="$2"
+      shift
+      ;;
+    -v | --verbose)
+      beVerbose="v"
+      ;;
+  esac
+  shift
 done
-shift $((OPTIND-1))
 
 # Determines the starting number, depending on if one was picked
 # --------------------------------------------------------------
 if [[ "${startingNum}" ]]; then
-	num=$((${startingNum}-1))
+  num=$((${startingNum}-1))
 else
-	num=0
+  num=0
 fi
 
 # If no sequence length is given,
@@ -51,15 +68,15 @@ fi
 # in the sequence is (depending on the starting number)
 # -----------------------------------------------------
 if [[ -z "${leadingZeros}" ]]; then
-	sequenceEnd=$(($(echo -n "$#")+${num}))
-	leadingZeros=$(echo -n "${sequenceEnd}" | wc -c | tr -d ' ')
+  sequenceEnd=$(($(echo -n "$#")+${num}))
+  leadingZeros=$(echo -n "${sequenceEnd}" | wc -c | tr -d ' ')
 fi
 
 # The actual renaming part
 # “#10” is necessary for using base10
 # -----------------------------------
 for fileToRename in $@; do
-	num=$(printf "%.${leadingZeros}d" "$((10#${num}+1))")
+  num=$(printf "%.${leadingZeros}d" "$((10#${num}+1))")
 
-	mv -n${beVerbose} "${fileToRename}" "$(dirname ${fileToRename})/${stringToPrepend}${num}${stringToAppend}.${fileToRename##*.}"
+  mv -n${beVerbose} "${fileToRename}" "$(dirname ${fileToRename})/${stringToPrepend}${num}${stringToAppend}.${fileToRename##*.}"
 done
