@@ -1,12 +1,14 @@
 #!/bin/bash
 
+readonly program="$(basename "$0")"
+
 IFS=$'\n'
 
 # Instructions on how to use the script
 # Shown when insufficient arguments are given
 # -------------------------------------------
 usage() {
-echo "usage: $0 <number_of_days> <files>"
+  echo "usage: $program <number_of_days> <files>"
 }
 
 if [[ -z ${2} ]]; then

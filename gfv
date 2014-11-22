@@ -1,5 +1,7 @@
 #!/bin/bash
 
+readonly program="$(basename "$0")"
+
 # This script depends on imagemagick and ffmpeg for the conversion
 # ----------------------------------------------------------------
 dependsOn() {
@@ -16,7 +18,7 @@ dependsOn ffmpeg
 # Shown when no arguments are given
 # -------------------------------------
 usage() {
-  echo "usage: $0 <input_file> <output_file>"
+  echo "usage: $program <input_file> <output_file>"
 }
 
 if [[ -z ${1} ]]; then

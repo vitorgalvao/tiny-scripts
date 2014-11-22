@@ -1,10 +1,12 @@
 #!/bin/bash
 
+readonly program="$(basename "$0")"
+
 # Instructions on how to use the script
 # Shown with when no arguments are given
 # --------------------------------------
 usage() {
-echo "usage: $0 <color> <files>
+echo "usage: $program <color> <files>
 
 Available color options:
 none (to remove label), orange, red, yellow, blue, purple, green, gray"
