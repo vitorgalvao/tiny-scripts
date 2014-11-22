@@ -1,14 +1,16 @@
 #!/bin/bash
 
+readonly program="$(basename "$0")"
+
 # instructions
 usage() {
-echo "usage: $0 [-h] [-v] [-l file] [-r file] [-a token]
+  echo "usage: $program [-h] [-v] [-l <file>] [-d <file>] [-t <token>]
 
 options:
-  -h   Show this message
-  -v   Show the status code for each link as it goes through it
-  -r   If set, links with a 301 (Moved permanently) will be on their own log
-  -a   Your Pinboard API token (if you don't set it, the script will ask for it)"
+  -h, --help           Show this message
+  -v, --verbose        Show the status code for each link as it goes through it
+  -r, --redirect-log   If set, links with a 301 (Moved permanently) will be on their own log
+  -t, --token          Your Pinboard API token (if you don't set it, the script will ask for it)"
 }
 
 # set color for verbose messages
@@ -17,17 +19,25 @@ good() { echo "$(tput setab 2)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
 warning() { echo "$(tput setab 3)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
 
 # set options
-while getopts hvra OPTION
-do
-  case "${OPTION}"
-    in
-      h) usage ; exit 0;;
-      v) verbose="true";;
-      r) redirectlog="true";;
-      a) token=${OPTARG};;
-    esac
+while [[ "$1" ]] do
+  case "$1" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -v | --verbose)
+      verbose="true"
+      ;;
+    -r | --redirect-log)
+      redirectlog="true"
+      ;;
+    -t | --token)
+      token="$1"
+      shift
+      ;;
+  esac
+  shift
 done
-shift $((OPTIND-1))
 
 # location for log files
 logfile="${HOME}/pinboardlinkcheck.log"
