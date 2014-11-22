@@ -5,20 +5,20 @@ usage() {
 echo "usage: $0 [-h] [-i file] [-d bundleID]
 
 options:
-	-h Show this message
-	-i Set the icon
-	-b Set the bundle id"
+  -h Show this message
+  -i Set the icon
+  -b Set the bundle id"
 }
 
 # set options
 while getopts hi:b: OPTION
 do
-	case "${OPTION}"
-	in
-		h) usage; exit 0;;
-		i) icon=${OPTARG};;
-		b) id=${OPTARG};;
-	esac
+  case "${OPTION}"
+  in
+    h) usage; exit 0;;
+    i) icon=${OPTARG};;
+    b) id=${OPTARG};;
+  esac
 done
 shift $((OPTIND-1))
 
