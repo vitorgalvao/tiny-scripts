@@ -1,30 +1,42 @@
 #!/bin/bash
 
+readonly program="$(basename "$0")"
+
 IFS=$'\n'
 
 # usage instructions
 usage() {
-echo "usage: $0 [-h] [-i dropboxID] [-t podcastTitle] [-d podcastDescription]
+echo "usage: $program [-h] [-i <dropboxID>] [-t <title>] [-d <description>]
 
 options:
-  -h  Show this message
-  -i  Set your dropbox Public diretory ID
-  -t  Set the podcast's title
-  -d  Set the podcast's description"
+  -h, --help                                      Show this message
+  -i <dropboxID>, --id <dropboxID>                Set your dropbox Public diretory ID
+  -t <title>, --title <title>                     Set the podcast's title
+  -d <description>, --description <description>   Set the podcast's description"
 }
 
 # options to use
-while getopts hi:t:d: OPTION
-do
-  case "${OPTION}"
-  in
-    h) usage; exit 0;;
-    i) dropboxId=${OPTARG};;
-    t) podcastTitle=${OPTARG};;
-    d) podcastDescription=${OPTARG};;
+while [[ "$1" ]] do
+  case "$1" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -i | --id)
+      dropboxId="$2"
+      shift
+      ;;
+    -t | --title)
+      podcastTitle="$2"
+      shift
+      ;;
+    -d | --description)
+      podcastDescription="$2"
+      shift
+      ;;
   esac
+  shift
 done
-shift $((OPTIND-1))
 
 # files
 dropboxIdFile="${HOME}/.podbook"
