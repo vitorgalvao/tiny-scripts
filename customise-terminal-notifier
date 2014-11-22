@@ -7,9 +7,9 @@ usage() {
 echo "usage: $program [-h] [-i <file>] [-b <bundleID>]
 
 options:
-  -h, --help                         Show this message
-  -i <file>, --icon <file>           Set the icon
-  -b <bundleID>, --bundle <bundleID> Set the bundle id"
+  -h, --help                           Show this message
+  -i <file>, --icon <file>             Set the icon
+  -b <bundleID>, --bundle <bundleID>   Set the bundle id"
 }
 
 # set options
