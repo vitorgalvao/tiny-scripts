@@ -1,5 +1,7 @@
 #!/bin/bash
 
+readonly program="$(basename "$0")"
+
 # This script depends on imagemagick for the conversion
 # -----------------------------------------------------
 dependsOn() {
@@ -15,12 +17,12 @@ dependsOn convert
 # Shown with '-h', or when no arguments are given
 # -----------------------------------------------
 usage() {
-echo "usage: $0 [-h] [-b num] [-e num] <input_files> <output_file>
+echo "usage: $program [-h] [-s <num>] [-e <num>] <input_files> <output_file>
 
 options:
-   -h   Show this message
-   -b   The original frame rate of the movie that had the images (defaults to 60)
-   -e   The new frame rate the gif should have, so it's not slowed down (defaults to 10)"
+   -h, --help                   Show this message
+   -s <num>, --start-rate <num> The original frame rate of the movie that had the images (defaults to 60)
+   -e <num>, --end-rate <num>   The new frame rate the gif should have, so it's not slowed down (defaults to 10)"
 }
 
 if [[ -z ${1} ]]; then
@@ -35,16 +37,23 @@ endRate="10"
 
 # Available flags to use with the script
 # --------------------------------------
-while getopts hb:e: OPTION
-do
-        case "${OPTION}"
-        in
-          h) usage ; exit 0;;
-          b) beginRate=${OPTARG};;
-          e) endRate=${OPTARG};;
-        esac
+while [[ "$1" ]] do
+  case "$1" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -s | --start-rate)
+      beginRate="$2"
+      shift
+      ;;
+    -e | --end-rate)
+      endRate="$2"
+      shift
+      ;;
+  esac
+  shift
 done
-shift $((OPTIND-1))
 
 # Calculate the frame drop rate
 # -----------------------------
