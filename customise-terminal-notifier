@@ -1,26 +1,35 @@
 #!/bin/bash
 
+readonly program="$(basename "$0")"
+
 # instructions
 usage() {
-echo "usage: $0 [-h] [-i file] [-d bundleID]
+echo "usage: $program [-h] [-i <file>] [-b <bundleID>]
 
 options:
-  -h Show this message
-  -i Set the icon
-  -b Set the bundle id"
+  -h, --help                         Show this message
+  -i <file>, --icon <file>           Set the icon
+  -b <bundleID>, --bundle <bundleID> Set the bundle id"
 }
 
 # set options
-while getopts hi:b: OPTION
-do
-  case "${OPTION}"
-  in
-    h) usage; exit 0;;
-    i) icon=${OPTARG};;
-    b) id=${OPTARG};;
+while [[ "$1" ]]; do
+  case "$1" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -i | --icon)
+      icon="$2"
+      shift
+      ;;
+    -b | --bundle)
+      id="$2"
+      shift
+      ;;
   esac
+  shift
 done
-shift $((OPTIND-1))
 
 # stop executing if an option is missing
 if [[ -z "${icon}" ]] || [[ -z "${id}" ]]; then usage && exit 1; fi
