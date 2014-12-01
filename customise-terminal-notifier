@@ -35,7 +35,6 @@ while [[ "$1" ]]; do
       ;;
     -*)
       syntax_error "unrecognized option: $1"
-      exit 1
       ;;
   esac
   shift
