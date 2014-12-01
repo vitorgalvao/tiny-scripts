@@ -19,7 +19,7 @@ good() { echo "$(tput setab 2)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
 warning() { echo "$(tput setab 3)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
 
 # set options
-while [[ "$1" ]] do
+while [[ "$1" ]]; do
   case "$1" in
     -h | --help)
       usage

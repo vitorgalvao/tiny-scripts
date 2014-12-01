@@ -37,7 +37,7 @@ endRate="10"
 
 # Available flags to use with the script
 # --------------------------------------
-while [[ "$1" ]] do
+while [[ "$1" ]]; do
   case "$1" in
     -h | --help)
       usage

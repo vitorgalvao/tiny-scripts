@@ -16,7 +16,7 @@ options:
 }
 
 # options to use
-while [[ "$1" ]] do
+while [[ "$1" ]]; do
   case "$1" in
     -h | --help)
       usage
