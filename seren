@@ -17,12 +17,12 @@ usage() {
 echo "usage: $program [-h] [-s <num>] [-l <num>] [-p <string>] [-a <string>] [-v] <files>
 
 options:
-  -h, --help              Show this message
-  -s, --starting-number   Sets starting number for the sequence (defaults to 1)
-  -l, --sequence-length   Sets sequence length (defaults to what'll accomodate the number of files)
-  -p, --prepend           Sets name to prepend to the sequence number (defaults to nothing)
-  -a, --append            Sets name to append to the sequence number (defaults to nothing)
-  -v, --verbose           Be verbose"
+  -h, --help                          Show this message
+  -s <num>, --starting-number <num>   Sets starting number for the sequence (defaults to 1)
+  -l <num>, --sequence-length <num>   Sets sequence length (defaults to what'll accomodate the number of files)
+  -p <string>, --prepend <string>     Sets name to prepend to the sequence number (defaults to nothing)
+  -a <string>, --append <string>      Sets name to append to the sequence number (defaults to nothing)
+  -v, --verbose                       Be verbose"
 }
 
 if [[ -z ${1} ]]; then
@@ -38,7 +38,7 @@ while [[ "$1" ]]; do
       usage
       exit 0
       ;;
-    -s | starting-number)
+    -s | --starting-number)
       startingNum="$2"
       shift
       ;;
