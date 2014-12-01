@@ -12,8 +12,8 @@ usage() {
 }
 
 if [[ -z ${2} ]]; then
-	usage
-	exit 1
+  usage
+  exit 1
 fi
 
 
@@ -40,61 +40,61 @@ minute=$(date -v +"$daysFromNow"d +"%M")
 for originalFile in "$@"
 do
 
-	# Set the file's name
-	# If there's already a file with that name, rename the new one by appending the date it's going to be deleted
-	newFile="$(basename ${originalFile})"
+  # Set the file's name
+  # If there's already a file with that name, rename the new one by appending the date it's going to be deleted
+  newFile="$(basename ${originalFile})"
 
-	if [[ -f "${appDirectory}/${newFile}" ]]; then
-		fileExtension="${originalFile##*.}"
-		fileNoExtension="${originalFile%.*}"
-		newFile="$(basename ${fileNoExtension})_$(date -v +"$daysFromNow"d +"%Y-%m-%d_%Hh%M").${fileExtension}"
+  if [[ -f "${appDirectory}/${newFile}" ]]; then
+    fileExtension="${originalFile##*.}"
+    fileNoExtension="${originalFile%.*}"
+    newFile="$(basename ${fileNoExtension})_$(date -v +"$daysFromNow"d +"%Y-%m-%d_%Hh%M").${fileExtension}"
 
-		echo "There's already a file named $(basename ${originalFile}) in the directory, the new file will be renamed to ${newFile}"
-	fi
+    echo "There's already a file named $(basename ${originalFile}) in the directory, the new file will be renamed to ${newFile}"
+  fi
 
-	# Set variables needed for launchd, and copy the file to the directory
-	label="com.DropboxTimer.${newFile//[^a-zA-Z-0-9_]/}"
-	agent="${HOME}/Library/LaunchAgents/${label}.plist"
+  # Set variables needed for launchd, and copy the file to the directory
+  label="com.DropboxTimer.${newFile//[^a-zA-Z-0-9_]/}"
+  agent="${HOME}/Library/LaunchAgents/${label}.plist"
 
-	cp -R "${originalFile}" "${appDirectory}/${newFile}"
+  cp -R "${originalFile}" "${appDirectory}/${newFile}"
 
-	# Prepare the script that'll delete the file (and itself)
-	scriptLocation="${appDirectory}/.DeleteScripts/${label}.sh"
-	script="#!/bin/bash
-	mv $(printf '%q' ${appDirectory}/${newFile}) ${HOME}/.Trash/
-	rm ${scriptLocation}
-	rm ${agent}
-	launchctl remove ${label}"
-	
-	echo "${script}" | tr -d '\t' > ${scriptLocation}
-	chmod +x ${scriptLocation}
+  # Prepare the script that'll delete the file (and itself)
+  scriptLocation="${appDirectory}/.DeleteScripts/${label}.sh"
+  script="#!/bin/bash
+  mv $(printf '%q' ${appDirectory}/${newFile}) ${HOME}/.Trash/
+  rm ${scriptLocation}
+  rm ${agent}
+  launchctl remove ${label}"
+  
+  echo "${script}" | tr -d '\t' > ${scriptLocation}
+  chmod +x ${scriptLocation}
 
-	# Make the plist and load it
-	plist="<?xml version='1.0' encoding='UTF-8'?>
-	<!DOCTYPE plist PUBLIC -//Apple Computer//DTD PLIST 1.0//EN
-	http://www.apple.com/DTDs/PropertyList-1.0.dtd>
-	<plist version='1.0'>
-	<dict>
-	<key>Label</key>
-	<string>${label}</string>
-	<key>Program</key>
-	<string>${scriptLocation}</string>
-	<key>StartCalendarInterval</key>
-	<array>
-	<dict>
-	<key>Month</key>
-	<integer>${month}</integer>
-	<key>Day</key>
-	<integer>${day}</integer>
-	<key>Hour</key>
-	<integer>${hour}</integer>
-	<key>Minute</key>
-	<integer>${minute}</integer>
-	</dict>
-	</array>
-	</dict>
-	</plist>"
+  # Make the plist and load it
+  plist="<?xml version='1.0' encoding='UTF-8'?>
+  <!DOCTYPE plist PUBLIC -//Apple Computer//DTD PLIST 1.0//EN
+  http://www.apple.com/DTDs/PropertyList-1.0.dtd>
+  <plist version='1.0'>
+  <dict>
+  <key>Label</key>
+  <string>${label}</string>
+  <key>Program</key>
+  <string>${scriptLocation}</string>
+  <key>StartCalendarInterval</key>
+  <array>
+  <dict>
+  <key>Month</key>
+  <integer>${month}</integer>
+  <key>Day</key>
+  <integer>${day}</integer>
+  <key>Hour</key>
+  <integer>${hour}</integer>
+  <key>Minute</key>
+  <integer>${minute}</integer>
+  </dict>
+  </array>
+  </dict>
+  </plist>"
 
-	echo "${plist}" | tr -d '\t' > ${agent}
-	launchctl load ${agent}
+  echo "${plist}" | tr -d '\t' > ${agent}
+  launchctl load ${agent}
 done

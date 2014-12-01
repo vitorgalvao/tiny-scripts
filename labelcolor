@@ -30,28 +30,28 @@ isValidColor="False"
 colorArray=('none' 'orange' 'red' 'yellow' 'blue' 'purple' 'green' 'gray')
 
 for (( i = 0; i < ${#colorArray[@]}; i++ )); do
-	if [[ "${colorArray[$i]}" = "${color}" ]]; then
-		color="${i}"
-		isValidColor="True"
-	fi
+  if [[ "${colorArray[$i]}" = "${color}" ]]; then
+    color="${i}"
+    isValidColor="True"
+  fi
 done
 
 if [[ "${isValidColor}" = "False" ]]; then
-	echo "Please choose a valid color"
-	usage
-	exit 1
+  echo "Please choose a valid color"
+  usage
+  exit 1
 fi
 
 # Set the label
 # -------------
 osascript - "${color}" "$@" << EOF &>/dev/null
-	on run argv
-		set labelIndex to (item 1 of argv as number)
-		repeat with i from 2 to (count of argv)
-			tell application "Finder"
-				set theFile to POSIX file (item i of argv) as alias
-				set label index of theFile to labelIndex
-			end tell
-		end repeat
-	end run
+  on run argv
+    set labelIndex to (item 1 of argv as number)
+    repeat with i from 2 to (count of argv)
+      tell application "Finder"
+        set theFile to POSIX file (item i of argv) as alias
+        set label index of theFile to labelIndex
+      end tell
+    end repeat
+  end run
 EOF

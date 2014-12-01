@@ -14,6 +14,6 @@ links=$(curl 'http://unsplash.com/' | grep 'alt="Download' | perl -pe 's/<a href
 
 # download the images
 for line in $(echo ${links}); do
-	curl "${line}" -Lo "${downloadDir}/${week}-${num}.jpg"
-	num=$(printf '%.2d' "$((10#${num}+1))")
+  curl "${line}" -Lo "${downloadDir}/${week}-${num}.jpg"
+  num=$(printf '%.2d' "$((10#${num}+1))")
 done
