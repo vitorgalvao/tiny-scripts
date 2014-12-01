@@ -12,11 +12,11 @@ IFS=$'\n'
 
 # usage instructions
 usage() {
-echo "usage: $program [-h] [-i <dropboxID>] [-t <title>] [-d <description>]
+echo "usage: $program [-h] [-i <dropbox_id>] [-t <title>] [-d <description>]
 
 options:
   -h, --help                                      Show this message
-  -i <dropboxID>, --id <dropboxID>                Set your dropbox Public diretory ID
+  -i <dropbox_id>, --id <dropbox_id>              Set your dropbox Public diretory ID
   -t <title>, --title <title>                     Set the podcast's title
   -d <description>, --description <description>   Set the podcast's description"
 }
@@ -29,15 +29,15 @@ while [[ "$1" ]]; do
       exit 0
       ;;
     -i | --id)
-      dropboxId="$2"
+      dropbox_id="$2"
       shift
       ;;
     -t | --title)
-      podcastTitle="$2"
+      podcast_title="$2"
       shift
       ;;
     -d | --description)
-      podcastDescription="$2"
+      podcast_description="$2"
       shift
       ;;
     -*)
@@ -48,13 +48,13 @@ while [[ "$1" ]]; do
 done
 
 # files
-dropboxIdFile="${HOME}/.podbook"
-podcastFile=$(echo -n "${podcastTitle}.rss" | tr -d ' ')
+dropbox_id_file="${HOME}/.podbook"
+podcast_file=$(echo -n "${podcast_title}.rss" | tr -d ' ')
 
-# check for dropboxId
-if [[ -z "${dropboxId}" ]]; then
-  if [[ -f "${dropboxIdFile}" ]]; then
-    dropboxId=$(cat "${dropboxIdFile}")
+# check for dropbox_id
+if [[ -z "${dropbox_id}" ]]; then
+  if [[ -f "${dropbox_id_file}" ]]; then
+    dropbox_id=$(cat "${dropbox_id_file}")
   else
     echo -e "You need to set your Dropbox Public directory ID, via the '-i' flag.\nAlternatively, put a '.podbook' file inside your home diretory, with your id in a single line"
     exit 1
@@ -62,27 +62,27 @@ if [[ -z "${dropboxId}" ]]; then
 fi
 
 # exit if title is missing
-if [[ -z "${podcastTitle}" ]]; then
+if [[ -z "${podcast_title}" ]]; then
   echo "You need to set a podcast title"
   usage
   exit 1
 fi
 
 # check if inside Dropbox/Public
-publicDir=$(pwd | perl -pe 's|.*(Dropbox/Public).*|\1|')
-if [[ -z "${publicDir}" ]]; then
+public_dir=$(pwd | perl -pe 's|.*(Dropbox/Public).*|\1|')
+if [[ -z "${public_dir}" ]]; then
   echo "You need to be inside your 'Dropbox/Public' directory (or a subdirectory of it)"
   exit 1
 fi
 
 # current subdirectory inside Dropbox/Public
-currentDir=$(pwd | perl -pe 's|.*(Dropbox/Public)(.*)|\2|')
+current_dir=$(pwd | perl -pe 's|.*(Dropbox/Public)(.*)|\2|')
 # if not a subdirectory, set it accordingly
-[[ -z "${currentDir}" ]] && currentDir="/"
+[[ -z "${current_dir}" ]] && current_dir="/"
 
-currentTime=$(date "+%a, %b %d %T %Z %Y")
+current_time=$(date "+%a, %b %d %T %Z %Y")
 
-fileTypes() {
+file_types() {
   find . -depth 1 -type f -name '*.m4a' -or -name '*.mp3' -or -name '*.mov' -or -name '*.mp4' -or -name '*.m4v' -or -name '*.pdf' -or -name '*.epub'
 }
 
@@ -91,40 +91,40 @@ artwork=$(find . -depth 1 -type f -name '*jpg' -or -name '*jpeg' -or -name '*png
 
 # functions to write the xml
 xmlStart() {
-podcastXml="<?xml version='1.0' encoding='utf-8'?>
+podcast_xml="<?xml version='1.0' encoding='utf-8'?>
 <rss version='2.0'>
 <channel>
-<title>${podcastTitle}</title>
-<description>${podcastDescription}</description>
-<image><url>https://dl.dropboxusercontent.com/u/${dropboxId}${currentDir}/${artwork}</url></image>
-<pubDate>${currentTime}</pubDate>"
+<title>${podcast_title}</title>
+<description>${podcast_description}</description>
+<image><url>https://dl.dropboxusercontent.com/u/${dropbox_id}${current_dir}/${artwork}</url></image>
+<pubDate>${current_time}</pubDate>"
 }
 
 xmlEnd() {
-podcastXml+="</channel>
+podcast_xml+="</channel>
 </rss>"
 }
 
 xmlItem() {
-fileName=$(echo "$1" | sed 's|\./||' | perl -MHTML::Entities -CS -pe'$_ = encode_entities($_, "&<")')
-itemTitle="${fileName%.*}"
-itemURL="https://dl.dropboxusercontent.com/u/${dropboxId}${currentDir}/${fileName}"
+file_name=$(echo "$1" | sed 's|\./||' | perl -MHTML::Entities -CS -pe'$_ = encode_entities($_, "&<")')
+item_title="${file_name%.*}"
+item_url="https://dl.dropboxusercontent.com/u/${dropbox_id}${current_dir}/${file_name}"
 
-podcastXml+="<item>
-<title>${itemTitle}</title>
-<enclosure url=\"${itemURL}\"/>
+podcast_xml+="<item>
+<title>${item_title}</title>
+<enclosure url=\"${item_url}\"/>
 </item>"
 }
 
 # write the xml
 xmlStart
-for file in $(fileTypes); do
+for file in $(file_types); do
   xmlItem "${file}"
 done
 xmlEnd
 
-echo "${podcastXml}" > "${podcastFile}"
+echo "${podcast_xml}" > "${podcast_file}"
 
-# copy the url of podcastFile to the clipboard
-echo -n "https://dl.dropboxusercontent.com/u/${dropboxId}${currentDir}/${podcastFile}" | pbcopy
+# copy the url of podcast_file to the clipboard
+echo -n "https://dl.dropboxusercontent.com/u/${dropbox_id}${current_dir}/${podcast_file}" | pbcopy
 echo "Podcast feed url copied to clipboard"

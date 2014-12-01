@@ -39,11 +39,11 @@ while [[ "$1" ]]; do
       exit 0
       ;;
     -s | --starting-number)
-      startingNum="$2"
+      starting_num="$2"
       shift
       ;;
     -l | --sequence-length)
-      leadingZeros="$2"
+      leading_zeros="$2"
       shift
       ;;
     -p | --prepend)
@@ -69,8 +69,8 @@ done
 
 # Determines the starting number, depending on if one was picked
 # --------------------------------------------------------------
-if [[ "${startingNum}" ]]; then
-  num=$((${startingNum}-1))
+if [[ "${starting_num}" ]]; then
+  num=$((${starting_num}-1))
 else
   num=0
 fi
@@ -79,16 +79,16 @@ fi
 # it will be set accordingly to what the last number
 # in the sequence is (depending on the starting number)
 # -----------------------------------------------------
-if [[ -z "${leadingZeros}" ]]; then
-  sequenceEnd=$(($(echo -n "$#")+${num}))
-  leadingZeros=$(echo -n "${sequenceEnd}" | wc -c | tr -d ' ')
+if [[ -z "${leading_zeros}" ]]; then
+  sequence_end=$(($(echo -n "$#")+${num}))
+  leading_zeros=$(echo -n "${sequence_end}" | wc -c | tr -d ' ')
 fi
 
 # The actual renaming part
 # “#10” is necessary for using base10
 # -----------------------------------
-for fileToRename in $@; do
-  num=$(printf "%.${leadingZeros}d" "$((10#${num}+1))")
+for file_to_rename in $@; do
+  num=$(printf "%.${leading_zeros}d" "$((10#${num}+1))")
 
-  mv -n${beVerbose} "${fileToRename}" "$(dirname ${fileToRename})/${stringToPrepend}${num}${stringToAppend}.${fileToRename##*.}"
+  mv -n${beVerbose} "${file_to_rename}" "$(dirname ${file_to_rename})/${stringToPrepend}${num}${stringToAppend}.${file_to_rename##*.}"
 done

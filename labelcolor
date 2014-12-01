@@ -25,18 +25,18 @@ shift
 # Covert color name to appropriate number
 # Check if color is valid
 # ---------------------------------------
-isValidColor="False"
+is_valid_color="False"
 
-colorArray=('none' 'orange' 'red' 'yellow' 'blue' 'purple' 'green' 'gray')
+color_array=('none' 'orange' 'red' 'yellow' 'blue' 'purple' 'green' 'gray')
 
-for (( i = 0; i < ${#colorArray[@]}; i++ )); do
-  if [[ "${colorArray[$i]}" = "${color}" ]]; then
+for (( i = 0; i < ${#color_array[@]}; i++ )); do
+  if [[ "${color_array[$i]}" = "${color}" ]]; then
     color="${i}"
-    isValidColor="True"
+    is_valid_color="True"
   fi
 done
 
-if [[ "${isValidColor}" = "False" ]]; then
+if [[ "${is_valid_color}" = "False" ]]; then
   echo "Please choose a valid color"
   usage
   exit 1

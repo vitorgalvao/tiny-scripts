@@ -10,14 +10,14 @@ syntax_error() {
 
 # This script depends on imagemagick for the conversion
 # -----------------------------------------------------
-dependsOn() {
+depends_on() {
   if [[ ! $(which "${1}") ]]; then
     echo -e >&2 "\n$(tput setaf 1)This script requires ${1}. Please install it first.$(tput sgr0)\n"
     exit 1
   fi
 }
 
-dependsOn convert
+depends_on convert
 
 # Instructions on how to use the script
 # Shown with '-h', or when no arguments are given
@@ -38,8 +38,8 @@ fi
 
 # Set some defaults
 # -----------------
-beginRate="60"
-endRate="10"
+start_rate="60"
+end_rate="10"
 
 # Available flags to use with the script
 # --------------------------------------
@@ -50,11 +50,11 @@ while [[ "$1" ]]; do
       exit 0
       ;;
     -s | --start-rate)
-      beginRate="$2"
+      start_rate="$2"
       shift
       ;;
     -e | --end-rate)
-      endRate="$2"
+      end_rate="$2"
       shift
       ;;
     -*)
@@ -69,14 +69,14 @@ done
 
 # Calculate the frame drop rate
 # -----------------------------
-rateCalculation="$((${beginRate} / ${endRate}))"
+rate_calculation="$((${start_rate} / ${end_rate}))"
 
 # Add only the necessary images to an array
 # -----------------------------------------
-for (( i = 1; i < $#; i += ${rateCalculation} )); do
-  imagesArray+=("${!i}")
+for (( i = 1; i < $#; i += ${rate_calculation} )); do
+  images_array+=("${!i}")
 done
 
 # Make the animated gif
 # ---------------------
-convert -dispose Background "${imagesArray[@]}" -layers Optimize "${!#}"
+convert -dispose Background "${images_array[@]}" -layers Optimize "${!#}"

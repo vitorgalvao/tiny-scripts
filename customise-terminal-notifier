@@ -45,14 +45,14 @@ done
 if [[ -z "${icon}" ]] || [[ -z "${id}" ]]; then usage && exit 1; fi
 
 # set variables
-tmVersion="1.5.0"
-tmpDir="/tmp/terminal-notifier$RANDOM"
-app="${tmpDir}/terminal-notifier-${tmVersion}/terminal-notifier.app"
-mkdir "${tmpDir}"
+tn_version="1.5.0"
+tmp_dir="/tmp/terminal-notifier$RANDOM"
+app="${tmp_dir}/terminal-notifier-${tn_version}/terminal-notifier.app"
+mkdir "${tmp_dir}"
 
 # get terminal notifier
-curl "https://github.com/alloy/terminal-notifier/releases/download/${tmVersion}/terminal-notifier-${tmVersion}.zip" -Lo "${tmpDir}/terminal-notifier.zip"
-unzip "${tmpDir}/terminal-notifier.zip" -d "${tmpDir}"
+curl "https://github.com/alloy/terminal-notifier/releases/download/${tn_version}/terminal-notifier-${tn_version}.zip" -Lo "${tmp_dir}/terminal-notifier.zip"
+unzip "${tmp_dir}/terminal-notifier.zip" -d "${tmp_dir}"
 
 # set icon and bundle id
 cp "${icon}" "${app}/Contents/Resources/Terminal.icns"

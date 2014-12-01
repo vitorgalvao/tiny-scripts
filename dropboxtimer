@@ -19,55 +19,55 @@ fi
 
 # Make sure the directories exist
 # -------------------------------
-appDirectory="${HOME}/Dropbox/Apps/DropboxTimer"
-mkdir -p "${appDirectory}/.DeleteScripts/"
+app_directory="${HOME}/Dropbox/Apps/DropboxTimer"
+mkdir -p "${app_directory}/.DeleteScripts/"
 
 
 # Use first argument as number of days to wait
 # Make the necessary calculations for when to delete the file
 # -----------------------------------------------------------
-daysFromNow="${1}"
+days_from_now="${1}"
 shift
 
-month=$(date -v +"$daysFromNow"d +"%m")
-day=$(date -v +"$daysFromNow"d +"%d")
-hour=$(date -v +"$daysFromNow"d +"%H")
-minute=$(date -v +"$daysFromNow"d +"%M")
+month=$(date -v +"$days_from_now"d +"%m")
+day=$(date -v +"$days_from_now"d +"%d")
+hour=$(date -v +"$days_from_now"d +"%H")
+minute=$(date -v +"$days_from_now"d +"%M")
 
 
 # Run main script
 # ---------------
-for originalFile in "$@"
+for original_file in "$@"
 do
 
   # Set the file's name
   # If there's already a file with that name, rename the new one by appending the date it's going to be deleted
-  newFile="$(basename ${originalFile})"
+  new_file="$(basename ${original_file})"
 
-  if [[ -f "${appDirectory}/${newFile}" ]]; then
-    fileExtension="${originalFile##*.}"
-    fileNoExtension="${originalFile%.*}"
-    newFile="$(basename ${fileNoExtension})_$(date -v +"$daysFromNow"d +"%Y-%m-%d_%Hh%M").${fileExtension}"
+  if [[ -f "${app_directory}/${new_file}" ]]; then
+    file_extension="${original_file##*.}"
+    file_no_extension="${original_file%.*}"
+    new_file="$(basename ${file_no_extension})_$(date -v +"$days_from_now"d +"%Y-%m-%d_%Hh%M").${file_extension}"
 
-    echo "There's already a file named $(basename ${originalFile}) in the directory, the new file will be renamed to ${newFile}"
+    echo "There's already a file named $(basename ${original_file}) in the directory, the new file will be renamed to ${new_file}"
   fi
 
   # Set variables needed for launchd, and copy the file to the directory
-  label="com.DropboxTimer.${newFile//[^a-zA-Z-0-9_]/}"
+  label="com.DropboxTimer.${new_file//[^a-zA-Z-0-9_]/}"
   agent="${HOME}/Library/LaunchAgents/${label}.plist"
 
-  cp -R "${originalFile}" "${appDirectory}/${newFile}"
+  cp -R "${original_file}" "${app_directory}/${new_file}"
 
   # Prepare the script that'll delete the file (and itself)
-  scriptLocation="${appDirectory}/.DeleteScripts/${label}.sh"
+  script_location="${app_directory}/.DeleteScripts/${label}.sh"
   script="#!/bin/bash
-  mv $(printf '%q' ${appDirectory}/${newFile}) ${HOME}/.Trash/
-  rm ${scriptLocation}
+  mv $(printf '%q' ${app_directory}/${new_file}) ${HOME}/.Trash/
+  rm ${script_location}
   rm ${agent}
   launchctl remove ${label}"
-  
-  echo "${script}" | tr -d '\t' > ${scriptLocation}
-  chmod +x ${scriptLocation}
+
+  echo "${script}" | tr -d '\t' > ${script_location}
+  chmod +x ${script_location}
 
   # Make the plist and load it
   plist="<?xml version='1.0' encoding='UTF-8'?>
@@ -78,7 +78,7 @@ do
   <key>Label</key>
   <string>${label}</string>
   <key>Program</key>
-  <string>${scriptLocation}</string>
+  <string>${script_location}</string>
   <key>StartCalendarInterval</key>
   <array>
   <dict>

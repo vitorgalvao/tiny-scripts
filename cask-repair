@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # location of homebrew-cask tap
-caskTap="$(brew --repository)/Library/Taps/caskroom/homebrew-cask"
+cask_tap="$(brew --repository)/Library/Taps/caskroom/homebrew-cask"
 
 # exit if not inside the a '/homebrew-cask/Casks' directory
-casksDir=$(pwd | perl -pe 's|.*(/homebrew-cask/Casks)$|\1|')
-if [[ "${casksDir}" != "/homebrew-cask/Casks" ]]; then
+casks_dir=$(pwd | perl -pe 's|.*(/homebrew-cask/Casks)$|\1|')
+if [[ "${casks_dir}" != "/homebrew-cask/Casks" ]]; then
   echo -e "\n$(tput setaf 1)You need to be inside a '/homebrew-cask/Casks' directory$(tput sgr0)\n"
   exit 1
 fi
@@ -20,10 +20,10 @@ fi
 finish() {
     git reset HEAD --hard
     git checkout master
-    git branch -D "${caskBranch}"
-    # revert state of caskTap
-    git --git-dir="${caskTap}/.git/" --work-tree="${caskTap}" clean --force
-    git --git-dir="${caskTap}/.git/" --work-tree="${caskTap}" reset HEAD --hard
+    git branch -D "${cask_branch}"
+    # revert state of cask_tap
+    git --git-dir="${cask_tap}/.git/" --work-tree="${cask_tap}" clean --force
+    git --git-dir="${cask_tap}/.git/" --work-tree="${cask_tap}" reset HEAD --hard
 
     # show message
     if [[ "$1" == "abort" ]]; then
@@ -46,80 +46,80 @@ divide() {
 }
 
 # clean the cask's name, and check if it is valid
-caskName="$1"
-[[ "${caskName}" == *".rb" ]] && caskName=$(echo "${caskName}" | sed 's|\.rb$||')
-caskFile="${caskName}.rb"
-caskBranch="update-${caskName}"
-[[ ! -f "${caskFile}" ]] && finish abort "There is no such cask"
+cask_name="$1"
+[[ "${cask_name}" == *".rb" ]] && cask_name=$(echo "${cask_name}" | sed 's|\.rb$||')
+cask_file="${cask_name}.rb"
+cask_branch="update-${cask_name}"
+[[ ! -f "${cask_file}" ]] && finish abort "There is no such cask"
 
 # initial tasks
 git pull upstream master
-git checkout -b "${caskBranch}"
+git checkout -b "${cask_branch}"
 divide
-brew cask home "${caskName}"
-cat "${caskFile}"
+brew cask home "${cask_name}"
+cat "${cask_file}"
 divide
 
 read -p "Save the new download URL to your clipboard, and type the version (or leave blank to abort)
-> " caskVersion
-[[ -z "${caskVersion}" ]] && finish abort "You decided to abort"
-caskUrl="$(pbpaste)"
+> " cask_version
+[[ -z "${cask_version}" ]] && finish abort "You decided to abort"
+cask_url="$(pbpaste)"
 
 # check if the URL sends a 200 HTTP code, else abort
-browserHeaders="-H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'"
-caskStatus=$(curl -sIL "${browserHeaders}" "${caskUrl}" | grep '^HTTP' | tail -1 | perl -pe 's|.* (\d{3}) .*|\1|')
+browser_headers="-H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'"
+cask_status=$(curl -sIL "${browser_headers}" "${cask_url}" | grep '^HTTP' | tail -1 | perl -pe 's|.* (\d{3}) .*|\1|')
 
 # if the download URL is from github or bitbucket, fake the status code
-[[ "${caskUrl}" =~ (github.com|bitbucket.org) ]] && caskStatus="200"
+[[ "${cask_url}" =~ (github.com|bitbucket.org) ]] && cask_status="200"
 
-if [[ "${caskStatus}" != "200" ]]; then
-  if [[ -z "${caskStatus}" ]]; then
+if [[ "${cask_status}" != "200" ]]; then
+  if [[ -z "${cask_status}" ]]; then
     finish abort "You need to have a valid URL in your clipboard"
   else
-    finish abort "Download URL returned ${caskStatus}"
+    finish abort "Download URL returned ${cask_status}"
   fi
 fi
 
 # calculate new sha256, if not using 'latest' version
-if [[ "${caskVersion}" == "latest" ]]; then
-  caskVersion=":latest"
-  caskSha=":no_check"
+if [[ "${cask_version}" == "latest" ]]; then
+  cask_version=":latest"
+  cask_sha=":no_check"
 else
-  caskVersion="'${caskVersion}'"
-  caskSha=$(curl -#L "${browserHeaders}" "${caskUrl}" | shasum -a 256 | tr -d ' -\n' | sed -E "s|(.*)|'\1'|")
+  cask_version="'${cask_version}'"
+  cask_sha=$(curl -#L "${browser_headers}" "${cask_url}" | shasum -a 256 | tr -d ' -\n' | sed -E "s|(.*)|'\1'|")
 fi
 
 # if the current url uses variables, keep it
-caskOldUrlStanza=$(grep "url '.*'" "${caskFile}" | sed -E "s|.*url '(.*)'.*|\1|")
-[[ caskOldUrlStanza == *"#{version"* ]] && caskUrl="${caskOldUrlStanza}"
+cask_old_url_stanza=$(grep "url '.*'" "${cask_file}" | sed -E "s|.*url '(.*)'.*|\1|")
+[[ cask_old_url_stanza == *"#{version"* ]] && cask_url="${cask_old_url_stanza}"
 
 # modify url, version, and sha256
-sed -i '' "s|url '.*'|url '${caskUrl}'|;s|version '.*'|version ${caskVersion}|;s|sha256 '.*'|sha256 ${caskSha}|" "${caskFile}"
+sed -i '' "s|url '.*'|url '${cask_url}'|;s|version '.*'|version ${cask_version}|;s|sha256 '.*'|sha256 ${cask_sha}|" "${cask_file}"
 
 # check if everything is alright, else abort
-caskUpdated="not checked"
-while [[ "${caskUpdated}" =~ [^y|^n|^e] ]]; do
+cask_updated="not checked"
+while [[ "${cask_updated}" =~ [^y|^n|^e] ]]; do
   # audit cask
-  cp "${caskFile}" "${caskTap}/Casks/"
-  brew cask audit "${caskName}"
+  cp "${cask_file}" "${cask_tap}/Casks/"
+  brew cask audit "${cask_name}"
 
   git diff
 
-  read -p "Is everything correct? You can also make further manual edits (y/n/e) " caskUpdated
+  read -p "Is everything correct? You can also make further manual edits (y/n/e) " cask_updated
 
-  if [[ "${caskUpdated}" == "y" ]]; then
+  if [[ "${cask_updated}" == "y" ]]; then
     break
-  elif [[ "${caskUpdated}" == "e" ]]; then
-    vim "${caskFile}"
-    caskUpdated="check again"
-  elif [[ "${caskUpdated}" == "n" ]]; then
+  elif [[ "${cask_updated}" == "e" ]]; then
+    vim "${cask_file}"
+    cask_updated="check again"
+  elif [[ "${cask_updated}" == "n" ]]; then
     finish abort "You decided to abort"
   fi
 done
 
 # commit, push, clean
-git commit "${caskFile}" -m "updated ${caskName} (${caskVersion})"
-git push origin "${caskBranch}"
+git commit "${cask_file}" -m "updated ${cask_name} (${cask_version})"
+git push origin "${cask_branch}"
 
 # cleanup
 finish success

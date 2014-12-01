@@ -8,11 +8,11 @@ CRAFTSCUTFILE="/tmp/crafts-cutfile"
 crafts() {
 echo "usage:
 
-  ccrafts <input>    # files and directories to copy (takes multiple arguments)
-  xcrafts <input>    # files and directories to move (takes multiple arguments)
-  vcrafts <output>   # directory to move and copy files and directories to
-                       (if no argument is give, it uses the current directory)
-  ecrafts            # edits copy and move lists"
+  ccrafts <input>    files and directories to copy (takes multiple arguments)
+  xcrafts <input>    files and directories to move (takes multiple arguments)
+  vcrafts <output>   directory to move and copy files and directories to
+                     (if no argument is given, it uses the current directory)
+  ecrafts            edits copy and move lists"
 }
 
 ccrafts() {
@@ -52,28 +52,28 @@ vcrafts() {
 
   # set output location
   if [[ -n "$1" ]]; then
-    craftsOutDir="$1"
+    crafts_out_dir="$1"
   else
-    craftsOutDir="."
+    crafts_out_dir="."
   fi
 
   # copy files and directories
   if [[ -f "${CRAFTSCOPYFILE}" ]]; then
     for line in $(cat "${CRAFTSCOPYFILE}"); do
-      cp -Rv "${line}" "${craftsOutDir}"
+      cp -Rv "${line}" "${crafts_out_dir}"
     done
   fi
 
   # move files and directories
   if [[ -f "${CRAFTSCUTFILE}" ]]; then
     for line in $(cat "${CRAFTSCUTFILE}"); do
-      mv -v "${line}" "${craftsOutDir}"
+      mv -v "${line}" "${crafts_out_dir}"
     done
   fi
 
   # reset files and options
   rm "${CRAFTSCOPYFILE}" "${CRAFTSCUTFILE}" 2>/dev/null
-  unset craftsOutDir
+  unset crafts_out_dir
   IFS=$OLDIFS
 }
 

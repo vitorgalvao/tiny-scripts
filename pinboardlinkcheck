@@ -29,7 +29,7 @@ while [[ "$1" ]]; do
       verbose="true"
       ;;
     -r | --redirect-log)
-      redirectlog="true"
+      redirect_log="true"
       ;;
     -t | --token)
       token="$1"
@@ -43,8 +43,8 @@ while [[ "$1" ]]; do
 done
 
 # location for log files
-logfile="${HOME}/pinboardlinkcheck.log"
-[[ -n "${redirectlog}" ]] && redirectlogfile="${HOME}/pinboardlinkcheck-redirects.log"
+log_file="${HOME}/pinboardlinkcheck.log"
+[[ -n "${redirect_log}" ]] && redirect_log_file="${HOME}/pinboardlinkcheck-redirects.log"
 
 # ask for api key, if needed
 if [[ -z "${token}" ]]; then
@@ -72,27 +72,27 @@ for page in ${links} ; do
   fi
 
   # append to log file
-  echo "${status} ${page}" >> "${logfile}"
+  echo "${status} ${page}" >> "${log_file}"
 done
 
 # cleanup
 # remove every link with a '200' code from the log
-sed -i '' '/^200/d' "${logfile}"
+sed -i '' '/^200/d' "${log_file}"
 
 # order links by status code
-orderedlinks=$(cat "${logfile}" | sort)
-echo "${orderedlinks}" > "${logfile}"
+ordered_links=$(cat "${log_file}" | sort)
+echo "${ordered_links}" > "${log_file}"
 
 # move 301 links to redirect log, if specified
-if [[ -n "${redirectlog}" ]]; then
-  redirectlinks=$(cat "${logfile}" | grep '^301' | sed 's/^301 //')
+if [[ -n "${redirect_log}" ]]; then
+  redirectlinks=$(cat "${log_file}" | grep '^301' | sed 's/^301 //')
 
   for page in ${redirectlinks}; do
-    redirecturl=$(curl --silent --output /dev/null --write-out "%{redirect_url}" "${page}")
-    echo "${page} → ${redirecturl}"
-    echo "${page} → ${redirecturl}" >> "${redirectlogfile}"
+    redirect_url=$(curl --silent --output /dev/null --write-out "%{redirect_url}" "${page}")
+    echo "${page} → ${redirect_url}"
+    echo "${page} → ${redirect_url}" >> "${redirect_log_file}"
   done
 
   # remove 301s from the main log
-  sed -i '' '/^301/d' "${logfile}"
+  sed -i '' '/^301/d' "${log_file}"
 fi
