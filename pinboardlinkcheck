@@ -35,6 +35,9 @@ while [[ "$1" ]]; do
       token="$1"
       shift
       ;;
+    -*)
+      syntax_error "unrecognized option: $1"
+      ;;
   esac
   shift
 done

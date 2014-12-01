@@ -2,6 +2,12 @@
 
 readonly program="$(basename "$0")"
 
+syntax_error() {
+  echo "$program: $1" >&2
+  echo "Try \`$program --help\` for more information." >&2
+  exit 1
+}
+
 # This script depends on imagemagick for the conversion
 # -----------------------------------------------------
 dependsOn() {
@@ -50,6 +56,12 @@ while [[ "$1" ]]; do
     -e | --end-rate)
       endRate="$2"
       shift
+      ;;
+    -*)
+      syntax_error "unrecognized option: $1"
+      ;;
+    *)
+      break
       ;;
   esac
   shift

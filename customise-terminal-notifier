@@ -2,6 +2,12 @@
 
 readonly program="$(basename "$0")"
 
+syntax_error() {
+  echo "$program: $1" >&2
+  echo "Try \`$program --help\` for more information." >&2
+  exit 1
+}
+
 # instructions
 usage() {
 echo "usage: $program [-h] [-i <file>] [-b <bundleID>]
@@ -26,6 +32,10 @@ while [[ "$1" ]]; do
     -b | --bundle)
       id="$2"
       shift
+      ;;
+    -*)
+      syntax_error "unrecognized option: $1"
+      exit 1
       ;;
   esac
   shift
