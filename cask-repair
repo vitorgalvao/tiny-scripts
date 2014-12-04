@@ -35,6 +35,9 @@ finish() {
   fi
 }
 
+# cleanup if aborted with ⌃C
+trap 'finish abort "You decided to abort"' SIGINT
+
 # define divider function
 divide() {
   if [[ $(which hr) ]]; then
