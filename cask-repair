@@ -60,7 +60,7 @@ git checkout -b "${cask_branch}"
 
 # check if cask's url is always up to date
 cask_old_url_stanza=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*)['\"].*|\1|")
-[[ "${cask_old_url_stanza}" =~ '#{version.*}' ]] && cask_url_up_to_date='true'
+[[ "${cask_old_url_stanza}" =~ /#{version.*}/ ]] && cask_url_up_to_date='true'
 
 # show cask's current state
 divide
@@ -99,7 +99,7 @@ fi
 [[ -z "${cask_version}" ]] && finish abort "You decided to abort"
 
 # calculate new sha, if not using 'latest' version
-if [[ "${cask_version}" =~ "[:]{0,1}latest" ]]; then
+if [[ "${cask_version}" =~ "latest" ]]; then
   cask_version=':latest'
   cask_sha=':no_check'
 else
