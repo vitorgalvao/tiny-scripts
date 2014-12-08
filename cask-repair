@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# exit if not inside a '/homebrew-cask/Casks' directory
-casks_dir=$(pwd | sed -E 's|.*(/homebrew-cask/Casks)$|\1|')
-if [[ "${casks_dir}" != '/homebrew-cask/Casks' ]]; then
-  echo -e "\n$(tput setaf 1)You need to be inside a '/homebrew-cask/Casks' directory$(tput sgr0)\n"
+# exit if not inside a 'homebrew-*/Casks' directory
+casks_dir=$(pwd | perl -ne 'print m{homebrew-[^/]+/Casks}')
+if [[ -z "${casks_dir}" ]]; then
+  echo -e "\n$(tput setaf 1)You need to be inside a '/homebrew-*/Casks' directory$(tput sgr0)\n"
   exit 1
 fi
 
