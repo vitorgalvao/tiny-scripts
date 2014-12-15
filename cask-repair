@@ -113,7 +113,7 @@ else
   rm -rf "$(brew --cache)" # clean homebrew's cache in advance
   brew cask fetch "./${cask_file}"
   downloaded_file=$(find "$(brew --cache)" -type f)
-  cask_sha=$(shasum -a 256 "${cask_file}" | awk '{ print $1 }')
+  cask_sha=$(shasum -a 256 "${downloaded_file}" | awk '{ print $1 }')
 
   modify_stanza 'sha256' "'${cask_sha}'"
 fi
