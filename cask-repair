@@ -57,6 +57,7 @@ cask_branch="update-${cask_name}"
 [[ ! -f "${cask_file}" ]] && finish abort 'There is no such cask'
 
 # initial tasks
+git checkout master
 git pull upstream master
 git checkout -b "${cask_branch}"
 
