@@ -23,22 +23,15 @@ modify_stanza() {
 
 # define function to check and modify sha256
 sha_change() {
-  # set sha256 as :no_check (possibly only tempoparily, to prevent mismatch errors when fetching)
+  # set sha256 as :no_check tempoparily, to prevent mismatch errors when fetching
   modify_stanza 'sha256' ':no_check'
 
-  # calculate new sha256 if not using :latest version, and change version and sha256
-  if [[ "${cask_version}" =~ ^:?latest$ ]]; then
-    modify_stanza 'version' ':latest'
-  else
-    modify_stanza 'version' "'${cask_version}'"
+  rm -rf "$(brew --cache)" # clean homebrew's cache in advance
+  brew cask fetch "./${cask_file}"
+  downloaded_file=$(find "$(brew --cache)" -type f)
+  cask_sha=$(shasum -a 256 "${downloaded_file}" | awk '{ print $1 }')
 
-    rm -rf "$(brew --cache)" # clean homebrew's cache in advance
-    brew cask fetch "./${cask_file}"
-    downloaded_file=$(find "$(brew --cache)" -type f)
-    cask_sha=$(shasum -a 256 "${downloaded_file}" | awk '{ print $1 }')
-
-    modify_stanza 'sha256' "'${cask_sha}'"
-  fi
+  modify_stanza 'sha256' "'${cask_sha}'"
 }
 
 # define abort function, that will reset the state
@@ -122,8 +115,14 @@ fi
 # check if a version was given
 [[ -z "${cask_version}" ]] && finish abort 'You decided to abort'
 
-# update sha256
-sha_change
+# change version and sha256, and calculate new sha256 if not using :latest version
+if [[ "${cask_version}" =~ ^:?latest$ ]]; then
+  modify_stanza 'version' ':latest'
+  modify_stanza 'sha256' ':no_check'
+else
+  modify_stanza 'version' "'${cask_version}'"
+  sha_change
+fi
 
 # check if everything is alright, else abort
 cask_updated='false'
@@ -139,7 +138,7 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
     break
   elif [[ "${cask_updated}" == 'e' ]]; then
     vim "${cask_file}"
-    sha_change
+    [[ ! "$(grep 'version :latest' ${cask_file})" ]] && sha_change # recheck sha256 if version isn't :latest
     cask_updated='false'
   elif [[ "${cask_updated}" == 'n' ]]; then
     finish abort 'You decided to abort'
