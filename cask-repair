@@ -145,6 +145,9 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
   fi
 done
 
+# grab version as it ended up in the cask
+cask_version=$(grep '^\s*version' ${cask_file} | perl -pe "s|^(\s*)version (.*)|\2|;s|'||g;s|^:||")
+
 # commit, push, clean
 git commit "${cask_file}" -m "updated ${cask_name} (${cask_version})"
 git push origin "${cask_branch}"
