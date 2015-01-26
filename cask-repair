@@ -140,7 +140,7 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
     break
   elif [[ "${cask_updated}" == 'e' ]]; then
     vim "${cask_file}"
-    [[ ! "$(grep 'version :latest' ${cask_file})" ]] && sha_change # recheck sha256 if version isn't :latest
+    [[ "$(brew cask _stanza version ${cask_file})" != ':latest' ]] && sha_change # recheck sha256 if version isn't :latest
     cask_updated='false'
   elif [[ "${cask_updated}" == 'n' ]]; then
     finish abort 'You decided to abort'
@@ -148,7 +148,7 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
 done
 
 # grab version as it ended up in the cask
-cask_version=$(grep '^\s*version' ${cask_file} | perl -pe "s|^(\s*)version (.*)|\2|;s|'||g;s|^:||")
+cask_version="$(brew cask _stanza version ${cask_file})"
 
 # commit, push, clean
 git commit "${cask_file}" -m "updated ${cask_name} (${cask_version})"
