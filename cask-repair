@@ -18,9 +18,11 @@ modify_stanza() {
   stanza_to_modify="$1"
   new_stanza_value="$2"
 
-  last_matching_stanza=$(cat "${cask_file}" | grep "^\s*${stanza_to_modify}" | tail -1 | perl -pe 's|^\s*||')
-
-  perl -i'' -pe "s|^(\s*)${last_matching_stanza}|\1${stanza_to_modify} ${new_stanza_value}|" "${cask_file}"
+  perl -0777 -i -e'
+    $stanza_to_modify = shift(@ARGV);
+    $new_stanza_value = shift(@ARGV);
+    print <> =~ s|\A.*^\s*\Q$stanza_to_modify\E\s\K[^\n]*|$new_stanza_value|smr;
+  ' "${stanza_to_modify}" "${new_stanza_value}" "${cask_file}"
 }
 
 # define function to check and modify sha256
