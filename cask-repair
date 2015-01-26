@@ -29,7 +29,7 @@ sha_change() {
   modify_stanza 'sha256' ':no_check'
 
   rm -rf "$(brew --cache)" # clean homebrew's cache in advance
-  brew cask fetch "./${cask_file}"
+  brew cask fetch "${cask_file}"
   downloaded_file=$(find "$(brew --cache)" -type f)
   cask_sha=$(shasum -a 256 "${downloaded_file}" | awk '{ print $1 }')
 
@@ -67,7 +67,7 @@ divide() {
 # clean the cask's name, and check if it is valid
 cask_name="$1"
 [[ "${cask_name}" == *'.rb' ]] && cask_name=$(echo "${cask_name}" | sed 's|\.rb$||')
-cask_file="${cask_name}.rb"
+cask_file="./${cask_name}.rb"
 cask_branch="update-${cask_name}"
 [[ ! -f "${cask_file}" ]] && finish abort 'There is no such cask'
 
@@ -130,7 +130,7 @@ fi
 cask_updated='false'
 until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
   # audit cask
-  brew cask audit "./${cask_file}"
+  brew cask audit "${cask_file}"
 
   git diff
 
