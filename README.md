@@ -2,6 +2,9 @@
 
 The easiest way to get these is via [this repository](https://github.com/vitorgalvao/homebrew-tinyscripts), as the install will take care of any eventual dependencies that are not already available on your system.
 
+### annotmd
+Script to convert .annot files to .md
+
 ### cask-repair
 Script to quickly repair outdated/broken Casks from homebrew-cask
 
