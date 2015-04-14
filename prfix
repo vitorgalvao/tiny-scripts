@@ -26,7 +26,7 @@ apply_patch() {
   branch_name="fix-${issue_number}"
 
   git checkout -b "${branch_name}"
-  curl --silent "${patch_url}" | git am # get and apply patch
+  curl --location --silent "${patch_url}" | git am # get and apply patch
 
   git rev-parse HEAD > "${commit_hash_file}" # save hash from current commit
   echo "${issue_number}" > "${issue_number_file}" # save issue number
