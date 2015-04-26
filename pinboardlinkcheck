@@ -10,7 +10,7 @@ syntax_error() {
 
 # instructions
 usage() {
-  echo "usage: $program [-h] [-v] [-l <file>] [-d <file>] [-t <token>]
+  echo "usage: $program [-h] [-v] [-t <token>]
 
 options:
   -h, --help           Show this message
