@@ -28,12 +28,15 @@ end
 
 annot_feed.css('annotation').each do |annotation|
   fragment_start = annotation.at('fragment').attribute('start').value
-  text = annotation.at('text').text.strip
 
-  File.open(out_file, 'a') do |f|
-    f.puts "\n#{text}\n\n"
-    f.puts "[§](#{fragment_start})"
-    f.puts '-' * 10
+  if annotation.at('text') # check first if annotation has text
+    text = annotation.at('text').text.strip
+
+    File.open(out_file, 'a') do |f|
+      f.puts "\n#{text}\n\n"
+      f.puts "[§](#{fragment_start})"
+      f.puts '-' * 10
+    end
   end
 
 end
