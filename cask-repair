@@ -84,7 +84,7 @@ cask_old_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*
 
 # show cask's current state
 divide
-brew cask home "${cask_name}"
+brew cask home "${cask_file}"
 cat "${cask_file}"
 divide
 
