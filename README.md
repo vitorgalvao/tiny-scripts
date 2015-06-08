@@ -48,7 +48,7 @@ Script to rename files in a numerical sequence
 Script to facilitate installing ubuntu on a USB stick, from OS X
 
 ### unsplashdownload
-Script to download images from http://unsplash.com/
+Script to download images from [unsplash](https://unsplash.com/)
 
 #### License
 The Unlicense (Public Domain, essentially)
