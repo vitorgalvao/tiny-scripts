@@ -17,11 +17,11 @@ Script to setup terminal-notifier with a custom icon
 ### dropboxtimer
 Script to add files to your dropbox, and delete them a set number of days later
 
-### gifmaker
-Script to make animated gifs from sequences of images, with more control over FPS
-
 ### gfv (gif from video)
 Script to make animated gifs from a video file
+
+### gifmaker
+Script to make animated gifs from sequences of images, with more control over FPS
 
 ### labelcolor
 Script to change label color of files in OS X
@@ -38,11 +38,11 @@ Script to generate a podcast RSS feed for audiobooks
 ### prfix
 Script to quickly pull, fix, and push [github](https://github.com/) pull requests
 
-### strongpassword
-Script to get a strong password by leveraging multiple sources
-
 ### seren
 Script to rename files in a numerical sequence
+
+### strongpassword
+Script to get a strong password by leveraging multiple sources
 
 ### ubuntu-usb
 Script to facilitate installing ubuntu on a USB stick, from OS X
