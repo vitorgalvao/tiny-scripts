@@ -14,7 +14,7 @@ split_time = {}
 human_time = ''
 
 ARGV.each do |file|
-  duration_in_ms = %x(mediainfo --Output='Audio;%Duration%' #{file.shellescape}).to_i
+  duration_in_ms = %x(mediainfo --Output='General;%Duration%' #{file.shellescape}).to_i
   ms += duration_in_ms
 end
 
