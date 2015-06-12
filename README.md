@@ -23,6 +23,9 @@ Script to make animated gifs from a video file
 ### gifmaker
 Script to make animated gifs from sequences of images, with more control over FPS
 
+### human-media-time
+Script to calculate the total running time of multiple media files, presenting the output in a human-readable way
+
 ### labelcolor
 Script to change label color of files in OS X
 

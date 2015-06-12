@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+require 'Shellwords'
+
+# usage
+if ARGV[0].nil?
+  abort "usage: #{File.basename($0)} <paths_to_video_and_audio_files>
+
+  Will output the total running time of the files, in a human-readable way.".gsub(%r{^ {2}},'')
+end
+
+ms = 0
+split_time = {}
+human_time = ''
+
+ARGV.each do |file|
+  duration_in_ms = %x{ mediainfo --Output='Video;%Duration%' #{file.shellescape} }.to_i
+  ms += duration_in_ms
+end
+
+split_time['s'] = (ms/1000)%60
+split_time['m'] = (ms/(1000*60))%60
+split_time['h'] = (ms/(1000*60*60))%24
+
+split_time.each do |key, value|
+  if value > 0
+    human_time = value.to_s + key + human_time
+  end
+end
+
+puts human_time
