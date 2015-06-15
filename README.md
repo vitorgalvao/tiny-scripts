@@ -38,8 +38,8 @@ Script to check the status code of links saved in your [pinboard](https://pinboa
 ### podbook
 Script to generate a podcast RSS feed for audiobooks
 
-### prfix
-Script to quickly pull, fix, and push [github](https://github.com/) pull requests
+### prfixbranch
+Script to quickly pull, fix, and push [github](https://github.com/) pull requests, creating a new pull request with the fix
 
 ### prfixmaster
 Script to quickly pull, fix, and push [github](https://github.com/) pull requests, merging directly to master and closing the previous pull request
