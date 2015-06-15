@@ -3,7 +3,7 @@
 readonly program="$(basename "$0")"
 
 commit_hash_file="/tmp/prfix_hash_save"
-issue_number_file="/tmp/issue_number_save"
+issue_number_file="/tmp/prfix_issue_number_save"
 
 usage() {
   echo "
