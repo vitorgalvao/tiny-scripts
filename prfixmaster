@@ -1,0 +1,107 @@
+#!/bin/bash
+
+readonly program="$(basename "$0")"
+
+depends_on() {
+  if [[ ! $(which "${1}") ]]; then
+    echo -e >&2 "\n$(tput setaf 1)This script requires ${1}. Please install it first.$(tput sgr0)\n"
+    exit 1
+  fi
+}
+
+syntax_error() {
+  echo "$program: $1" >&2
+  echo "Try \`$program --help\` for more information." >&2
+  exit 1
+}
+
+depends_on ghi
+
+issue_number_file='/tmp/prfixmaster_issue_number_save'
+
+usage() {
+  echo "
+  usage: $program [-h] [-r <remote>] [-c] <github_pull_request_url>
+
+  options:
+    -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
+    -c, --continue                   Use after making your fixes. Will push your changes and close the issue with a message. If you use it with uncommitted changes, they'll all be squashed (fixup) into the original patch; else your commits will be preserved
+    -h, --help                       Show this help.
+  " | sed -E 's/^ {2}//'
+}
+
+# available flags
+while [[ "$1" ]]; do
+  case "$1" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -r | --remote)
+      remote="$2"
+      shift
+      ;;
+    -c | --continue)
+      push_changes="yes"
+      ;;
+    -*)
+      syntax_error "unrecognized option: $1"
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
+
+pull_remote() { # pull changes if local branch is behind
+  last_commit_local=$(git rev-parse refs/heads/master)
+  last_commit_remote=$(git ls-remote "${remote}" --heads refs/heads/master | perl -pe 's/\s.*//')
+  [[ "${last_commit_local}" != "${last_commit_remote}" ]] && git pull --rebase "${remote}" master
+}
+
+apply_patch() {
+  git checkout master
+  pull_remote
+
+  url=$(echo "$1" | perl -pe 's/(.*\d).*/\1/') # clean url of extraneous information
+  issue_number=$(echo "${url}" | sed 's|.*/||')
+  patch_url="${url}.patch" # github pull request url, ending in '.patch'
+
+  curl --location --silent "${patch_url}" | git am # get and apply patch
+
+  echo "${issue_number}" > "${issue_number_file}" # save issue number
+
+  echo "
+    Make your changes and run
+      $program -c
+  " | sed -E 's/^ {2}//'
+}
+
+push_and_close() {
+  original_issue="$(cat ${issue_number_file})"
+  uncommitted_changes="$(git status --porcelain)"
+
+  # squash your fixes into the original patch, if there are uncommitted changes
+  if [[ "${uncommitted_changes}" ]]; then
+    git commit --all --allow-empty-message --message ''
+    git reset --soft "${original_commit}"
+  fi
+
+  # push and close issue
+  pull_remote
+  git push "${remote}" master
+
+  ghi close --message "Thank you for the contribution. It needed some fixes, so they were made in ${last_commit_remote}. Your contribution is still included (and still credited to you), with the appropriate modifications. Please feel free to ask about any of the changes." "${original_issue}"
+}
+
+# use 'upstream' as default remote
+[[ -z "${remote}" ]] && remote='upstream'
+
+if [[ "$1" =~ https://github.com/* ]]; then
+  apply_patch "$1"
+elif [[ "${push_changes}" == 'yes' ]]; then
+  push_and_close
+else
+  usage
+fi

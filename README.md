@@ -41,6 +41,9 @@ Script to generate a podcast RSS feed for audiobooks
 ### prfix
 Script to quickly pull, fix, and push [github](https://github.com/) pull requests
 
+### prfixmaster
+Script to quickly pull, fix, and push [github](https://github.com/) pull requests, merging directly to master and closing the previous pull request
+
 ### seren
 Script to rename files in a numerical sequence
 
