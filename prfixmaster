@@ -64,8 +64,8 @@ apply_patch() {
   git checkout master
   pull_remote
 
-  url=$(echo "$1" | perl -pe 's/(.*\d).*/\1/') # clean url of extraneous information
-  issue_number=$(echo "${url}" | sed 's|.*/||')
+  url=$(perl -pe 's/(.*\d).*/\1/' <<< "$1") # clean url of extraneous information
+  issue_number=$(sed 's|.*/||' <<< "${url}")
   patch_url="${url}.patch" # github pull request url, ending in '.patch'
 
   curl --location --silent "${patch_url}" | git am # get and apply patch
