@@ -20,8 +20,8 @@ usage() {
 }
 
 apply_patch() {
-  url=$(echo "$1" | perl -pe 's/(.*\d).*/\1/') # clean url of extraneous information
-  issue_number=$(echo "${url}" | sed 's|.*/||')
+  url=$(perl -pe 's/(.*\d).*/\1/' <<< "$1") # clean url of extraneous information
+  issue_number=$(sed 's|.*/||' <<< "${url}")
   patch_url="${url}.patch" # github pull request url, ending in '.patch'
   branch_name="fix-${issue_number}"
 
