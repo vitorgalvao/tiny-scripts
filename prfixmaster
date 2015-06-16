@@ -82,10 +82,11 @@ push_and_close() {
   original_issue="$(cat ${issue_number_file})"
   uncommitted_changes="$(git status --porcelain)"
 
-  # squash your fixes into the original patch, if there are uncommitted changes
+  # squash your fixes into the last commit, if there are uncommitted changes
   if [[ "${uncommitted_changes}" ]]; then
     git commit --all --allow-empty-message --message ''
-    git reset --soft "${original_commit}"
+    git reset --soft @~
+    git commit --amend -C HEAD
   fi
 
   # push and close issue
