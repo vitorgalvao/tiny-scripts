@@ -61,7 +61,8 @@ pull_remote() { # pull changes if local branch is behind
 }
 
 apply_patch() {
-  git checkout master
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
+  [[ "${current_branch}" != 'master' ]] && git checkout master
   pull_remote
 
   url=$(perl -pe 's/(.*\d).*/\1/' <<< "$1") # clean url of extraneous information
