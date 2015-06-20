@@ -17,6 +17,9 @@ Script to setup terminal-notifier with a custom icon
 ### dropboxtimer
 Script to add files to your dropbox, and delete them a set number of days later
 
+### fastmerge
+Script to quickly pull and push [github](https://github.com/) pull requests to keep commit history cleaner, merging directly to master and closing the previous pull request
+
 ### gfv (gif from video)
 Script to make animated gifs from a video file
 

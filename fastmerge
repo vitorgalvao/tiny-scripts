@@ -1,0 +1,50 @@
+#!/bin/bash
+
+readonly program="$(basename "$0")"
+
+depends_on() {
+  if [[ ! $(which "${1}") ]]; then
+    echo -e >&2 "\n$(tput setaf 1)This script requires ${1}. Please install it first.$(tput sgr0)\n"
+    exit 1
+  fi
+}
+
+depends_on ghi
+
+usage() {
+  echo "usage: $program <github_pull_request_url>"
+}
+
+pull_remote() { # pull changes if local branch is behind
+  last_commit_local=$(git rev-parse refs/heads/master)
+  last_commit_remote=$(git ls-remote "${remote}" --heads refs/heads/master | perl -pe 's/\s.*//')
+  [[ "${last_commit_local}" != "${last_commit_remote}" ]] && git pull --rebase "${remote}" master
+}
+
+apply_patch() {
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
+  [[ "${current_branch}" != 'master' ]] && git checkout master
+  pull_remote
+
+  url=$(perl -pe 's/(.*\d).*/\1/' <<< "$1") # clean url of extraneous information
+  issue_number=$(sed 's|.*/||' <<< "${url}")
+  patch_url="${url}.patch" # github pull request url, ending in '.patch'
+
+  curl --location --silent "${patch_url}" | git am # get and apply patch
+}
+
+push_and_close() {
+  pull_remote
+  git push "${remote}" master
+
+  ghi close --message "Thank you for the contribution. It was merged directly as ${last_commit_local} to keep commit history cleaner. Your contribution is still credited to you." "${issue_number}"
+}
+
+[[ -z "${remote}" ]] && remote='upstream' # use 'upstream' as default remote
+
+if [[ "$1" =~ https://github.com/* ]]; then
+  apply_patch "$1"
+  push_and_close
+else
+  usage
+fi
