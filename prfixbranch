@@ -96,4 +96,5 @@ elif [[ "${push_changes}" == 'yes' ]]; then
   push_changes
 else
   usage
+  exit 1
 fi

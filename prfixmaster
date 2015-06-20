@@ -105,4 +105,5 @@ elif [[ "${push_changes}" == 'yes' ]]; then
   push_and_close
 else
   usage
+  exit 1
 fi
