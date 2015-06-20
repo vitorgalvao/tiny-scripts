@@ -25,7 +25,7 @@ usage() {
 
   options:
     -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
-    -c, --continue                   Use after making your fixes. Will push your changes and close the issue with a message. If you use it with uncommitted changes, they'll all be squashed (fixup) into the original patch; else your commits will be preserved
+    -c, --continue                   Use after making your fixes, to push your changes and close the issue with a message. If you use it with uncommitted changes, they'll all be squashed (fixup) into the original patch; else your commits will be preserved.
     -h, --help                       Show this help.
   " | sed -E 's/^ {2}//'
 }
@@ -42,7 +42,7 @@ while [[ "$1" ]]; do
       shift
       ;;
     -c | --continue)
-      push_changes="yes"
+      push_changes='yes'
       ;;
     -*)
       syntax_error "unrecognized option: $1"
