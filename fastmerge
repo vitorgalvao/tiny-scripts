@@ -75,9 +75,13 @@ push_and_close() {
 
 [[ -z "${remote}" ]] && remote='upstream' # use 'upstream' as default remote
 
-if [[ "$1" =~ https://github.com/* ]]; then
-  apply_patch "$1"
-  push_and_close
-else
-  usage
-fi
+while [[ "$1" ]]; do # allow for multiple github PR urls to be passed at once
+  if [[ "$1" =~ https://github.com/* ]]; then
+    apply_patch "$1"
+    push_and_close
+  else
+    usage
+    exit 1
+  fi
+  shift
+done
