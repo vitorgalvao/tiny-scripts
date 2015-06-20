@@ -9,11 +9,44 @@ depends_on() {
   fi
 }
 
+syntax_error() {
+  echo "$program: $1" >&2
+  echo "Try \`$program --help\` for more information." >&2
+  exit 1
+}
+
 depends_on ghi
 
 usage() {
-  echo "usage: $program <github_pull_request_url>"
+  echo "
+  usage: $program [-h] [-r <remote>] <github_pull_request_url>
+
+  options:
+    -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
+    -h, --help                       Show this help.
+  " | sed -E 's/^ {2}//'
 }
+
+# available flags
+while [[ "$1" ]]; do
+  case "$1" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -r | --remote)
+      remote="$2"
+      shift
+      ;;
+    -*)
+      syntax_error "unrecognized option: $1"
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
 
 pull_remote() { # pull changes if local branch is behind
   last_commit_local=$(git rev-parse refs/heads/master)
