@@ -2,22 +2,49 @@
 
 readonly program="$(basename "$0")"
 
+syntax_error() {
+  echo "$program: $1" >&2
+  echo "Try \`$program --help\` for more information." >&2
+  exit 1
+}
+
 commit_hash_file="/tmp/prfix_hash_save"
 issue_number_file="/tmp/prfix_issue_number_save"
 
 usage() {
   echo "
-  usage: $program [-h] [-c] <github_pull_request_url>
+  usage: $program [-h] [-r <remote>] [-c] <github_pull_request_url>
 
-  Every option should be used on its own, without the others.
-    <github_pull_request_url>
-      Should be the complete url. Use this first, to apply the pull request as a patch.
-    -c [remote]
-      Use after making your fixes. If you use it with uncommitted changes, they'll all be squashed (fixup) into the original patch; else your commits will be preserved. Takes an optional remote to push to (defaults to \"origin\").
-    -h
-      Show this help.
+  options:
+    -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
+    -c, --continue                   Use after making your fixes, to push your changes. If you use it with uncommitted changes, they'll all be squashed (fixup) into the original patch; else your commits will be preserved.
+    -h, --help                       Show this help.
   " | sed -E 's/^ {2}//'
 }
+
+# available flags
+while [[ "$1" ]]; do
+  case "$1" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -r | --remote)
+      remote="$2"
+      shift
+      ;;
+    -c | --continue)
+      push_changes="yes"
+      ;;
+    -*)
+      syntax_error "unrecognized option: $1"
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
 
 apply_patch() {
   url=$(perl -pe 's/(.*\d).*/\1/' <<< "$1") # clean url of extraneous information
@@ -61,11 +88,11 @@ push_changes() {
   git branch -D "${branch_name}"
 }
 
+[[ -z "${remote}" ]] && remote='upstream' # use 'upstream' as default remote
+
 if [[ "$1" =~ https://github.com/* ]]; then
   apply_patch "$1"
-elif [[ "$1" == '-c' ]]; then
-  # if called with an argument, use that as the remote to push to; else use 'origin'
-  [[ -z "$2" ]] && remote="origin" || remote="$1"
+elif [[ "${push_changes}" == 'yes' ]]; then
   push_changes
 else
   usage
