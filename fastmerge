@@ -15,6 +15,12 @@ syntax_error() {
   exit 1
 }
 
+abort_patch() {
+  echo -e "\n$(tput setaf 1)There was an error applying the patch from ${issue_number}. Reverting to last successful state.$(tput sgr0)\n"
+  git reset --hard "${last_commit_remote}"
+  exit 1
+}
+
 depends_on ghi
 
 usage() {
@@ -64,6 +70,7 @@ apply_patch() {
   patch_url="${url}.patch" # github pull request url, ending in '.patch'
 
   curl --location --silent "${patch_url}" | git am # get and apply patch
+  [[ "$?" != 0 ]] && abort_patch # if applying the patch was unsuccessful, warn and revert state
 }
 
 push_and_close() {
