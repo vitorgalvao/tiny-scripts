@@ -19,32 +19,29 @@ fi
 
 # Use first argument as color
 # ---------------------------
-color=${1}
+color_name=${1}
 shift
 
-# Covert color name to appropriate number
+# Covert color name to appropriate index
 # Check if color is valid
-# ---------------------------------------
-is_valid_color="False"
-
+# --------------------------------------
 color_array=('none' 'orange' 'red' 'yellow' 'blue' 'purple' 'green' 'gray')
 
-for (( i = 0; i < ${#color_array[@]}; i++ )); do
-  if [[ "${color_array[$i]}" = "${color}" ]]; then
-    color="${i}"
-    is_valid_color="True"
+for i in "${!color_array[@]}"; do
+  if [[ "${color_array[$i]}" = "${color_name}" ]]; then
+    color_index="${i}"
   fi
 done
 
-if [[ "${is_valid_color}" = "False" ]]; then
-  echo "Please choose a valid color"
+if [[ -z "${color_index}" ]]; then
+  echo "Please choose a valid color."
   usage
   exit 1
 fi
 
 # Set the label
 # -------------
-osascript - "${color}" "$@" << EOF &>/dev/null
+osascript - "${color_index}" "$@" << EOF &>/dev/null
   on run argv
     set labelIndex to (item 1 of argv as number)
     repeat with i from 2 to (count of argv)
