@@ -23,12 +23,14 @@ depends_on convert
 # Shown with '-h', or when no arguments are given
 # -----------------------------------------------
 usage() {
-echo "usage: $program [-h] [-s <num>] [-e <num>] <input_files> <output_file>
+  echo "
+    usage: $program [options] <input_files> <output_file>
 
-options:
-   -h, --help                     Show this message
-   -s <num>, --start-rate <num>   The original frame rate of the movie that had the images (defaults to 60)
-   -e <num>, --end-rate <num>     The new frame rate the gif should have, so it's not slowed down (defaults to 10)"
+    options:
+       -s <num>, --start-rate <num>   The original frame rate of the movie that had the images (defaults to 60).
+       -e <num>, --end-rate <num>     The new frame rate the gif should have, so it's not slowed down (defaults to 10).
+       -h, --help                     Show this message.
+  " | sed -E 's/^ {4}//'
 }
 
 if [[ -z ${1} ]]; then

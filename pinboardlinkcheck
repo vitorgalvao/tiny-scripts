@@ -10,13 +10,15 @@ syntax_error() {
 
 # instructions
 usage() {
-  echo "usage: $program [-h] [-v] [-t <token>]
+  echo "
+    usage: $program [options]
 
-options:
-  -h, --help           Show this message
-  -v, --verbose        Show the status code for each link as it goes through it
-  -r, --redirect-log   If set, links with a 301 (Moved permanently) will be on their own log
-  -t, --token          Your Pinboard API token (if you don't set it, the script will ask for it)"
+    options:
+      -r, --redirect-log   If set, links with a 301 (Moved permanently) will be on their own log.
+      -t, --token          Your Pinboard API token (if you don't set it, the script will ask for it).
+      -v, --verbose        Show the status code for each link as it goes through it.
+      -h, --help           Show this message.
+  " | sed -E 's/^ {4}//'
 }
 
 # set color for verbose messages

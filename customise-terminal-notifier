@@ -10,12 +10,14 @@ syntax_error() {
 
 # instructions
 usage() {
-echo "usage: $program [-h] [-i <file>] [-b <bundleID>]
+  echo "
+    usage: $program -i <file> -b <bundle_id>
 
-options:
-  -h, --help                           Show this message
-  -i <file>, --icon <file>             Set the icon
-  -b <bundleID>, --bundle <bundleID>   Set the bundle id"
+    options:
+      -i <file>, --icon <file>               Set the icon.
+      -b <bundle_id>, --bundle <bundle_id>   Set the bundle id.
+      -h, --help                             Show this message.
+  " | sed -E 's/^ {4}//'
 }
 
 # set options

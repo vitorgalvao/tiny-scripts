@@ -13,13 +13,13 @@ syntax_error() {
 
 usage() {
   echo "
-  usage: $program [-h] [-r <remote>] [-c] <github_pull_request_url>
+    usage: $program [options] <github_pull_request_url>
 
-  options:
-    -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
-    -c, --continue                   Use after making your fixes, to push your changes. If you use it with uncommitted changes, they'll all be squashed (fixup) into the original patch; else your commits will be preserved.
-    -h, --help                       Show this help.
-  " | sed -E 's/^ {2}//'
+    options:
+      -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
+      -c, --continue                   Use after making your fixes, to push your changes. If you use it with uncommitted changes, they'll all be squashed (fixup) into the original patch; else your commits will be preserved.
+      -h, --help                       Show this help.
+  " | sed -E 's/^ {4}//'
 }
 
 # available flags

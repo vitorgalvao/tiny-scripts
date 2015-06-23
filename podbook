@@ -1,5 +1,6 @@
 #!/bin/bash
 
+IFS=$'\n'
 readonly program="$(basename "$0")"
 
 syntax_error() {
@@ -8,17 +9,17 @@ syntax_error() {
   exit 1
 }
 
-IFS=$'\n'
-
 # usage instructions
 usage() {
-echo "usage: $program [-h] [-i <dropbox_id>] [-t <title>] [-d <description>]
+  echo "
+    usage: $program [options]
 
-options:
-  -h, --help                                      Show this message
-  -i <dropbox_id>, --id <dropbox_id>              Set your dropbox Public diretory ID
-  -t <title>, --title <title>                     Set the podcast's title
-  -d <description>, --description <description>   Set the podcast's description"
+    options:
+      -i <dropbox_id>, --id <dropbox_id>              Set your dropbox Public diretory ID.
+      -t <title>, --title <title>                     Set the podcast's title.
+      -d <description>, --description <description>   Set the podcast's description.
+      -h, --help                                      Show this message.
+  " | sed -E 's/^ {4}//'
 }
 
 # options to use

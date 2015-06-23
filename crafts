@@ -5,20 +5,19 @@ CRAFTSCOPYFILE="/tmp/crafts-copyfile"
 CRAFTSCUTFILE="/tmp/crafts-cutfile"
 
 # usage
-crafts() {
-echo "usage:
-
-  ccrafts <input>    files and directories to copy (takes multiple arguments)
-  xcrafts <input>    files and directories to move (takes multiple arguments)
-  vcrafts <output>   directory to move and copy files and directories to
-                     (if no argument is given, it uses the current directory)
-  ecrafts            edits copy and move lists"
+usage() {
+echo "
+  usage: ccrafts <input>    Files and directories to copy (takes multiple arguments).
+         xcrafts <input>    Files and directories to move (takes multiple arguments).
+         vcrafts <output>   Directory to move and copy files and directories to (if no argument is given, it uses the current directory).
+         ecrafts            Edits copy and move lists.
+  " | sed -E 's/^ {4}//'
 }
 
 ccrafts() {
   # show usage if no argument is given
   if [[ -z "$1" ]]; then
-    crafts
+    usage
     kill -INT $$
   fi
 
@@ -31,7 +30,7 @@ ccrafts() {
 xcrafts() {
   # show usage if no argument is given
   if [[ -z "$1" ]]; then
-    crafts
+    usage
     kill -INT $$
   fi
 
@@ -46,7 +45,7 @@ vcrafts() {
 
   # show usage if more than one argument is given
   if [[ -n "$2" ]]; then
-    crafts
+    usage
     kill -INT $$
   fi
 

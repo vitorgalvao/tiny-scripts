@@ -6,10 +6,12 @@ readonly program="$(basename "$0")"
 # Shown with when no arguments are given
 # --------------------------------------
 usage() {
-echo "usage: $program <color> <files>
+  echo "
+    usage: $program <color> <files>
 
-Available color options:
-none (to remove label), orange, red, yellow, blue, purple, green, gray"
+    Available color options:
+      none (removes label), orange, red, yellow, blue, purple, green, gray
+  " | sed -E 's/^ {4}//'
 }
 
 if [[ -z ${1} ]]; then

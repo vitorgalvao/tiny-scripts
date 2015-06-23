@@ -14,18 +14,20 @@ IFS=$'\n'
 # Shown with '-h', or when no arguments are given
 # -----------------------------------------------
 usage() {
-echo "usage: $program [-h] [-s <num>] [-l <num>] [-p <string>] [-a <string>] [-v] <files>
+  echo "
+    usage: $program [options] <files>
 
-options:
-  -h, --help                          Show this message
-  -s <num>, --starting-number <num>   Sets starting number for the sequence (defaults to 1)
-  -l <num>, --sequence-length <num>   Sets sequence length (defaults to what'll accomodate the number of files)
-  -p <string>, --prepend <string>     Sets name to prepend to the sequence number (defaults to nothing)
-  -a <string>, --append <string>      Sets name to append to the sequence number (defaults to nothing)
-  -v, --verbose                       Be verbose"
+    options:
+      -s <num>, --starting-number <num>   Sets starting number for the sequence (defaults to 1).
+      -l <num>, --sequence-length <num>   Sets sequence length (defaults to what'll accomodate the number of files).
+      -p <string>, --prepend <string>     Sets name to prepend to the sequence number (defaults to nothing).
+      -a <string>, --append <string>      Sets name to append to the sequence number (defaults to nothing).
+      -v, --verbose                       Be verbose.
+      -h, --help                          Show this message.
+  " | sed -E 's/^ {4}//'
 }
 
-if [[ -z ${1} ]]; then
+if [[ -z "$1" ]]; then
   usage
   exit 1
 fi
