@@ -16,9 +16,13 @@ syntax_error() {
 }
 
 abort_patch() {
-  echo -e "\n$(tput setaf 1)There was an error applying the patch from ${issue_number}. Reverting to last successful state.$(tput sgr0)\n"
-  git reset --hard "${last_commit_remote}"
-  git am --abort
+  if [[ "$1" == 'revert' ]]; then
+    git reset --hard "${last_commit_remote}"
+    git am --abort
+    shift
+  fi
+
+  echo -e "\n$(tput setaf 1)$1$(tput sgr0)\n"
   exit 1
 }
 
@@ -55,6 +59,12 @@ while [[ "$1" ]]; do
   shift
 done
 
+check_repo() {
+  local_repo=$(git remote show origin -n | grep "Fetch URL:" | sed -E 's|^.*/(.*).git|\1|')
+  remote_repo=$(sed -E 's|.*/(.*)/pull.*|\1|' <<< "${url}")
+  [[ "${local_repo}" != "${remote_repo}" ]] && abort_patch "You're trying to pull from '${remote_repo}', but you're on '${local_repo}'."
+}
+
 pull_remote() { # pull changes if local branch is behind
   last_commit_local=$(git rev-parse refs/heads/master)
   last_commit_remote=$(git ls-remote "${remote}" --heads refs/heads/master | perl -pe 's/\s.*//')
@@ -62,16 +72,17 @@ pull_remote() { # pull changes if local branch is behind
 }
 
 apply_patch() {
+  url=$(perl -pe 's/(.*\d).*/\1/' <<< "$1") # clean url of extraneous information
+  issue_number=$(sed 's|.*/||' <<< "${url}")
+  patch_url="${url}.patch" # github pull request url, ending in '.patch'
+  check_repo
+
   current_branch=$(git rev-parse --abbrev-ref HEAD)
   [[ "${current_branch}" != 'master' ]] && git checkout master
   pull_remote
 
-  url=$(perl -pe 's/(.*\d).*/\1/' <<< "$1") # clean url of extraneous information
-  issue_number=$(sed 's|.*/||' <<< "${url}")
-  patch_url="${url}.patch" # github pull request url, ending in '.patch'
-
   curl --location --silent "${patch_url}" | git am # get and apply patch
-  [[ "$?" != 0 ]] && abort_patch # if applying the patch was unsuccessful, warn and revert state
+  [[ "$?" != 0 ]] && abort_patch 'revert' "There was an error applying the patch from ${issue_number}. Reverted to last successful state." # if applying the patch was unsuccessful, warn and revert state
 }
 
 push_and_close() {

@@ -54,6 +54,16 @@ while [[ "$1" ]]; do
   shift
 done
 
+check_repo() {
+  local_repo=$(git remote show origin -n | grep "Fetch URL:" | sed -E 's|^.*/(.*).git|\1|')
+  remote_repo=$(sed -E 's|.*/(.*)/pull.*|\1|' <<< "${url}")
+
+  if [[ "${local_repo}" != "${remote_repo}" ]]; then
+    echo -e "\n$(tput setaf 1)You're trying to pull from '${remote_repo}' but you're on '${local_repo}'.$(tput sgr0)\n"
+    exit 1
+  fi
+}
+
 pull_remote() { # pull changes if local branch is behind
   last_commit_local=$(git rev-parse refs/heads/master)
   last_commit_remote=$(git ls-remote "${remote}" --heads refs/heads/master | perl -pe 's/\s.*//')
@@ -61,13 +71,14 @@ pull_remote() { # pull changes if local branch is behind
 }
 
 apply_patch() {
-  current_branch=$(git rev-parse --abbrev-ref HEAD)
-  [[ "${current_branch}" != 'master' ]] && git checkout master
-  pull_remote
-
   url=$(perl -pe 's/(.*\d).*/\1/' <<< "$1") # clean url of extraneous information
   issue_number=$(sed 's|.*/||' <<< "${url}")
   patch_url="${url}.patch" # github pull request url, ending in '.patch'
+  check_repo
+
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
+  [[ "${current_branch}" != 'master' ]] && git checkout master
+  pull_remote
 
   curl --location --silent "${patch_url}" | git am # get and apply patch
 
