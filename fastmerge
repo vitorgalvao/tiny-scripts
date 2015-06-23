@@ -1,6 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "$0")"
+remote='upstream' # use 'upstream' as default remote
 
 depends_on() {
   if [[ ! $(which "${1}") ]]; then
@@ -9,24 +10,13 @@ depends_on() {
   fi
 }
 
+depends_on ghi
+
 syntax_error() {
   echo "$program: $1" >&2
   echo "Try \`$program --help\` for more information." >&2
   exit 1
 }
-
-abort_patch() {
-  if [[ "$1" == 'revert' ]]; then
-    git reset --hard "${last_commit_remote}"
-    git am --abort
-    shift
-  fi
-
-  echo -e "\n$(tput setaf 1)$1$(tput sgr0)\n"
-  exit 1
-}
-
-depends_on ghi
 
 usage() {
   echo "
@@ -58,6 +48,17 @@ while [[ "$1" ]]; do
   esac
   shift
 done
+
+abort_patch() {
+  if [[ "$1" == 'revert' ]]; then
+    git reset --hard "${last_commit_remote}"
+    git am --abort
+    shift
+  fi
+
+  echo -e "\n$(tput setaf 1)$1$(tput sgr0)\n"
+  exit 1
+}
 
 check_repo() {
   local_repo=$(git remote show origin -n | grep "Fetch URL:" | sed -E 's|^.*/(.*).git|\1|')
@@ -91,8 +92,6 @@ push_and_close() {
 
   ghi close --message "Thank you for the contribution. It was merged directly as ${last_commit_local} to keep commit history cleaner. Your contribution is still credited to you." "${issue_number}"
 }
-
-[[ -z "${remote}" ]] && remote='upstream' # use 'upstream' as default remote
 
 while [[ "$1" ]]; do # allow for multiple github PR urls to be passed at once
   if [[ "$1" =~ https://github.com/* ]]; then

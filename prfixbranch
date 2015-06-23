@@ -1,15 +1,15 @@
 #!/bin/bash
 
 readonly program="$(basename "$0")"
+readonly commit_hash_file="/tmp/prfix_hash_save"
+readonly issue_number_file="/tmp/prfix_issue_number_save"
+remote='upstream' # use 'upstream' as default remote
 
 syntax_error() {
   echo "$program: $1" >&2
   echo "Try \`$program --help\` for more information." >&2
   exit 1
 }
-
-commit_hash_file="/tmp/prfix_hash_save"
-issue_number_file="/tmp/prfix_issue_number_save"
 
 usage() {
   echo "
@@ -98,8 +98,6 @@ push_changes() {
   git checkout master
   git branch -D "${branch_name}"
 }
-
-[[ -z "${remote}" ]] && remote='upstream' # use 'upstream' as default remote
 
 if [[ "$1" =~ https://github.com/* ]]; then
   apply_patch "$1"

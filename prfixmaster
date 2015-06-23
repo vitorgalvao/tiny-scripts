@@ -1,6 +1,8 @@
 #!/bin/bash
 
 readonly program="$(basename "$0")"
+readonly issue_number_file='/tmp/prfixmaster_issue_number_save'
+remote='upstream' # use 'upstream' as default remote
 
 depends_on() {
   if [[ ! $(which "${1}") ]]; then
@@ -9,15 +11,13 @@ depends_on() {
   fi
 }
 
+depends_on ghi
+
 syntax_error() {
   echo "$program: $1" >&2
   echo "Try \`$program --help\` for more information." >&2
   exit 1
 }
-
-depends_on ghi
-
-issue_number_file='/tmp/prfixmaster_issue_number_save'
 
 usage() {
   echo "
@@ -107,8 +107,6 @@ push_and_close() {
 
   ghi close --message "Thank you for the contribution. It needed some fixes, so they were made in ${last_commit_local}. Your contribution is still included (and still credited to you), with the appropriate modifications. Please feel free to ask about any of the changes." "${original_issue}"
 }
-
-[[ -z "${remote}" ]] && remote='upstream' # use 'upstream' as default remote
 
 if [[ "$1" =~ https://github.com/* ]]; then
   apply_patch "$1"
