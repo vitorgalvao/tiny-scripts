@@ -18,6 +18,7 @@ syntax_error() {
 abort_patch() {
   echo -e "\n$(tput setaf 1)There was an error applying the patch from ${issue_number}. Reverting to last successful state.$(tput sgr0)\n"
   git reset --hard "${last_commit_remote}"
+  git am --abort
   exit 1
 }
 
