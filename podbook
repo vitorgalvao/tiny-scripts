@@ -87,7 +87,7 @@ file_types() {
   find . -depth 1 -type f -name '*.m4a' -or -name '*.mp3' -or -name '*.mov' -or -name '*.mp4' -or -name '*.m4v' -or -name '*.pdf' -or -name '*.epub'
 }
 
-# get fist jpg of png in the directory for the artwork
+# get fist jpg or png in the directory for the artwork
 artwork=$(find . -depth 1 -type f -name '*jpg' -or -name '*jpeg' -or -name '*png' | head -1 | xargs basename | perl -MHTML::Entities -CS -pe'$_ = encode_entities($_, "&<")')
 
 # functions to write the xml
