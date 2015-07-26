@@ -23,6 +23,7 @@ usage() {
     usage: $program [options] <github_pull_request_url>
 
     options:
+      -m, --maintainer                 Use when merging a contribution from a maintainer.
       -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
       -h, --help                       Show this help.
   " | sed -E 's/^ {4}//'
@@ -34,6 +35,9 @@ while [[ "$1" ]]; do
     -h | --help)
       usage
       exit 0
+      ;;
+    -m | --maintainer)
+      maintainer_pr='true'
       ;;
     -r | --remote)
       remote="$2"
@@ -90,7 +94,11 @@ push_and_close() {
   pull_remote
   git push "${remote}" master
 
-  ghi close --message "Thank you for the contribution. It was merged directly as ${last_commit_local} to keep commit history cleaner. Your contribution is still credited to you." "${issue_number}"
+  if [[ "${maintainer_pr}" == 'true' ]]; then
+    ghi close --message "Merged as ${last_commit_local}." "${issue_number}"
+  else
+    ghi close --message "Thank you for the contribution. It was merged directly as ${last_commit_local} to keep commit history cleaner. Your contribution is still credited to you." "${issue_number}"
+  fi
 }
 
 while [[ "$1" ]]; do # allow for multiple github PR urls to be passed at once
