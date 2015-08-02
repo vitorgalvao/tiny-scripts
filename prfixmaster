@@ -55,7 +55,7 @@ while [[ "$1" ]]; do
 done
 
 check_repo() {
-  local_repo=$(git remote show origin -n | grep "Fetch URL:" | sed -E 's|^.*/(.*).git|\1|')
+  local_repo=$(git remote show origin -n | grep "Fetch URL:" | sed -E 's|^.*/([^(\.git)]*)(\.git)?|\1|')
   remote_repo=$(sed -E 's|.*/(.*)/pull.*|\1|' <<< "${url}")
 
   if [[ "${local_repo}" != "${remote_repo}" ]]; then
