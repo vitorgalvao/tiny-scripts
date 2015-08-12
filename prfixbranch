@@ -57,7 +57,7 @@ check_repo() {
 }
 
 apply_patch() {
-  url=$(perl -pe 's/(.*\d).*/\1/' <<< "$1") # clean url of extraneous information
+  url=$(perl -pe 's|(.*/pull/\d+).*|\1|' <<< "$1") # clean url of extraneous information
   issue_number=$(sed 's|.*/||' <<< "${url}")
   patch_url="${url}.patch" # github pull request url, ending in '.patch'
   check_repo
