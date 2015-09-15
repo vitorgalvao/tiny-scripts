@@ -65,7 +65,7 @@ abort_patch() {
 }
 
 check_repo() {
-  local_repo=$(git remote show origin -n | grep "Fetch URL:" | sed -E 's|^.*/(.*).git|\1|')
+  local_repo=$(git remote show origin -n | grep "Fetch URL:" | sed 's|.*/||;s|\.git$||')
   remote_repo=$(sed -E 's|.*/(.*)/pull.*|\1|' <<< "${url}")
   [[ "${local_repo}" != "${remote_repo}" ]] && abort_patch "You're trying to pull from '${remote_repo}', but you're on '${local_repo}'."
 }
