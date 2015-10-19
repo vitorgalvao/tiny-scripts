@@ -3,14 +3,15 @@
 readonly program="$(basename "$0")"
 remote='upstream' # use 'upstream' as default remote
 
-depends_on() {
-  if [[ ! $(which "${1}") ]]; then
-    echo -e >&2 "\n$(tput setaf 1)This script requires ${1}. Please install it first.$(tput sgr0)\n"
-    exit 1
-  fi
-}
-
-depends_on ghi
+# check if 'ghi' is installed and configured
+if [[ ! $(which 'ghi') ]] || [[ "$(ghi 2>&1 | grep 'Authorization required.')" ]]; then
+  echo -e "$(tput setaf 1)
+    This script requires 'ghi' installed and configured.
+    If you have [Homebrew](http://brew.sh), you can install it with 'brew install ghi'.
+    To configure it, run 'ghi config --auth <username>'. Your Github password will be required, but is never stored.
+  $(tput sgr0)" | sed -E 's/ {4}//' >&2
+  exit 1
+fi
 
 syntax_error() {
   echo "$program: $1" >&2
