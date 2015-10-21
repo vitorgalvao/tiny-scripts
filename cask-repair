@@ -12,7 +12,7 @@ syntax_error() {
 
 usage() {
   echo "
-    usage: $program [options] <github_pull_request_url>
+    usage: $program [options] <cask_name>
 
     options:
       -l <remote>, --pull <remote>   Use to specify a remote to pull from (defaults to 'upstream').
