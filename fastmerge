@@ -102,6 +102,12 @@ push_and_close() {
   fi
 }
 
+# exit if no argument was given
+if [[ -z "$1" ]]; then
+  usage
+  exit 1
+fi
+
 while [[ "$1" ]]; do # allow for multiple github PR urls to be passed at once
   if [[ "$1" =~ https://github.com/* ]]; then
     apply_patch "$1"
