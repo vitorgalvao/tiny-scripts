@@ -14,9 +14,9 @@ usage() {
     usage: $program -i <file> -b <bundle_id>
 
     options:
-      -i <file>, --icon <file>               Set the icon.
-      -b <bundle_id>, --bundle <bundle_id>   Set the bundle id.
-      -h, --help                             Show this message.
+      -i <file>, --icon <file>               Set the icon (can be either an 'icns' or an image format, like 'png')
+      -b <bundle_id>, --bundle <bundle_id>   Set the bundle id
+      -h, --help                             Show this message
   " | sed -E 's/^ {4}//'
 }
 
@@ -42,22 +42,43 @@ while [[ "$1" ]]; do
   shift
 done
 
+function make_icns() {
+  local file="$1"
+  local iconset="$(mktemp -d)"
+  local output_icon="$(mktemp).icns"
+
+  sips --resampleHeightWidth 16 16 "${file}" --out "${iconset}/icon_16x16.png" &> /dev/null
+  sips --resampleHeightWidth 32 32 "${file}" --out "${iconset}/icon_16x16@2x.png" &> /dev/null
+  sips --resampleHeightWidth 32 32 "${file}" --out "${iconset}/icon_32x32.png" &> /dev/null
+  sips --resampleHeightWidth 64 64 "${file}" --out "${iconset}/icon_32x32@2x.png" &> /dev/null
+  sips --resampleHeightWidth 128 128 "${file}" --out "${iconset}/icon_128x128.png" &> /dev/null
+  sips --resampleHeightWidth 256 256 "${file}" --out "${iconset}/icon_128x128@2x.png" &> /dev/null
+  sips --resampleHeightWidth 256 256 "${file}" --out "${iconset}/icon_256x256.png" &> /dev/null
+  sips --resampleHeightWidth 512 512 "${file}" --out "${iconset}/icon_256x256@2x.png" &> /dev/null
+  sips --resampleHeightWidth 512 512 "${file}" --out "${iconset}/icon_512x512.png" &> /dev/null
+  sips --resampleHeightWidth 1024 1024 "${file}" --out "${iconset}/icon_512x512@2x.png" &> /dev/null
+
+  mv "${iconset}" "${iconset}.iconset"
+  iconutil -c icns "${iconset}.iconset" --output "${output_icon}"
+
+  echo "${output_icon}" # so its path is returned when the function ends
+}
+
 # stop executing if an option is missing
 if [[ -z "${icon}" ]] || [[ -z "${id}" ]]; then usage && exit 1; fi
 
 # set variables
-tn_version="$(curl --location --silent 'https://github.com/alloy/terminal-notifier/releases.atom' | grep '<title>' | sed -n 2p | perl -pe 's|.*<title>(.*)</title>.*|\1|')"
-tmp_dir="/tmp/terminal-notifier$RANDOM"
+tn_version="$(curl --location --silent 'https://github.com/alloy/terminal-notifier/releases.atom' | grep '<title>' | sed -n 2p | sed -E 's|.*<title>(.*)</title>.*|\1|')"
+tmp_dir="$(mktemp -d -t 'terminal-notifier')"
 app="${tmp_dir}/terminal-notifier-${tn_version}/terminal-notifier.app"
-mkdir "${tmp_dir}"
 
 # get terminal notifier
-curl "https://github.com/alloy/terminal-notifier/releases/download/${tn_version}/terminal-notifier-${tn_version}.zip" -Lo "${tmp_dir}/terminal-notifier.zip"
-unzip "${tmp_dir}/terminal-notifier.zip" -d "${tmp_dir}"
+curl --progress-bar --location "https://github.com/alloy/terminal-notifier/releases/download/${tn_version}/terminal-notifier-${tn_version}.zip" | ditto -xk - "${tmp_dir}"
 
 # set icon and bundle id
+[[ "${icon}" != *'.icns' ]] && icon=$(make_icns "${icon}") # convert icon, if not already 'icns'
 cp "${icon}" "${app}/Contents/Resources/Terminal.icns"
 sed -i '' "s/nl.superalloy.oss.terminal-notifier/${id}/" "${app}/Contents/Info.plist"
 
-# move it to your Desktop
-mv "${app}" "${HOME}/Desktop/"
+# move it to the Desktop
+mv "${app}" "${HOME}/Desktop"
