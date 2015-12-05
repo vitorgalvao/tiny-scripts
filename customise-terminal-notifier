@@ -59,7 +59,7 @@ function make_icns() {
   sips --resampleHeightWidth 1024 1024 "${file}" --out "${iconset}/icon_512x512@2x.png" &> /dev/null
 
   mv "${iconset}" "${iconset}.iconset"
-  iconutil -c icns "${iconset}.iconset" --output "${output_icon}"
+  iconutil --convert icns "${iconset}.iconset" --output "${output_icon}"
 
   echo "${output_icon}" # so its path is returned when the function ends
 }
