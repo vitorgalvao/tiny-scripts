@@ -178,7 +178,7 @@ fi
 [[ -z "${cask_version}" ]] && finish abort 'You decided to abort'
 
 # change version and sha256, and calculate new sha256 if not using :latest version
-if [[ "${cask_version}" =~ ^:?latest$ ]]; then
+if [[ "${cask_version}" =~ ^:latest$ ]]; then
   modify_stanza 'version' ':latest'
   modify_stanza 'sha256' ':no_check'
 else
