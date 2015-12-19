@@ -63,6 +63,16 @@ sha_change() {
   # set sha256 as :no_check tempoparily, to prevent mismatch errors when fetching
   modify_stanza 'sha256' ':no_check'
 
+  # change appcast sha if appropriate
+  if [[ "${cask_appcast_url}" ]]; then
+      cask_appcast_sha=$(curl "${cask_appcast_url}"|shasum -a 256|sed 's| .*$||')
+      # abort if the appcast returns empty
+      if [[ "${cask_appcast_sha}" == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' ]]; then
+	  finish abort "Appcast url invalid or empty ${cask_appcast_url}"
+      fi
+      modify_stanza ':sha256 =>' "'${cask_appcast_sha}'"
+  fi
+
   rm -rf "$(brew --cache)" # clean homebrew's cache in advance
   brew cask fetch "${cask_file}"
   downloaded_file=$(find "$(brew --cache)" -type f)
@@ -127,6 +137,8 @@ git checkout -b "${cask_branch}"
 # check if cask's url is always up to date
 cask_old_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*)['\"].*|\1|")
 [[ "${cask_old_url}" =~ \#{version.*} ]] && cask_url_up_to_date='true'
+# get cask appcast url
+cask_appcast_url=$(grep "appcast ['\"].*['\"]" "${cask_file}" | sed -E "s|.*appcast ['\"](.*)['\"],?|\1|")
 
 # show cask's current state
 divide
