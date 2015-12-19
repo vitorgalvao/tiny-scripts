@@ -66,14 +66,14 @@ sha_change() {
   rm -rf "$(brew --cache)" # clean homebrew's cache in advance
   brew cask fetch "${cask_file}"
   downloaded_file=$(find "$(brew --cache)" -type f)
-  cask_sha=$(shasum -a 256 "${downloaded_file}" | awk '{ print $1 }')
+  cask_sha=$(shasum --algorithm 256 "${downloaded_file}" | awk '{ print $1 }')
 
   modify_stanza 'sha256' "'${cask_sha}'"
 }
 
 # define function to check and modify appcast's sha256
 appcast_sha_change() {
-  cask_appcast_sha=$(curl --silent "${cask_appcast_url}" | shasum -a 256 | awk '{ print $1 }')
+  cask_appcast_sha=$(curl --silent "${cask_appcast_url}" | shasum --algorithm 256 | awk '{ print $1 }')
 
   # abort if the appcast returns empty
   [[ "${cask_appcast_sha}" == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' ]] && finish abort "Appcast url invalid or empty '${cask_appcast_url}'"
@@ -156,8 +156,8 @@ else
   cask_url="$(pbpaste)"
 
   # check if the URL sends a 200 HTTP code, else abort
-  browser_headers="-H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'"
-  cask_status=$(curl -sIL "${browser_headers}" "${cask_url}" | grep '^HTTP' | tail -1 | perl -pe 's|.* (\d{3}) .*|\1|')
+  browser_headers="--header 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'"
+  cask_status=$(curl --silent --head --location "${browser_headers}" "${cask_url}" | grep '^HTTP' | tail -1 | perl -pe 's|.* (\d{3}) .*|\1|')
 
   # if the download URL is from github or bitbucket, fake the status code
   [[ "${cask_url}" =~ (github.com|bitbucket.org) ]] && cask_status='200'
@@ -212,7 +212,7 @@ done
 cask_version="$(brew cask _stanza version ${cask_file})"
 
 # commit, push, clean
-git commit "${cask_file}" -m "updated ${cask_name} (${cask_version})"
+git commit "${cask_file}" --message "updated ${cask_name} (${cask_version})"
 git push "${remote_push}" "${cask_branch}"
 
 # cleanup
