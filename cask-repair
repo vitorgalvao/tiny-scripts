@@ -1,8 +1,19 @@
 #!/bin/bash
 
 readonly program="$(basename "$0")"
+readonly submit_pr_to='caskroom:master'
 remote_pull='upstream' # use 'upstream' as default remote to pull from
 remote_push='origin' # use 'origin' as default remote to push to
+
+# check if 'hub' is installed and configured
+if [[ ! $(which 'hub') ]]; then
+  echo -e "$(tput setaf 1)
+    This script requires 'hub'.
+    If you have [Homebrew](http://brew.sh), you can install it with 'brew install hub'.
+    If it isn’t yet, it will ask to be configured at the appropriate step.
+  $(tput sgr0)" | sed -E 's/ {4}//' >&2
+  exit 1
+fi
 
 syntax_error() {
   echo "$program: $1" >&2
@@ -211,9 +222,10 @@ done
 # grab version as it ended up in the cask
 cask_version="$(brew cask _stanza version ${cask_file})"
 
-# commit, push, clean
-git commit "${cask_file}" --message "updated ${cask_name} (${cask_version})"
-git push "${remote_push}" "${cask_branch}"
+# commit, push, submit pull request, clean
+readonly commit_message="updated ${cask_name} (${cask_version})"
 
-# cleanup
+git commit "${cask_file}" --message "${commit_message}"
+git push "${remote_push}" "${cask_branch}"
+hub pull-request -b "${submit_pr_to}" -m "${commit_message}"
 finish success
