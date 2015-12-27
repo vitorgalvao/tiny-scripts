@@ -75,7 +75,7 @@ sha_change() {
   modify_stanza 'sha256' ':no_check'
 
   brew cask fetch "${cask_file}"
-  downloaded_file=$(find "$(brew --cache)" -type f -print0 | xargs -0 stat -f '%m %N' | sort --numeric-sort --reverse | head -1 | cut -d' ' -f2-) # last modified file in cache
+  downloaded_file=$(find "$(brew --cache)" -type f -print0 | xargs -0 /usr/bin/stat -f '%m %N' | sort --numeric-sort --reverse | head -1 | cut -d' ' -f2-) # last modified file in cache
   cask_sha=$(shasum --algorithm 256 "${downloaded_file}" | awk '{ print $1 }')
 
   modify_stanza 'sha256' "'${cask_sha}'"
