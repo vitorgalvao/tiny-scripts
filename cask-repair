@@ -166,8 +166,8 @@ else
   cask_url="$(pbpaste)"
 
   # check if the URL sends a 200 HTTP code, else abort
-  browser_headers="--header 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'"
-  cask_status=$(curl --silent --head --location "${browser_headers}" "${cask_url}" | grep '^HTTP' | tail -1 | perl -pe 's|.* (\d{3}) .*|\1|')
+  browser_headers='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'
+  cask_status=$(curl --silent --head --location --header "${browser_headers}" "${cask_url}" | grep '^HTTP' | tail -1 | perl -pe 's|.* (\d{3}) .*|\1|')
 
   # if the download URL is from github or bitbucket, fake the status code
   [[ "${cask_url}" =~ (github.com|bitbucket.org) ]] && cask_status='200'
