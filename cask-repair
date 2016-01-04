@@ -85,8 +85,8 @@ sha_change() {
 appcast_sha_change() {
   cask_appcast_sha=$(curl --silent "${cask_appcast_url}" | shasum --algorithm 256 | awk '{ print $1 }')
 
-  # abort if the appcast returns empty
-  [[ "${cask_appcast_sha}" == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' ]] && finish abort "Appcast url invalid or empty '${cask_appcast_url}'"
+  # set appcast's sha256 to empty, if it's url returns an empty string
+  [[ "${cask_appcast_sha}" == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' ]] && cask_appcast_sha=''
 
   modify_stanza ':sha256 =>' "'${cask_appcast_sha}'"
 }
