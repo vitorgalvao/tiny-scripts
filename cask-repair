@@ -75,7 +75,7 @@ sha_change() {
   modify_stanza 'sha256' ':no_check'
 
   brew cask fetch --force "${cask_file}"
-  downloaded_file=$(brew cask fetch "${cask_file}" | tail -1 | sed 's/==> Success! Downloaded to -> //')
+  downloaded_file=$(brew cask fetch "${cask_file}" 2>/dev/null | tail -1 | sed 's/==> Success! Downloaded to -> //')
   cask_sha=$(shasum --algorithm 256 "${downloaded_file}" | awk '{ print $1 }')
 
   modify_stanza 'sha256' "'${cask_sha}'"
