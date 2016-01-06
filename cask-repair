@@ -153,24 +153,27 @@ git checkout master
 git pull --rebase "${remote_pull}" master
 git checkout -b "${cask_branch}"
 
-# check if cask's url is always up to date
-cask_old_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*)['\"].*|\1|")
-[[ "${cask_old_url}" =~ \#{version.*} ]] && cask_url_up_to_date='true'
-
 # show cask's current state
 divide
 brew cask home "${cask_file}"
 cat "${cask_file}"
 divide
 
+# check if cask's url is always up to date
+cask_old_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*)['\"].*|\1|")
+[[ "${cask_old_url}" =~ \#{version.*} ]] && cask_url_up_to_date='true'
+
 # if url is always up to date, use it; else ask for it to be in the clipboard
 if [[ "${cask_url_up_to_date}" ]]; then
   read -p 'Type the new version (or leave blank to abort)
-> ' cask_version
+> ' given_cask_version
 else
   read -p 'Save the new download URL to your clipboard, and type the new version (or leave blank to abort)
-> ' cask_version
+> ' given_cask_version
   cask_url="$(pbpaste)"
+
+  # abort if no version was given
+  [[ -z "${given_cask_version}" ]] && finish abort 'You decided to abort'
 
   # check if the URL sends a 200 HTTP code, else abort
   local browser_headers='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'
@@ -191,15 +194,12 @@ else
   modify_stanza 'url' "'${cask_url}'"
 fi
 
-# check if a version was given
-[[ -z "${cask_version}" ]] && finish abort 'You decided to abort'
-
 # change version and sha256, and calculate new sha256 values as appropriate if not using :latest version
-if [[ "${cask_version}" =~ ^:latest$ ]]; then
+if [[ "${given_cask_version}" =~ ^:latest$ ]]; then
   modify_stanza 'version' ':latest'
   modify_stanza 'sha256' ':no_check'
 else
-  modify_stanza 'version' "'${cask_version}'"
+  modify_stanza 'version' "'${given_cask_version}'"
   update_cask_shas
 fi
 
@@ -225,10 +225,10 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
 done
 
 # grab version as it ended up in the cask
-cask_version="$(brew cask _stanza version ${cask_file})"
+final_cask_version="$(brew cask _stanza version ${cask_file})"
 
 # commit, push, submit pull request, clean
-readonly commit_message="updated ${cask_name} (${cask_version})"
+readonly commit_message="updated ${cask_name} (${final_cask_version})"
 
 git commit "${cask_file}" --message "${commit_message}"
 git push "${remote_push}" "${cask_branch}"
