@@ -79,6 +79,9 @@ modify_stanza() {
 
 # define function to check and modify sha256
 sha_change() {
+  local cask_sha_deliberatedly_unchecked=$(grep 'sha256 :no_check # required as upstream package is updated in-place' "${cask_file}")
+  [[ -n "${cask_sha_deliberatedly_unchecked}" ]] && return # abort function if cask deliberate uses ':no_check' with a version
+
   # set sha256 as :no_check tempoparily, to prevent mismatch errors when fetching
   modify_stanza 'sha256' ':no_check'
 
@@ -91,6 +94,9 @@ sha_change() {
 
 # define function to check and modify appcast's sha256
 appcast_sha_change() {
+  local cask_appcast_url=$(brew cask _stanza appcast "${cask_file}")
+  [[ -z "${cask_appcast_url}" ]] && return # abort function if cask does not have an appcast
+
   local cask_appcast_sha=$(curl --silent "${cask_appcast_url}" | shasum --algorithm 256 | awk '{ print $1 }')
   local cask_appcast_status=$(http_status "${cask_appcast_url}")
 
@@ -104,13 +110,10 @@ appcast_sha_change() {
   modify_stanza ':sha256 =>' "'${cask_appcast_sha}'"
 }
 
-# define function to update only the appropriate shas, give the conditions
+# define function to quickly call both sha changing functions
 update_cask_shas() {
-  local cask_sha_deliberatedly_unchecked=$(grep 'sha256 :no_check # required as upstream package is updated in-place' "${cask_file}")
-  cask_appcast_url=$(brew cask _stanza appcast "${cask_file}")
-
-  [[ -n "${cask_sha_deliberatedly_unchecked}" ]] && sha_change
-  [[ -n "${cask_appcast_url}" ]] && appcast_sha_change
+  sha_change
+  appcast_sha_change
 }
 
 # define abort function, that will reset the state
