@@ -93,10 +93,10 @@ appcast_sha_change() {
 
 # define function to update only the appropriate shas, give the conditions
 update_cask_shas() {
-  local cask_sha=$(brew cask _stanza sha256 "${cask_file}")
+  local cask_sha_deliberatedly_unchecked=$(grep 'sha256 :no_check # required as upstream package is updated in-place' "${cask_file}")
   cask_appcast_url=$(brew cask _stanza appcast "${cask_file}")
 
-  [[ "${cask_sha}" != ':no_check' ]] && sha_change
+  [[ -n "${cask_sha_deliberatedly_unchecked}" ]] && sha_change
   [[ -n "${cask_appcast_url}" ]] && appcast_sha_change
 }
 
