@@ -57,6 +57,14 @@ while [[ "$1" ]]; do
   shift
 done
 
+# define function to get HTTP status codes of URLs
+http_status() {
+  local url="$1"
+  local browser_headers='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'
+
+  curl --silent --head --location --header "${browser_headers}" "${url}" | grep '^HTTP' | tail -1 | perl -pe 's|.* (\d{3}) .*|\1|'
+}
+
 # define function to modify stanzas
 modify_stanza() {
   stanza_to_modify="$1"
@@ -84,9 +92,14 @@ sha_change() {
 # define function to check and modify appcast's sha256
 appcast_sha_change() {
   local cask_appcast_sha=$(curl --silent "${cask_appcast_url}" | shasum --algorithm 256 | awk '{ print $1 }')
+  local cask_appcast_status=$(http_status "${cask_appcast_url}")
 
   # set appcast's sha256 to empty, if its url returns an empty string
-  [[ "${cask_appcast_sha}" == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' ]] && cask_appcast_sha=''
+  if [[ "${cask_appcast_sha}" == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' ]]; then
+    cask_appcast_sha='appcast is probably incorrect, as an empty string was returned'
+  elif [[ "${cask_appcast_status}" != '200' ]]; then
+    cask_appcast_sha="appcast is probbly incorrect, as non-200 (OK) HTTP response code was returned (${cask_appcast_status})"
+  fi
 
   modify_stanza ':sha256 =>' "'${cask_appcast_sha}'"
 }
@@ -176,8 +189,7 @@ else
   [[ -z "${given_cask_version}" ]] && finish abort 'You decided to abort'
 
   # check if the URL sends a 200 HTTP code, else abort
-  local browser_headers='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'
-  local cask_status=$(curl --silent --head --location --header "${browser_headers}" "${cask_url}" | grep '^HTTP' | tail -1 | perl -pe 's|.* (\d{3}) .*|\1|')
+  local cask_status=$(http_status "${cask_url}")
 
   # if the download URL is from github or bitbucket, fake the status code
   [[ "${cask_url}" =~ (github.com|bitbucket.org) ]] && cask_status='200'
