@@ -1,6 +1,6 @@
 # Collection of small scripts
 
-The easiest way to get these is via [this repository](https://github.com/vitorgalvao/homebrew-tinyscripts), as the install will take care of any eventual dependencies that are not already available on your system.
+The easiest way to get these is via [this repository](https://github.com/vitorgalvao/homebrew-tiny-scripts), as the install will take care of any eventual dependencies that are not already available on your system.
 
 ### annotmd
 Script to convert .annot files to .md
