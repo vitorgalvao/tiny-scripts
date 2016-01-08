@@ -143,7 +143,7 @@ finish() {
     echo -e "\n$(tput setaf 1)$2$(tput sgr0)\n"
     exit 1
   elif [[ "$1" == 'success' ]]; then
-    echo -e "\n$(tput setaf 2)Submitted$(tput sgr0)\n"
+    echo -e "\n\n$(tput setaf 2)Submitted ($2)$(tput sgr0)\n"
     exit 0
   fi
 }
@@ -268,5 +268,5 @@ readonly commit_message="updated ${cask_name} (${final_cask_version})"
 
 git commit "${cask_file}" --message "${commit_message}" --quiet
 git push "${remote_push}" "${cask_branch}" --quiet
-hub pull-request -b "${submit_pr_to}" -m "${commit_message}"
-finish success
+pr_link=$(hub pull-request -b "${submit_pr_to}" -m "${commit_message}")
+finish success "${pr_link}"
