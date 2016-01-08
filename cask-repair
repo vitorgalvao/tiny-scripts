@@ -31,6 +31,7 @@ usage() {
       -p <remote>, --push <remote>   Use to specify a remote to push to (defaults to 'origin').
       -n, --no-home                  Do not open the homepage for the given cask.
       -a, --app-version              Give an app version directly, instead of being prompted for it.
+      -u, --app-url                  Give an app URL directly, instead of being prompted for it.
       -h, --help                     Show this help.
   " | sed -E 's/^ {4}//'
 }
@@ -55,6 +56,10 @@ while [[ "$1" ]]; do
       ;;
     -a | --app-version)
       given_cask_version="$2"
+      shift
+      ;;
+    -u | --app-url)
+      given_cask_url="$2"
       shift
       ;;
     -*)
@@ -202,10 +207,12 @@ fi
 
 # if url does not use interpolation, ask for it
 if [[ -z "${cask_url_up_to_date}" ]]; then
-  read -p 'Paste the new URL (or leave blank to abort)
+  if [[ -z "${given_cask_url}" ]]; then
+    read -p 'Paste the new URL (or leave blank to abort)
 > ' given_cask_url
 
-  [[ -z "${given_cask_url}" ]] && finish abort 'You decided to abort' # abort if no url was given
+    [[ -z "${given_cask_url}" ]] && finish abort 'You decided to abort' # abort if no url was given
+  fi
 
   # check if the URL sends a 200 HTTP code, else abort
   cask_status=$(http_status "${given_cask_url}" 'follow_redirects')
