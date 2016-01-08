@@ -189,8 +189,8 @@ else
 > ' given_cask_version
   cask_url="$(pbpaste)"
 
-  # abort if no version was given
-  [[ -z "${given_cask_version}" ]] && finish abort 'You decided to abort'
+  [[ -z "${given_cask_version}" ]] && finish abort 'You decided to abort' # abort if no version was given
+  [[ "${given_cask_version}" == 'latest' ]] && given_cask_version=':latest' # allow both ':latest' and 'latest' to be given
 
   # check if the URL sends a 200 HTTP code, else abort
   cask_status=$(http_status "${cask_url}" 'follow_redirects')
