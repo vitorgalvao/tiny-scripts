@@ -119,9 +119,9 @@ update_cask_shas() {
 
 # define abort function, that will reset the state
 finish() {
-  git reset HEAD --hard
-  git checkout master
-  git branch -D "${cask_branch}"
+  git reset HEAD --hard --quiet
+  git checkout master --quiet
+  git branch -D "${cask_branch}" --quiet
 
   # show message
   if [[ "$1" == 'abort' ]]; then
@@ -166,9 +166,9 @@ cask_branch="update-${cask_name}"
 [[ ! -f "${cask_file}" ]] && finish abort 'There is no such cask'
 
 # initial tasks
-git checkout master
-git pull --rebase "${remote_pull}" master
-git checkout -b "${cask_branch}"
+git checkout master --quiet
+git pull --rebase "${remote_pull}" master --quiet
+git checkout -b "${cask_branch}" --quiet
 
 # show cask's current state
 divide
@@ -226,6 +226,7 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
   brew cask audit "${cask_file}"
 
   git diff
+  divide
 
   read -n1 -p 'Is everything correct? You can also make further manual edits (y/n/e) ' cask_updated
 
@@ -246,7 +247,7 @@ final_cask_version="$(brew cask _stanza version ${cask_file})"
 # commit, push, submit pull request, clean
 readonly commit_message="updated ${cask_name} (${final_cask_version})"
 
-git commit "${cask_file}" --message "${commit_message}"
-git push "${remote_push}" "${cask_branch}"
+git commit "${cask_file}" --message "${commit_message}" --quiet
+git push "${remote_push}" "${cask_branch}" --quiet
 hub pull-request -b "${submit_pr_to}" -m "${commit_message}"
 finish success
