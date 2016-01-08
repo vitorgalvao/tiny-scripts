@@ -197,8 +197,7 @@ cask_old_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*
 
 # ask for cask version, if not given previously
 if [[ -z "${given_cask_version}" ]]; then
-  read -p 'Type the new version (or leave blank to abort)
-> ' given_cask_version
+  read -p $'Type the new version (or leave blank to abort)\n> ' given_cask_version
 
   [[ -z "${given_cask_version}" ]] && finish abort 'You decided to abort' # abort if no version was given
 fi
@@ -208,8 +207,7 @@ fi
 # if url does not use interpolation, ask for it
 if [[ -z "${cask_url_up_to_date}" ]]; then
   if [[ -z "${given_cask_url}" ]]; then
-    read -p 'Paste the new URL (or leave blank to abort)
-> ' given_cask_url
+    read -p $'Paste the new URL (or leave blank to abort)\n> ' given_cask_url
 
     [[ -z "${given_cask_url}" ]] && finish abort 'You decided to abort' # abort if no url was given
   fi
