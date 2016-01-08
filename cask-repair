@@ -233,7 +233,7 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
     break
   elif [[ "${cask_updated}" == 'e' ]]; then
     open -W "${cask_file}"
-    [[ "$(brew cask _stanza version ${cask_file})" != ':latest' ]] && update_cask_shas # recheck sha256 values if version isn't :latest
+    [[ "$(brew cask _stanza version ${cask_file})" != 'latest' ]] && update_cask_shas # recheck sha256 values if version isn't :latest
     cask_updated='false'
   elif [[ "${cask_updated}" == 'n' ]]; then
     finish abort 'You decided to abort'
