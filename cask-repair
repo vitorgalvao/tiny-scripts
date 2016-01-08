@@ -6,11 +6,11 @@ remote_pull='upstream' # use 'upstream' as default remote to pull from
 remote_push='origin' # use 'origin' as default remote to push to
 
 # check if 'hub' is installed and configured
-if [[ ! $(which 'hub') ]]; then
+if [[ ! $(which 'hub') ]] || [[ ! $(grep 'oauth_token:' "${HOME}/.config/hub" 2>/dev/null) ]]; then
   echo -e "$(tput setaf 1)
-    This script requires 'hub'.
+    This script requires 'hub' installed and configured.
     If you have [Homebrew](http://brew.sh), you can install it with 'brew install hub'.
-    If it isn’t yet, it will ask to be configured at the appropriate step.
+    To configure it, run 'cd $(brew --repository) && hub issue'. Your Github password will be required, but is never stored.
   $(tput sgr0)" | sed -E 's/ {4}//' >&2
   exit 1
 fi
