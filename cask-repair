@@ -212,21 +212,21 @@ if [[ -z "${cask_url_up_to_date}" ]]; then
     [[ -z "${given_cask_url}" ]] && finish abort 'You decided to abort' # abort if no url was given
   fi
 
+  modify_stanza 'url' "'${given_cask_url}'"
+  cask_url=$(brew cask _stanza url "${cask_file}")
+
   # check if the URL sends a 200 HTTP code, else abort
-  cask_status=$(http_status "${given_cask_url}" 'follow_redirects')
+  cask_url_status=$(http_status "${cask_url}" 'follow_redirects')
 
-  [[ "${given_cask_url}" =~ (github.com|bitbucket.org) ]] && cask_status='200' # if the download URL is from github or bitbucket, fake the status code
+  [[ "${cask_url}" =~ (github.com|bitbucket.org) ]] && cask_url_status='200' # if the download URL is from github or bitbucket, fake the status code
 
-  if [[ "${cask_status}" != '200' ]]; then
-    if [[ -z "${cask_status}" ]]; then
+  if [[ "${cask_url_status}" != '200' ]]; then
+    if [[ -z "${cask_url_status}" ]]; then
       finish abort 'You need to paste a valid URL'
     else
-      finish abort "Download URL returned ${cask_status}"
+      finish abort "Download URL returned ${cask_url_status}"
     fi
   fi
-
-  # modify url
-  modify_stanza 'url' "'${given_cask_url}'"
 fi
 
 # change version and sha256, and calculate new sha256 values as appropriate if not using :latest version
