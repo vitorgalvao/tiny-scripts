@@ -78,7 +78,7 @@ http_status() {
   [[ "$2" == 'follow_redirects' ]] && local follow_redirects='--location' || local follow_redirects='--no-location'
   local browser_headers='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'
 
-  curl --silent --head "${follow_redirects}" --header "${browser_headers}" "${url}" | grep '^HTTP' | tail -1 | perl -pe 's|.* (\d{3}) .*|\1|'
+  curl --silent --head "${follow_redirects}" --header "${browser_headers}" --write-out '%{http_code}' "${url}" -o '/dev/null'
 }
 
 # define function to check if a given string contains ruby-style interpolation
