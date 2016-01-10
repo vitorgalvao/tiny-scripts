@@ -30,8 +30,8 @@ usage() {
       -l <remote>, --pull <remote>   Use to specify a remote to pull from (defaults to 'upstream').
       -p <remote>, --push <remote>   Use to specify a remote to push to (defaults to 'origin').
       -n, --no-home                  Do not open the homepage for the given cask.
-      -a, --app-version              Give an app version directly, instead of being prompted for it.
-      -u, --app-url                  Give an app URL directly, instead of being prompted for it.
+      -v, --cask-version             Give a version directly, instead of being prompted for it.
+      -u, --cask-url                 Give a URL directly, instead of being prompted for it.
       -h, --help                     Show this help.
   " | sed -E 's/^ {4}//'
 }
