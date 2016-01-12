@@ -221,9 +221,9 @@ cask_bare_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.
 # if url does not use interpolation, ask for it
 if [[ "${cask_url_uses_interpolation}" == 'false' ]]; then
   if [[ -z "${given_cask_url}" ]]; then
-    read -p $'Paste the new URL (or leave blank to abort)\n> ' given_cask_url
+    read -p $'Paste the new URL (or leave blank to use the current one)\n> ' given_cask_url
 
-    [[ -z "${given_cask_url}" ]] && finish abort 'You decided to abort' # abort if no url was given
+    [[ -z "${given_cask_url}" ]] && given_cask_url=$(brew cask _stanza url "${cask_file}")
   fi
 
   [[ $(has_interpolation "${given_cask_url}") == 'true' ]] && modify_stanza 'url' "\"${given_cask_url}\"" || modify_stanza 'url' "'${given_cask_url}'" # use appropriate quotes depending on if a url with interpolation was given
