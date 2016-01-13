@@ -123,7 +123,7 @@ appcast_sha_change() {
   local cask_appcast_url=$(brew cask _stanza appcast "${cask_file}")
   [[ -z "${cask_appcast_url}" ]] && return # abort function if cask does not have an appcast
 
-  local cask_appcast_sha=$(curl --silent "${cask_appcast_url}" | shasum --algorithm 256 | awk '{ print $1 }')
+  local cask_appcast_sha=$(curl --silent "${cask_appcast_url}" | sed 's|<pubDate>[^<]*</pubDate>||g' | shasum --algorithm 256 | awk '{ print $1 }')
   local cask_appcast_status=$(http_status "${cask_appcast_url}" 'no_follow_redirects')
 
   # set appcast's sha256 to empty, if its url returns an empty string
