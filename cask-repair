@@ -129,7 +129,7 @@ appcast_checkpoint_change() {
   if [[ "${cask_appcast_checkpoint}" == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' ]]; then
     cask_appcast_checkpoint='appcast is probably incorrect, as an empty string was returned'
   elif [[ "${cask_appcast_status}" != '200' ]]; then
-    cask_appcast_checkpoint="appcast is probaly incorrect, as non-200 (OK) HTTP response code was returned (${cask_appcast_status})"
+    cask_appcast_checkpoint="appcast is probably incorrect, as a non-200 (OK) HTTP response code was returned (${cask_appcast_status})"
   fi
 
   modify_stanza ':checkpoint =>' "'${cask_appcast_checkpoint}'"
