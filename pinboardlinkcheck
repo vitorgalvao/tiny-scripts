@@ -66,7 +66,7 @@ links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}"
 
 # check each link individually
 for page in ${links} ; do
-  status=$(curl --silent --output /dev/null --write-out "%{http_code}" "${page}")
+  status=$(curl --silent --output /dev/null --write-out '%{http_code}' "${page}")
 
   # show ouptut if '-v' is set
   if [[ -n "${verbose}" ]]; then
@@ -96,7 +96,7 @@ if [[ -n "${redirect_log}" ]]; then
   redirectlinks=$(cat "${log_file}" | grep '^301' | sed 's/^301 //')
 
   for page in ${redirectlinks}; do
-    redirect_url=$(curl --silent --output /dev/null --write-out "%{redirect_url}" "${page}")
+    redirect_url=$(curl --silent --output /dev/null --write-out '%{redirect_url}' "${page}")
     echo "${page} → ${redirect_url}"
     echo "${page} → ${redirect_url}" >> "${redirect_log_file}"
   done
