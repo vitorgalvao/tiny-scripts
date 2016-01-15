@@ -54,11 +54,11 @@ while [[ "$1" ]]; do
     -n | --no-home)
       open_home='false'
       ;;
-    -a | --app-version)
+    -v | --cask-version)
       given_cask_version="$2"
       shift
       ;;
-    -u | --app-url)
+    -u | --cask-url)
       given_cask_url="$2"
       shift
       ;;
