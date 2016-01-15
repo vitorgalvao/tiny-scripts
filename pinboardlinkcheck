@@ -1,6 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "$0")"
+readonly browser_headers=(--header 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36')
 
 syntax_error() {
   echo "$program: $1" >&2
@@ -66,7 +67,7 @@ links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}"
 
 # check each link individually
 for page in ${links} ; do
-  status=$(curl --silent --output /dev/null --write-out '%{http_code}' "${page}")
+  status=$(curl --silent "${browser_headers[@]}" --write-out '%{http_code}' --output /dev/null "${page}")
 
   # show ouptut if '-v' is set
   if [[ -n "${verbose}" ]]; then
@@ -96,7 +97,7 @@ if [[ -n "${redirect_log}" ]]; then
   redirectlinks=$(cat "${log_file}" | grep '^301' | sed 's/^301 //')
 
   for page in ${redirectlinks}; do
-    redirect_url=$(curl --silent --output /dev/null --write-out '%{redirect_url}' "${page}")
+    redirect_url=$(curl --silent "${browser_headers[@]}" --write-out '%{redirect_url}' --output /dev/null "${page}")
     echo "${page} → ${redirect_url}"
     echo "${page} → ${redirect_url}" >> "${redirect_log_file}"
   done
