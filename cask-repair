@@ -176,11 +176,13 @@ if [[ -z "${casks_dir}" ]]; then
   exit 1
 fi
 
-# exit if no argument was given
+# exit if no argument or more than one argument was given
 if [[ -z "$1" ]]; then
   usage
   exit 1
 fi
+
+[[ -n "$2" ]] && 'finish abort "You can only give one cask argument per run"'
 
 # clean the cask's name, and check if it is valid
 cask_name="$1"
