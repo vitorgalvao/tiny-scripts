@@ -15,9 +15,8 @@ usage() {
     usage: $program [options]
 
     options:
-      -r, --redirect-log   If set, links with a 301 (Moved permanently) will be on their own log.
+      -r, --redirect-log   If set, links with 301 (Moved permanently) will be on their own log.
       -t, --token          Your Pinboard API token (if you don't set it, the script will ask for it).
-      -v, --verbose        Show the status code for each link as it goes through it.
       -h, --help           Show this message.
   " | sed -E 's/^ {4}//'
 }
@@ -33,9 +32,6 @@ while [[ "$1" ]]; do
     -h | --help)
       usage
       exit 0
-      ;;
-    -v | --verbose)
-      verbose="true"
       ;;
     -r | --redirect-log)
       redirect_log="true"
@@ -69,15 +65,12 @@ links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}"
 for page in ${links} ; do
   status=$(curl --silent "${browser_headers[@]}" --write-out '%{http_code}' --output /dev/null "${page}")
 
-  # show ouptut if '-v' is set
-  if [[ -n "${verbose}" ]]; then
-    if [[ "${status:0:1}" == '2' ]]; then
-      good "${status}" "${page}"
-    elif [[ "${status:0:1}" == '3' ]]; then
-      warning "${status}" "${page}"
-    else
-      bad "${status}" "${page}"
-    fi
+  if [[ "${status:0:1}" == '2' ]]; then
+    good "${status}" "${page}"
+  elif [[ "${status:0:1}" == '3' ]]; then
+    warning "${status}" "${page}"
+  else
+    bad "${status}" "${page}"
   fi
 
   # append to log file
