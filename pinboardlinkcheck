@@ -16,7 +16,8 @@ usage() {
 
     options:
       -r, --redirect-log    If set, links with 301 (Moved permanently) will be on their own log.
-      -t, --token <token>   Your Pinboard API token (if you don't set it, the script will ask for it).
+      -t, --token <token>   Your Pinboard API token.
+      -a, --ask-for-token   Ask for your Pinboard API token on start.
       -h, --help            Show this message.
   " | sed -E 's/^ {4}//'
 }
@@ -34,11 +35,14 @@ while [[ "$1" ]]; do
       exit 0
       ;;
     -r | --redirect-log)
-      redirect_log="true"
+      redirect_log='true'
       ;;
     -t | --token)
       token="$1"
       shift
+      ;;
+    -a | --ask-for-token)
+      ask_for_token='true'
       ;;
     -*)
       syntax_error "unrecognized option: $1"
@@ -51,11 +55,17 @@ done
 log_file="${HOME}/pinboardlinkcheck.log"
 [[ -n "${redirect_log}" ]] && redirect_log_file="${HOME}/pinboardlinkcheck-redirects.log"
 
-# ask for api key, if needed
-if [[ -z "${token}" ]]; then
-  echo 'Please insert your api key'
+# ask for api token, if option is set
+if [[ -n "${ask_for_token}" ]]; then
+  echo 'Please insert your api token'
   echo 'You can get it at https://pinboard.in/settings/password'
   read -p '> ' token
+fi
+
+# exit if no token was set
+if [[ -z "${token}" ]]; then
+  usage
+  exit 1
 fi
 
 # get all your pinboard links
