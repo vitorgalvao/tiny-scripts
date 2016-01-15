@@ -15,9 +15,9 @@ usage() {
     usage: $program [options]
 
     options:
-      -r, --redirect-log   If set, links with 301 (Moved permanently) will be on their own log.
-      -t, --token          Your Pinboard API token (if you don't set it, the script will ask for it).
-      -h, --help           Show this message.
+      -r, --redirect-log    If set, links with 301 (Moved permanently) will be on their own log.
+      -t, --token <token>   Your Pinboard API token (if you don't set it, the script will ask for it).
+      -h, --help            Show this message.
   " | sed -E 's/^ {4}//'
 }
 
