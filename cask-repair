@@ -250,23 +250,22 @@ fi
 cask_updated='false'
 until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
   # fix style errors and audit cask
-  brew cask style --fix "${cask_file}"
-  brew cask audit "${cask_file}"
+  brew cask style --fix "${cask_file}" &>/dev/null
+  brew cask audit "${cask_file}" &>/dev/null
   audit_result="$?"
 
   git diff
   divide
 
+  if [[ "${audit_result}" != '0' ]]; then
+    brew cask audit "${cask_file}"
+    divide
+  fi
+
   read -n1 -p 'Is everything correct? You can also make further manual edits (y/n/e) ' cask_updated
 
   if [[ "${cask_updated}" == 'y' ]]; then
-    if [[ "${audit_result}" != '0' ]]; then
-      echo "\n"
-      brew cask audit "${cask_file}"
-      cask_updated='false'
-    else
-      break
-    fi
+    [[ "${audit_result}" != '0' ]] && cask_updated='false' || break
   elif [[ "${cask_updated}" == 'e' ]]; then
     [[ -n "${EDITOR}" ]] && "${EDITOR}" "${cask_file}" || open -W "${cask_file}" # open cask in appropriate editor
     [[ "$(is_version_latest)" == 'false' ]] && update_cask_shas # recheck sha256 values if version isn't :latest
