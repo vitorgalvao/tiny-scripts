@@ -32,6 +32,7 @@ usage() {
       -n, --no-home                  Do not open the homepage for the given cask.
       -v, --cask-version             Give a version directly, instead of being prompted for it.
       -u, --cask-url                 Give a URL directly, instead of being prompted for it.
+      -b, --blind-submit             Submit cask without asking for confirmation, if it passes audit.
       -h, --help                     Show this help.
   " | sed -E 's/^ {4}//'
 }
@@ -61,6 +62,9 @@ while [[ "$1" ]]; do
     -u | --cask-url)
       given_cask_url="$2"
       shift
+      ;;
+    -b | --blind-submit)
+      cask_updated='y'
       ;;
     -*)
       syntax_error "unrecognized option: $1"
@@ -247,7 +251,7 @@ fi
 [[ "$(is_version_latest)" == 'false' ]] && update_cask_shas || modify_stanza 'sha256' ':no_check' # calculate new sha256 values
 
 # check if everything is alright, else abort
-cask_updated='false'
+[[ -z "${cask_updated}" ]] && cask_updated='false'
 until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
   # fix style errors and audit cask
   brew cask style --fix "${cask_file}" &>/dev/null
