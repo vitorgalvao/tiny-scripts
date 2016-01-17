@@ -249,7 +249,8 @@ fi
 # check if everything is alright, else abort
 cask_updated='false'
 until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
-  # audit cask
+  # fix style errors and audit cask
+  brew cask style --fix "${cask_file}"
   brew cask audit "${cask_file}"
 
   git diff
