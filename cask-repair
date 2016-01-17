@@ -252,6 +252,7 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
   # fix style errors and audit cask
   brew cask style --fix "${cask_file}"
   brew cask audit "${cask_file}"
+  brew cask style --fix "${cask_file}"
 
   git diff
   divide
