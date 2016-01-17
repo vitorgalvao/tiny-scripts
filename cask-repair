@@ -4,7 +4,7 @@ readonly program="$(basename "$0")"
 readonly submit_pr_to='caskroom:master'
 remote_pull='upstream' # use 'upstream' as default remote to pull from
 remote_push='origin' # use 'origin' as default remote to push to
-open_home='true' # by default, open the cask's homepage
+open_home='false' # by default, do not open the cask's homepage
 
 # check if 'hub' is installed and configured
 if [[ ! $(which 'hub') ]] || [[ ! $(grep 'oauth_token:' "${HOME}/.config/hub" 2>/dev/null) ]]; then
@@ -29,7 +29,7 @@ usage() {
     options:
       -l <remote>, --pull <remote>   Use to specify a remote to pull from (defaults to 'upstream').
       -p <remote>, --push <remote>   Use to specify a remote to push to (defaults to 'origin').
-      -n, --no-home                  Do not open the homepage for the given cask.
+      -o, --open-home                Open the homepage for the given cask.
       -v, --cask-version             Give a version directly, instead of being prompted for it.
       -u, --cask-url                 Give a URL directly, instead of being prompted for it.
       -b, --blind-submit             Submit cask without asking for confirmation, if it passes audit.
@@ -52,8 +52,8 @@ while [[ "$1" ]]; do
       remote_push="$2"
       shift
       ;;
-    -n | --no-home)
-      open_home='false'
+    -o | --open-home)
+      open_home='true'
       ;;
     -v | --cask-version)
       given_cask_version="$2"
