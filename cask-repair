@@ -261,7 +261,7 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
   if [[ "${cask_updated}" == 'y' ]]; then
     break
   elif [[ "${cask_updated}" == 'e' ]]; then
-    open -W "${cask_file}"
+    [[ -n "${EDITOR}" ]] && "${EDITOR}" "${cask_file}" || open -W "${cask_file}" # open cask in appropriate editor
     [[ "$(is_version_latest)" == 'false' ]] && update_cask_shas # recheck sha256 values if version isn't :latest
     cask_updated='false'
   elif [[ "${cask_updated}" == 'n' ]]; then
