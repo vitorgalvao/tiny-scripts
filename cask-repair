@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly program="$(basename "$0")"
+readonly program="$(basename "${0}")"
 readonly submit_pr_to='caskroom:master'
 remote_pull='upstream' # use 'upstream' as default remote to pull from
 remote_push='origin' # use 'origin' as default remote to push to
@@ -18,14 +18,14 @@ if [[ ! $(which 'hub') ]] || [[ ! $(grep 'oauth_token:' "${HOME}/.config/hub" 2>
 fi
 
 syntax_error() {
-  echo "$program: $1" >&2
-  echo "Try \`$program --help\` for more information." >&2
+  echo "${program}: ${1}" >&2
+  echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
 usage() {
   echo "
-    usage: $program [options] <cask_name>
+    usage: ${program} [options] <cask_name>
 
     options:
       -l <remote>, --pull <remote>   Use to specify a remote to pull from (defaults to 'upstream').
@@ -40,18 +40,18 @@ usage() {
 }
 
 # available flags
-while [[ "$1" ]]; do
-  case "$1" in
+while [[ "${1}" ]]; do
+  case "${1}" in
     -h | --help)
       usage
       exit 0
       ;;
     -l | --pull)
-      remote_pull="$2"
+      remote_pull="${2}"
       shift
       ;;
     -p | --push)
-      remote_push="$2"
+      remote_push="${2}"
       shift
       ;;
     -o | --open-home)
@@ -61,18 +61,18 @@ while [[ "$1" ]]; do
       show_appcast='true'
       ;;
     -v | --cask-version)
-      given_cask_version="$2"
+      given_cask_version="${2}"
       shift
       ;;
     -u | --cask-url)
-      given_cask_url="$2"
+      given_cask_url="${2}"
       shift
       ;;
     -b | --blind-submit)
       cask_updated='y'
       ;;
     -*)
-      syntax_error "unrecognized option: $1"
+      syntax_error "unrecognized option: ${1}"
       ;;
     *)
       break
@@ -83,8 +83,8 @@ done
 
 # define function to get HTTP status codes of URLs
 http_status() {
-  local url="$1"
-  [[ "$2" == 'follow_redirects' ]] && local follow_redirects='--location' || local follow_redirects='--no-location'
+  local url="${1}"
+  [[ "${2}" == 'follow_redirects' ]] && local follow_redirects='--location' || local follow_redirects='--no-location'
   local browser_headers=(--header 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36')
 
   curl --silent --head "${follow_redirects}" "${browser_headers[@]}" --write-out '%{http_code}' "${url}" -o '/dev/null'
@@ -92,7 +92,7 @@ http_status() {
 
 # define function to check if a given string contains ruby-style interpolation
 has_interpolation() {
-  [[ "$1" =~ \#{version.*} ]] && echo 'true' || echo 'false'
+  [[ "${1}" =~ \#{version.*} ]] && echo 'true' || echo 'false'
 }
 
 # define function to check if cask is using :latest version
@@ -102,8 +102,8 @@ is_version_latest() {
 
 # define function to modify stanzas
 modify_stanza() {
-  stanza_to_modify="$1"
-  new_stanza_value="$2"
+  stanza_to_modify="${1}"
+  new_stanza_value="${2}"
 
   perl -0777 -i -e'
     $stanza_to_modify = shift(@ARGV);
@@ -120,26 +120,30 @@ cask_appcast_info() {
 
 # define function to check and modify sha256
 sha_change() {
-  local cask_sha_deliberatedly_unchecked=$(grep 'sha256 :no_check # required as upstream package is updated in-place' "${cask_file}")
+  local cask_sha_deliberatedly_unchecked downloaded_file package_sha
+
+  cask_sha_deliberatedly_unchecked=$(grep 'sha256 :no_check # required as upstream package is updated in-place' "${cask_file}")
   [[ -n "${cask_sha_deliberatedly_unchecked}" ]] && return # abort function if cask deliberate uses ':no_check' with a version
 
   # set sha256 as :no_check tempoparily, to prevent mismatch errors when fetching
   modify_stanza 'sha256' ':no_check'
 
   brew cask fetch --force "${cask_file}"
-  local downloaded_file=$(brew cask fetch "${cask_file}" 2>/dev/null | tail -1 | sed 's/==> Success! Downloaded to -> //')
-  local package_sha=$(shasum --algorithm 256 "${downloaded_file}" | awk '{ print $1 }')
+  downloaded_file=$(brew cask fetch "${cask_file}" 2>/dev/null | tail -1 | sed 's/==> Success! Downloaded to -> //')
+  package_sha=$(shasum --algorithm 256 "${downloaded_file}" | awk '{ print $1 }')
 
   modify_stanza 'sha256' "'${package_sha}'"
 }
 
 # define function to check and modify appcast's checkpoint sha256
 appcast_checkpoint_change() {
+  local cask_appcast_checkpoint cask_appcast_status
+
   cask_appcast_info
   [[ "${cask_has_appcast}" == 'false' ]] && return # abort function if cask does not have an appcast
 
-  local cask_appcast_checkpoint=$(curl --silent --compressed "${cask_appcast_url}" | sed 's|<pubDate>[^<]*</pubDate>||g' | shasum --algorithm 256 | awk '{ print $1 }')
-  local cask_appcast_status=$(http_status "${cask_appcast_url}" 'no_follow_redirects')
+  cask_appcast_checkpoint=$(curl --silent --compressed "${cask_appcast_url}" | sed 's|<pubDate>[^<]*</pubDate>||g' | shasum --algorithm 256 | awk '{ print $1 }')
+  cask_appcast_status=$(http_status "${cask_appcast_url}" 'no_follow_redirects')
 
   if [[ "${cask_appcast_checkpoint}" == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' ]]; then
     cask_appcast_checkpoint='appcast is probably incorrect, as an empty string was returned'
@@ -163,11 +167,11 @@ finish() {
   git branch -D "${cask_branch}" --quiet
 
   # show message
-  if [[ "$1" == 'abort' ]]; then
-    echo -e "\n$(tput setaf 1)$2$(tput sgr0)\n"
+  if [[ "${1}" == 'abort' ]]; then
+    echo -e "\n$(tput setaf 1)${2}$(tput sgr0)\n"
     exit 1
-  elif [[ "$1" == 'success' ]]; then
-    echo -e "\n\n$(tput setaf 2)Submitted ($2)$(tput sgr0)\n"
+  elif [[ "${1}" == 'success' ]]; then
+    echo -e "\n\n$(tput setaf 2)Submitted (${2})$(tput sgr0)\n"
     exit 0
   fi
 }
@@ -192,15 +196,15 @@ if [[ -z "${casks_dir}" ]]; then
 fi
 
 # exit if no argument or more than one argument was given
-if [[ -z "$1" ]]; then
+if [[ -z "${1}" ]]; then
   usage
   exit 1
 fi
 
-[[ -n "$2" ]] && 'finish abort "You can only give one cask argument per run"'
+[[ -n "${2}" ]] && 'finish abort "You can only give one cask argument per run"'
 
 # clean the cask's name, and check if it is valid
-cask_name="$1"
+cask_name="${1}"
 [[ "${cask_name}" == *'.rb' ]] && cask_name=$(echo "${cask_name}" | sed 's|\.rb$||')
 cask_file="./${cask_name}.rb"
 cask_branch="update-${cask_name}"
