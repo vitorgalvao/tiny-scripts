@@ -112,6 +112,12 @@ modify_stanza() {
   ' "${stanza_to_modify}" "${new_stanza_value}" "${cask_file}"
 }
 
+# define function to get appcast url and existence
+cask_appcast_info() {
+  cask_appcast_url=$(brew cask _stanza appcast "${cask_file}")
+  [[ -n "${cask_appcast_url}" ]] && cask_has_appcast='true' || cask_has_appcast='false'
+}
+
 # define function to check and modify sha256
 sha_change() {
   local cask_sha_deliberatedly_unchecked=$(grep 'sha256 :no_check # required as upstream package is updated in-place' "${cask_file}")
@@ -129,6 +135,7 @@ sha_change() {
 
 # define function to check and modify appcast's checkpoint sha256
 appcast_checkpoint_change() {
+  cask_appcast_info
   [[ "${cask_has_appcast}" == 'false' ]] && return # abort function if cask does not have an appcast
 
   local cask_appcast_checkpoint=$(curl --silent --compressed "${cask_appcast_url}" | sed 's|<pubDate>[^<]*</pubDate>||g' | shasum --algorithm 256 | awk '{ print $1 }')
@@ -207,9 +214,8 @@ git checkout -b "${cask_branch}" --quiet
 # open home and appcast
 [[ "${show_home}" == 'true' ]] && brew cask home "${cask_file}"
 
-cask_appcast_url=$(brew cask _stanza appcast "${cask_file}")
-[[ -n "${cask_appcast_url}" ]] && cask_has_appcast='true' || cask_has_appcast == 'false'
-[[ "${cask_has_appcast}" == 'true' ]] && [[ "${show_appcast}" == 'true' ]] && open $(brew cask _stanza appcast "${cask_file}")
+cask_appcast_info
+[[ "${cask_has_appcast}" == 'true' ]] && [[ "${show_appcast}" == 'true' ]] && open "$(brew cask _stanza appcast "${cask_file}")"
 
 # show cask's current state
 divide
