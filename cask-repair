@@ -4,8 +4,8 @@ readonly program="$(basename "$0")"
 readonly submit_pr_to='caskroom:master'
 remote_pull='upstream' # use 'upstream' as default remote to pull from
 remote_push='origin' # use 'origin' as default remote to push to
-open_home='false' # by default, do not open the cask's homepage
-open_appcast='false' # by default, do not open the cask's appcast
+show_home='false' # by default, do not open the cask's homepage
+show_appcast='false' # by default, do not open the cask's appcast
 
 # check if 'hub' is installed and configured
 if [[ ! $(which 'hub') ]] || [[ ! $(grep 'oauth_token:' "${HOME}/.config/hub" 2>/dev/null) ]]; then
@@ -55,10 +55,10 @@ while [[ "$1" ]]; do
       shift
       ;;
     -o | --open-home)
-      open_home='true'
+      show_home='true'
       ;;
     -a | --open-appcast)
-      open_appcast='true'
+      show_appcast='true'
     -v | --cask-version)
       given_cask_version="$2"
       shift
@@ -204,11 +204,11 @@ git pull --rebase "${remote_pull}" master --quiet
 git checkout -b "${cask_branch}" --quiet
 
 # open home and appcast
-[[ "${open_home}" == 'true' ]] && brew cask home "${cask_file}"
+[[ "${show_home}" == 'true' ]] && brew cask home "${cask_file}"
 
 cask_appcast_url=$(brew cask _stanza appcast "${cask_file}")
 [[ -n "${cask_appcast_url}" ]] && cask_has_appcast='true' || cask_has_appcast == 'false'
-[[ "${cask_has_appcast}" == 'true' ]] && [[ "${open_appcast}" == 'true' ]] && open $(brew cask _stanza appcast "${cask_file}")
+[[ "${cask_has_appcast}" == 'true' ]] && [[ "${show_appcast}" == 'true' ]] && open $(brew cask _stanza appcast "${cask_file}")
 
 # show cask's current state
 divide
