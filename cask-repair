@@ -140,7 +140,7 @@ appcast_checkpoint_change() {
     cask_appcast_checkpoint="appcast is probably incorrect, as a non-200 (OK) HTTP response code was returned (${cask_appcast_status})"
   fi
 
-  modify_stanza ':checkpoint =>' "'${cask_appcast_checkpoint}'"
+  modify_stanza 'checkpoint:' "'${cask_appcast_checkpoint}'"
 }
 
 # define function to quickly call both sha changing functions
