@@ -1,18 +1,18 @@
 #!/bin/bash
 
-readonly program="$(basename "$0")"
+readonly program="$(basename "${0}")"
 readonly browser_headers=(--header 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36')
 
 syntax_error() {
-  echo "$program: $1" >&2
-  echo "Try \`$program --help\` for more information." >&2
+  echo "${program}: ${1}" >&2
+  echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
 # instructions
 usage() {
   echo "
-    usage: $program [options]
+    usage: ${program} [options]
 
     options:
       -r, --redirect-log    If set, links with 301 (Moved permanently) will be on their own log.
@@ -28,8 +28,8 @@ good() { echo "$(tput setab 2)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
 warning() { echo "$(tput setab 3)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
 
 # set options
-while [[ "$1" ]]; do
-  case "$1" in
+while [[ "${1}" ]]; do
+  case "${1}" in
     -h | --help)
       usage
       exit 0
@@ -38,14 +38,14 @@ while [[ "$1" ]]; do
       redirect_log='true'
       ;;
     -t | --token)
-      token="$1"
+      token="${1}"
       shift
       ;;
     -a | --ask-for-token)
       ask_for_token='true'
       ;;
     -*)
-      syntax_error "unrecognized option: $1"
+      syntax_error "unrecognized option: ${1}"
       ;;
   esac
   shift

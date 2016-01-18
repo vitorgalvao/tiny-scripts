@@ -16,26 +16,26 @@ echo "
 
 ccrafts() {
   # show usage if no argument is given
-  if [[ -z "$1" ]]; then
+  if [[ -z "${1}" ]]; then
     usage
     kill -INT $$
   fi
 
   # make sure directory names don't end in '/'
   for arg; do
-    echo "$PWD/${arg#./}" | sed 's/\/$//' >> "${CRAFTSCOPYFILE}"
+    echo "${PWD}/${arg#./}" | sed 's/\/$//' >> "${CRAFTSCOPYFILE}"
   done
 }
 
 xcrafts() {
   # show usage if no argument is given
-  if [[ -z "$1" ]]; then
+  if [[ -z "${1}" ]]; then
     usage
     kill -INT $$
   fi
 
   for arg; do
-    echo "$PWD/${arg#./}" >> "${CRAFTSCUTFILE}"
+    echo "${PWD}/${arg#./}" >> "${CRAFTSCUTFILE}"
   done
 }
 
@@ -44,14 +44,14 @@ vcrafts() {
   IFS=$'\n'
 
   # show usage if more than one argument is given
-  if [[ -n "$2" ]]; then
+  if [[ -n "${2}" ]]; then
     usage
     kill -INT $$
   fi
 
   # set output location
-  if [[ -n "$1" ]]; then
-    crafts_out_dir="$1"
+  if [[ -n "${1}" ]]; then
+    crafts_out_dir="${1}"
   else
     crafts_out_dir="."
   fi

@@ -1,17 +1,17 @@
 #!/bin/bash
 
-readonly program="$(basename "$0")"
+readonly program="$(basename "${0}")"
 
 syntax_error() {
-  echo "$program: $1" >&2
-  echo "Try \`$program --help\` for more information." >&2
+  echo "${program}: ${1}" >&2
+  echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
 # instructions
 usage() {
   echo "
-    usage: $program -i <file> -b <bundle_id>
+    usage: ${program} -i <file> -b <bundle_id>
 
     options:
       -i <file>, --icon <file>               Set the icon (can be either an 'icns' or an image format, like 'png')
@@ -21,29 +21,29 @@ usage() {
 }
 
 # set options
-while [[ "$1" ]]; do
-  case "$1" in
+while [[ "${1}" ]]; do
+  case "${1}" in
     -h | --help)
       usage
       exit 0
       ;;
     -i | --icon)
-      icon="$2"
+      icon="${2}"
       shift
       ;;
     -b | --bundle)
-      id="$2"
+      id="${2}"
       shift
       ;;
     -*)
-      syntax_error "unrecognized option: $1"
+      syntax_error "unrecognized option: ${1}"
       ;;
   esac
   shift
 done
 
 function make_icns() {
-  local file="$1"
+  local file="${1}"
   local iconset="$(mktemp -d)"
   local output_icon="$(mktemp).icns"
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly program="$(basename "$0")"
+readonly program="$(basename "${0}")"
 remote='upstream' # use 'upstream' as default remote
 
 # check if 'ghi' is installed and configured
@@ -14,14 +14,14 @@ if [[ ! $(which 'ghi') ]] || ! security find-internet-password -s github.com -l 
 fi
 
 syntax_error() {
-  echo "$program: $1" >&2
-  echo "Try \`$program --help\` for more information." >&2
+  echo "${program}: ${1}" >&2
+  echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
 usage() {
   echo "
-    usage: $program [options] <github_pull_request_url>
+    usage: ${program} [options] <github_pull_request_url>
 
     Multiple <github_pull_request_url> can be given, and will be processed in sequence.
 
@@ -33,8 +33,8 @@ usage() {
 }
 
 # available flags
-while [[ "$1" ]]; do
-  case "$1" in
+while [[ "${1}" ]]; do
+  case "${1}" in
     -h | --help)
       usage
       exit 0
@@ -43,11 +43,11 @@ while [[ "$1" ]]; do
       maintainer_pr='true'
       ;;
     -r | --remote)
-      remote="$2"
+      remote="${2}"
       shift
       ;;
     -*)
-      syntax_error "unrecognized option: $1"
+      syntax_error "unrecognized option: ${1}"
       ;;
     *)
       break
@@ -57,13 +57,13 @@ while [[ "$1" ]]; do
 done
 
 abort_patch() {
-  if [[ "$1" == 'revert' ]]; then
+  if [[ "${1}" == 'revert' ]]; then
     git reset --hard "${last_commit_remote}"
     git am --abort
     shift
   fi
 
-  echo -e "\n$(tput setaf 1)$1$(tput sgr0)\n"
+  echo -e "\n$(tput setaf 1)${1}$(tput sgr0)\n"
   exit 1
 }
 
@@ -80,7 +80,7 @@ pull_remote() { # pull changes if local branch is behind
 }
 
 apply_patch() {
-  url=$(perl -pe 's|(.*/pull/\d+).*|\1|' <<< "$1") # clean url of extraneous information
+  url=$(perl -pe 's|(.*/pull/\d+).*|\1|' <<< "${1}") # clean url of extraneous information
   issue_number=$(sed 's|.*/||' <<< "${url}")
   patch_url="${url}.patch" # github pull request url, ending in '.patch'
   check_repo
@@ -105,14 +105,14 @@ push_and_close() {
 }
 
 # exit if no argument was given
-if [[ -z "$1" ]]; then
+if [[ -z "${1}" ]]; then
   usage
   exit 1
 fi
 
-while [[ "$1" ]]; do # allow for multiple github PR urls to be passed at once
-  if [[ "$1" =~ https://github.com/* ]]; then
-    apply_patch "$1"
+while [[ "${1}" ]]; do # allow for multiple github PR urls to be passed at once
+  if [[ "${1}" =~ https://github.com/* ]]; then
+    apply_patch "${1}"
     push_and_close
   else
     usage

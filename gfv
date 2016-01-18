@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly program="$(basename "$0")"
+readonly program="$(basename "${0}")"
 
 # This script depends on imagemagick and ffmpeg for the conversion
 # ----------------------------------------------------------------
@@ -18,25 +18,25 @@ depends_on ffmpeg
 # Shown when no arguments are given
 # -------------------------------------
 usage() {
-  echo "usage: $program <input_file> [<output_file>]"
+  echo "usage: ${program} <input_file> [<output_file>]"
 }
 
-if [[ -z $1 ]]; then
+if [[ -z ${1} ]]; then
   usage
   exit 1
 fi
 
 # Make gif next to original video, if no output name given
 # --------------------------------------------------------
-input_file="$1"
+input_file="${1}"
 
-if [[ -z $2 ]]; then
+if [[ -z ${2} ]]; then
   input_file_name=$(basename "${input_file}")
   input_file_no_extension=${input_file_name%.*}
   input_file_dir=$(dirname "${input_file}")
   output_file="${input_file_dir}/${input_file_no_extension}.gif"
 else
-  output_file="$2"
+  output_file="${2}"
 fi
 
 

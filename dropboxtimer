@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly program="$(basename "$0")"
+readonly program="$(basename "${0}")"
 
 IFS=$'\n'
 
@@ -8,7 +8,7 @@ IFS=$'\n'
 # Shown when insufficient arguments are given
 # -------------------------------------------
 usage() {
-  echo "usage: $program <number_of_days> <files>"
+  echo "usage: ${program} <number_of_days> <files>"
 }
 
 if [[ -z ${2} ]]; then
@@ -29,15 +29,15 @@ mkdir -p "${app_directory}/.DeleteScripts/"
 days_from_now="${1}"
 shift
 
-month=$(date -v +"$days_from_now"d +"%m")
-day=$(date -v +"$days_from_now"d +"%d")
-hour=$(date -v +"$days_from_now"d +"%H")
-minute=$(date -v +"$days_from_now"d +"%M")
+month=$(date -v +"${days_from_now}"d +"%m")
+day=$(date -v +"${days_from_now}"d +"%d")
+hour=$(date -v +"${days_from_now}"d +"%H")
+minute=$(date -v +"${days_from_now}"d +"%M")
 
 
 # Run main script
 # ---------------
-for original_file in "$@"
+for original_file in "${@}"
 do
 
   # Set the file's name
@@ -47,7 +47,7 @@ do
   if [[ -f "${app_directory}/${new_file}" ]]; then
     file_extension="${original_file##*.}"
     file_no_extension="${original_file%.*}"
-    new_file="$(basename ${file_no_extension})_$(date -v +"$days_from_now"d +"%Y-%m-%d_%Hh%M").${file_extension}"
+    new_file="$(basename ${file_no_extension})_$(date -v +"${days_from_now}"d +"%Y-%m-%d_%Hh%M").${file_extension}"
 
     echo "There's already a file named $(basename ${original_file}) in the directory, the new file will be renamed to ${new_file}"
   fi

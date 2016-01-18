@@ -1,10 +1,10 @@
 #!/bin/bash
 
-readonly program="$(basename "$0")"
+readonly program="$(basename "${0}")"
 
 syntax_error() {
-  echo "$program: $1" >&2
-  echo "Try \`$program --help\` for more information." >&2
+  echo "${program}: ${1}" >&2
+  echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
@@ -15,7 +15,7 @@ IFS=$'\n'
 # -----------------------------------------------
 usage() {
   echo "
-    usage: $program [options] <files>
+    usage: \$1 [options] <files>
 
     options:
       -s <num>, --starting-number <num>   Sets starting number for the sequence (defaults to 1).

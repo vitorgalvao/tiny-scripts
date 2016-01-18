@@ -1,18 +1,18 @@
 #!/bin/bash
 
 IFS=$'\n'
-readonly program="$(basename "$0")"
+readonly program="$(basename "${0}")"
 
 syntax_error() {
-  echo "$program: $1" >&2
-  echo "Try \`$program --help\` for more information." >&2
+  echo "${program}: ${1}" >&2
+  echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
 # usage instructions
 usage() {
   echo "
-    usage: $program [options]
+    usage: ${program} [options]
 
     options:
       -i <dropbox_id>, --id <dropbox_id>              Set your dropbox Public diretory ID.
@@ -23,26 +23,26 @@ usage() {
 }
 
 # options to use
-while [[ "$1" ]]; do
-  case "$1" in
+while [[ "${1}" ]]; do
+  case "${1}" in
     -h | --help)
       usage
       exit 0
       ;;
     -i | --id)
-      dropbox_id="$2"
+      dropbox_id="${2}"
       shift
       ;;
     -t | --title)
-      podcast_title="$2"
+      podcast_title="${2}"
       shift
       ;;
     -d | --description)
-      podcast_description="$2"
+      podcast_description="${2}"
       shift
       ;;
     -*)
-      syntax_error "unrecognized option: $1"
+      syntax_error "unrecognized option: ${1}"
       ;;
   esac
   shift
@@ -107,7 +107,7 @@ podcast_xml+="</channel>
 }
 
 xmlItem() {
-file_name=$(echo "$1" | sed 's|\./||' | perl -MHTML::Entities -CS -pe'$_ = encode_entities($_, "&<")')
+file_name=$(echo "${1}" | sed 's|\./||' | perl -MHTML::Entities -CS -pe'$_ = encode_entities($_, "&<")')
 item_title="${file_name%.*}"
 item_url="https://dl.dropboxusercontent.com/u/${dropbox_id}${current_dir}/${file_name}"
 

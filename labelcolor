@@ -1,13 +1,13 @@
 #!/bin/bash
 
-readonly program="$(basename "$0")"
+readonly program="$(basename "${0}")"
 
 # Instructions on how to use the script
 # Shown with when no arguments are given
 # --------------------------------------
 usage() {
   echo "
-    usage: $program <color> <files>
+    usage: ${program} <color> <files>
 
     Available color options:
       none (removes label), orange, red, yellow, blue, purple, green, gray
@@ -30,7 +30,7 @@ shift
 color_array=('none' 'orange' 'red' 'yellow' 'blue' 'purple' 'green' 'gray')
 
 for i in "${!color_array[@]}"; do
-  if [[ "${color_array[$i]}" = "${color_name}" ]]; then
+  if [[ "${color_array[${i}]}" = "${color_name}" ]]; then
     color_index="${i}"
   fi
 done
@@ -43,7 +43,7 @@ fi
 
 # Set the label
 # -------------
-osascript - "${color_index}" "$@" << EOF &>/dev/null
+osascript - "${color_index}" "${@}" << EOF &>/dev/null
   on run argv
     set labelIndex to (item 1 of argv as number)
     repeat with i from 2 to (count of argv)

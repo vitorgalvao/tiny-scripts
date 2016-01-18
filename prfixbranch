@@ -1,19 +1,19 @@
 #!/bin/bash
 
-readonly program="$(basename "$0")"
+readonly program="$(basename "${0}")"
 readonly commit_hash_file="/tmp/prfix_hash_save"
 readonly issue_number_file="/tmp/prfix_issue_number_save"
 remote='upstream' # use 'upstream' as default remote
 
 syntax_error() {
-  echo "$program: $1" >&2
-  echo "Try \`$program --help\` for more information." >&2
+  echo "${program}: ${1}" >&2
+  echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
 usage() {
   echo "
-    usage: $program [options] <github_pull_request_url>
+    usage: ${program} [options] <github_pull_request_url>
 
     options:
       -r <remote>, --remote <remote>   Use to specify a remote to push to (defaults to 'upstream').
@@ -23,21 +23,21 @@ usage() {
 }
 
 # available flags
-while [[ "$1" ]]; do
-  case "$1" in
+while [[ "${1}" ]]; do
+  case "${1}" in
     -h | --help)
       usage
       exit 0
       ;;
     -r | --remote)
-      remote="$2"
+      remote="${2}"
       shift
       ;;
     -c | --continue)
       push_changes="yes"
       ;;
     -*)
-      syntax_error "unrecognized option: $1"
+      syntax_error "unrecognized option: ${1}"
       ;;
     *)
       break
@@ -57,7 +57,7 @@ check_repo() {
 }
 
 apply_patch() {
-  url=$(perl -pe 's|(.*/pull/\d+).*|\1|' <<< "$1") # clean url of extraneous information
+  url=$(perl -pe 's|(.*/pull/\d+).*|\1|' <<< "${1}") # clean url of extraneous information
   issue_number=$(sed 's|.*/||' <<< "${url}")
   patch_url="${url}.patch" # github pull request url, ending in '.patch'
   check_repo
@@ -71,7 +71,7 @@ apply_patch() {
 
   echo "
     Make your necessary changes, and run
-      $program -c
+      ${program} -c
 
     If you have uncommitted changes, they'll be squashed into the original patch.
     If you have new commits, they’ll be included separately
@@ -99,8 +99,8 @@ push_changes() {
   git branch -D "${branch_name}"
 }
 
-if [[ "$1" =~ https://github.com/* ]]; then
-  apply_patch "$1"
+if [[ "${1}" =~ https://github.com/* ]]; then
+  apply_patch "${1}"
 elif [[ "${push_changes}" == 'yes' ]]; then
   push_changes
 else
