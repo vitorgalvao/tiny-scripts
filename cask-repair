@@ -59,6 +59,7 @@ while [[ "$1" ]]; do
       ;;
     -a | --open-appcast)
       show_appcast='true'
+      ;;
     -v | --cask-version)
       given_cask_version="$2"
       shift
