@@ -6,6 +6,7 @@ remote_pull='upstream' # use 'upstream' as default remote to pull from
 remote_push='origin' # use 'origin' as default remote to push to
 show_home='false' # by default, do not open the cask's homepage
 show_appcast='false' # by default, do not open the cask's appcast
+warning_messages=()
 
 # check if 'hub' is installed and configured
 if [[ ! $(which 'hub') ]] || [[ ! $(grep 'oauth_token:' "${HOME}/.config/hub" 2>/dev/null) ]]; then
@@ -146,9 +147,9 @@ appcast_checkpoint_change() {
   cask_appcast_status=$(http_status "${cask_appcast_url}" 'no_follow_redirects')
 
   if [[ "${cask_appcast_checkpoint}" == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' ]]; then
-    cask_appcast_checkpoint='appcast is probably incorrect, as an empty string was returned'
+    add_warning warning 'appcast is probably incorrect, as an empty string was returned'
   elif [[ "${cask_appcast_status}" != '200' ]]; then
-    cask_appcast_checkpoint="appcast is probably incorrect, as a non-200 (OK) HTTP response code was returned (${cask_appcast_status})"
+    add_warning warning "appcast is probably incorrect, as a non-200 (OK) HTTP response code was returned (${cask_appcast_status})"
   fi
 
   modify_stanza 'checkpoint:' "'${cask_appcast_checkpoint}'"
@@ -158,6 +159,27 @@ appcast_checkpoint_change() {
 update_cask_shas() {
   sha_change
   appcast_checkpoint_change
+}
+
+# define function to add warnings to be shown on review
+add_warning() {
+  local message severity color
+
+  severity="${1}"
+  message="${2}"
+
+  [[ "${severity}" == 'warning' ]] && color="$(tput setaf 3)•$(tput sgr0)" || color="$(tput setaf 1)•$(tput sgr0)"
+
+  warning_messages+=("${color} ${message}")
+}
+
+# define function to show warnings if there are any
+show_warnings() {
+  if [[ ${#warning_messages[@]} != '0' ]]; then
+    printf '%s\n' "${warning_messages[@]}"
+    warning_messages=()
+    divide
+  fi
 }
 
 # define abort function, that will reset the state
@@ -201,7 +223,7 @@ if [[ -z "${1}" ]]; then
   exit 1
 fi
 
-[[ -n "${2}" ]] && 'finish abort "You can only give one cask argument per run"'
+[[ -n "${2}" ]] && finish abort 'You can only give one cask argument per run'
 
 # clean the cask's name, and check if it is valid
 cask_name="${1}"
@@ -261,9 +283,9 @@ if [[ "${cask_url_uses_interpolation}" == 'false' ]]; then
 
   if [[ "${cask_url_status}" != '200' ]]; then
     if [[ -z "${cask_url_status}" ]]; then
-      finish abort 'You need to paste a valid URL'
+      add_warning warning 'you need to use a valid URL'
     else
-      finish abort "Download URL returned ${cask_url_status}"
+      add_warning warning "url is probably incorrect, as a non-200 (OK) HTTP response code was returned (${cask_url_status})"
     fi
   fi
 fi
@@ -273,18 +295,16 @@ fi
 # check if everything is alright, else abort
 [[ -z "${cask_updated}" ]] && cask_updated='false'
 until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
-  # fix style errors and audit cask
+  # fix style errors and check for audit errors
   brew cask style --fix "${cask_file}" &>/dev/null
-  brew cask audit "${cask_file}" &>/dev/null
+
+  audit_message=$(brew cask audit "${cask_file}" 2>/dev/null)
   audit_result="$?"
+  [[ "${audit_result}" != '0' ]] && add_warning error "${audit_message}"
 
   git diff
   divide
-
-  if [[ "${audit_result}" != '0' ]]; then
-    brew cask audit "${cask_file}"
-    divide
-  fi
+  show_warnings
 
   read -n1 -p 'Is everything correct? You can also make further manual edits (y/n/e) ' cask_updated
 
