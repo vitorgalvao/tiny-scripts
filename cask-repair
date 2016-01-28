@@ -35,6 +35,7 @@ usage() {
       -a, --open-appcast             Open the appcast for the given cask.
       -v, --cask-version             Give a version directly, instead of being prompted for it.
       -u, --cask-url                 Give a URL directly, instead of being prompted for it.
+      -c, --closes-issue <number>    Adds 'Closes #<number>.' to the commit message.
       -b, --blind-submit             Submit cask without asking for confirmation, if it passes audit.
       -h, --help                     Show this help.
   " | sed -E 's/^ {4}//'
@@ -67,6 +68,10 @@ while [[ "${1}" ]]; do
       ;;
     -u | --cask-url)
       given_cask_url="${2}"
+      shift
+      ;;
+    -c | --closes-issue)
+      issue_to_close="${2}"
       shift
       ;;
     -b | --blind-submit)
@@ -325,5 +330,5 @@ readonly commit_message="updated ${cask_name} (${cask_version})"
 
 git commit "${cask_file}" --message "${commit_message}" --quiet
 git push "${remote_push}" "${cask_branch}" --quiet
-pr_link=$(hub pull-request -b "${submit_pr_to}" -m "${commit_message}")
+[[ -z "${issue_to_close}" ]] && pr_link=$(hub pull-request -b "${submit_pr_to}" -m "${commit_message}") || pr_link=$(hub pull-request -b "${submit_pr_to}" -m "$(echo -e "updated ${cask_name} (${cask_version})\n\nCloses #${issue_to_close}.")")
 finish success "${pr_link}"
