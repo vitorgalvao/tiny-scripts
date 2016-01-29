@@ -331,4 +331,4 @@ readonly commit_message="updated ${cask_name} (${cask_version})"
 git commit "${cask_file}" --message "${commit_message}" --quiet
 git push "${remote_push}" "${cask_branch}" --quiet
 [[ -z "${issue_to_close}" ]] && pr_link=$(hub pull-request -b "${submit_pr_to}" -m "${commit_message}") || pr_link=$(hub pull-request -b "${submit_pr_to}" -m "$(echo -e "updated ${cask_name} (${cask_version})\n\nCloses #${issue_to_close}.")")
-finish success "${pr_link}"
+[[ -n "${pr_link}" ]] && finish success "${pr_link}" || finish abort 'There was an error submitting the pull request. Have you forked the repo and made sure the pull and push remotes exist?'
