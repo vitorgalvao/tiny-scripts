@@ -37,6 +37,7 @@ usage() {
       -u, --cask-url                 Give a URL directly, instead of being prompted for it.
       -c, --closes-issue <number>    Adds 'Closes #<number>.' to the commit message.
       -b, --blind-submit             Submit cask without asking for confirmation, if it passes audit.
+      -d, --delete-branches          Use with caution! Deletes all local and remote branches named like update-<word>.
       -h, --help                     Show this help.
   " | sed -E 's/^ {4}//'
 }
@@ -76,6 +77,10 @@ while [[ "${1}" ]]; do
       ;;
     -b | --blind-submit)
       cask_updated='blindly'
+      ;;
+    -d | --delete-branches)
+      can_run_without_arguments='true'
+      delete_created_branches='true'
       ;;
     -*)
       syntax_error "unrecognized option: ${1}"
@@ -158,6 +163,19 @@ appcast_checkpoint_change() {
   modify_stanza 'checkpoint:' "'${cask_appcast_checkpoint}'"
 }
 
+delete_created_branches() {
+  # delete local branches
+  for branch in $(git branch --all | grep --extended-regexp '^ *update-.+$' | sed 's|^ *||'); do
+    git branch -D "${branch}"
+  done
+
+  # delete remote branches
+  git fetch --prune "${remote_push}"
+  for branch in $(git branch --all | grep --extended-regexp "remotes/${remote_push}/update-.+$" | sed 's|.*/||'); do
+    git push "${remote_push}" --delete "${branch}"
+  done
+}
+
 # define function to quickly call both sha changing functions
 update_cask_shas() {
   sha_change
@@ -221,9 +239,14 @@ if [[ -z "${casks_dir}" ]]; then
 fi
 
 # exit if no argument or more than one argument was given
-if [[ -z "${1}" ]]; then
+if [[ -z "${1}" ]] && [[ "${can_run_without_arguments}" != 'true' ]]; then
   usage
   exit 1
+fi
+
+if [[ "${delete_created_branches}" == 'true' ]]; then
+  delete_created_branches
+  exit 0
 fi
 
 [[ -n "${2}" ]] && finish abort 'You can only give one cask argument per run'
