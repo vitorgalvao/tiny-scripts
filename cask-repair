@@ -305,7 +305,7 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
   audit_result="$?"
   [[ "${audit_result}" != '0' ]] && add_warning error "${audit_message}"
 
-  git diff
+  git --no-pager diff
   divide
   show_warnings
 
