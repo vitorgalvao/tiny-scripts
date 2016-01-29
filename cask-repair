@@ -303,7 +303,7 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
 
   audit_message=$(brew cask audit "${cask_file}" 2>/dev/null)
   audit_result="$?"
-  [[ "${audit_result}" != '0' ]] && add_warning error "${audit_message}"
+  [[ "${audit_result}" -ne 0 ]] && add_warning error "${audit_message}"
 
   git --no-pager diff
   divide
@@ -312,7 +312,7 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
   [[ "${cask_updated}" == 'blindly' ]] && cask_updated='y' || read -n1 -p 'Is everything correct? You can also make further manual edits (y/n/e) ' cask_updated
 
   if [[ "${cask_updated}" == 'y' ]]; then
-    [[ "${audit_result}" != '0' ]] && cask_updated='false' || break
+    [[ "${audit_result}" -ne 0 ]] && cask_updated='false' || break
   elif [[ "${cask_updated}" == 'e' ]]; then
     [[ -n "${EDITOR}" ]] && "${EDITOR}" "${cask_file}" || open -W "${cask_file}" # open cask in appropriate editor
     [[ "$(is_version_latest)" == 'false' ]] && update_cask_shas # recheck sha256 values if version isn't :latest
