@@ -75,7 +75,7 @@ while [[ "${1}" ]]; do
       shift
       ;;
     -b | --blind-submit)
-      cask_updated='y'
+      cask_updated='blindly'
       ;;
     -*)
       syntax_error "unrecognized option: ${1}"
@@ -309,7 +309,7 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
   divide
   show_warnings
 
-  read -n1 -p 'Is everything correct? You can also make further manual edits (y/n/e) ' cask_updated
+  [[ "${cask_updated}" == 'blindly' ]] && cask_updated='y' || read -n1 -p 'Is everything correct? You can also make further manual edits (y/n/e) ' cask_updated
 
   if [[ "${cask_updated}" == 'y' ]]; then
     [[ "${audit_result}" != '0' ]] && cask_updated='false' || break
