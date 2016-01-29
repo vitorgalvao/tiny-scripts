@@ -178,7 +178,7 @@ add_warning() {
 
 # define function to show warnings if there are any
 show_warnings() {
-  if [[ ${#warning_messages[@]} != '0' ]]; then
+  if [[ ${#warning_messages[@]} -gt 0 ]]; then
     printf '%s\n' "${warning_messages[@]}"
     warning_messages=()
     divide
