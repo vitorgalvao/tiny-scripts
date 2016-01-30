@@ -56,10 +56,14 @@ while [[ "${1}" ]]; do
   shift
 done
 
+message() {
+  echo "${1}"
+}
+
 abort_patch() {
   if [[ "${1}" == 'revert' ]]; then
-    git reset --hard "${last_commit_remote}"
     git am --abort
+    git reset --hard "${last_commit_remote}"
     shift
   fi
 
@@ -79,7 +83,7 @@ check_repo() {
 pull_remote() { # pull changes if local branch is behind
   last_commit_local=$(git rev-parse refs/heads/master)
   last_commit_remote=$(git ls-remote "${remote}" --heads refs/heads/master | perl -pe 's/\s.*//')
-  [[ "${last_commit_local}" != "${last_commit_remote}" ]] && git pull --rebase "${remote}" master
+  [[ "${last_commit_local}" != "${last_commit_remote}" ]] && git pull --rebase "${remote}" master --quiet
 }
 
 apply_patch() {
@@ -89,22 +93,26 @@ apply_patch() {
   check_repo
 
   current_branch=$(git rev-parse --abbrev-ref HEAD)
-  [[ "${current_branch}" != 'master' ]] && git checkout master
+  [[ "${current_branch}" != 'master' ]] && git checkout master --quiet
   pull_remote
 
-  curl --location --silent "${patch_url}" | git am # get and apply patch
-  [[ "$?" != 0 ]] && abort_patch 'revert' "There was an error applying the patch from ${issue_number}. Reverted to last successful state." # if applying the patch was unsuccessful, warn and revert state
+  message "Applying #${issue_number} as patch…"
+
+  curl --location --silent "${patch_url}" | git am --quiet # get and apply patch
+  [[ "$?" -ne 0 ]] && abort_patch 'revert' "There was an error applying the patch from ${url}. Reverted to last successful state." # if applying the patch was unsuccessful, warn and revert state
 }
 
 push_and_close() {
   pull_remote
-  git push "${remote}" master
+  git push "${remote}" master --quiet
 
   if [[ "${maintainer_pr}" == 'true' ]]; then
-    ghi close --message "Merged as ${last_commit_local}." "${issue_number}"
+    ghi close --message "Merged as ${last_commit_local}." "${issue_number}" 1>/dev/null
   else
-    ghi close --message "Thank you for the contribution. It was merged directly as ${last_commit_local} to keep commit history cleaner. Your contribution is still credited to you." "${issue_number}"
+    ghi close --message "Thank you for the contribution. It was merged directly as ${last_commit_local} to keep commit history cleaner. Your contribution is still credited to you." "${issue_number}" 1>/dev/null
   fi
+
+  message 'Merged and closed issue.'
 }
 
 # exit if no argument was given
