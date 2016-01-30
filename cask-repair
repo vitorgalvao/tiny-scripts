@@ -164,16 +164,16 @@ appcast_checkpoint_change() {
 }
 
 delete_created_branches() {
+  local local_branches remote_branches
+
   # delete local branches
-  for branch in $(git branch --all | grep --extended-regexp '^ *update-.+$' | sed 's|^ *||'); do
-    git branch -D "${branch}"
-  done
+  local_branches=$(git branch --all | grep --extended-regexp '^ *update-.+$' | perl -pe 's|^ *||;s|\n| |')
+  [[ -n "${local_branches}" ]] && git branch -D ${local_branches}
 
   # delete remote branches
   git fetch --prune "${remote_push}"
-  for branch in $(git branch --all | grep --extended-regexp "remotes/${remote_push}/update-.+$" | sed 's|.*/||'); do
-    git push "${remote_push}" --delete "${branch}"
-  done
+  remote_branches=$(git branch --all | grep --extended-regexp "remotes/${remote_push}/update-.+$" | perl -pe 's|.*/||;s|\n| |')
+  [[ -n "${remote_branches}" ]] && git push "${remote_push}" --delete ${remote_branches}
 }
 
 # define function to quickly call both sha changing functions
