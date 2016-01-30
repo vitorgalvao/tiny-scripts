@@ -67,6 +67,9 @@ abort_patch() {
   exit 1
 }
 
+# cleanup if aborted with ⌃C
+trap 'abort_patch "You aborted."' SIGINT
+
 check_repo() {
   local_repo=$(git remote show origin -n | grep "Fetch URL:" | sed 's|.*/||;s|\.git$||')
   remote_repo=$(sed -E 's|.*/(.*)/pull.*|\1|' <<< "${url}")
