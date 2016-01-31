@@ -57,9 +57,9 @@ log_file="${HOME}/pinboardlinkcheck.log"
 
 # ask for api token, if option is set
 if [[ -n "${ask_for_token}" ]]; then
-  echo 'Please insert your api token'
+  echo 'Please insert your api token (will not be echoed)'
   echo 'You can get it at https://pinboard.in/settings/password'
-  read -p '> ' token
+  read -sp '> ' token
 fi
 
 # exit if no token was set
