@@ -234,16 +234,16 @@ divide() {
   fi
 }
 
+# exit if no argument or more than one argument was given
+if [[ -z "${1}" ]] && [[ "${can_run_without_arguments}" != 'true' ]]; then
+  usage
+  exit 1
+fi
+
 # exit if not inside a 'homebrew-*/Casks' directory
 casks_dir=$(pwd | perl -ne 'print m{homebrew-[^/]+/Casks}')
 if [[ -z "${casks_dir}" ]]; then
   echo -e "\n$(tput setaf 1)You need to be inside a '/homebrew-*/Casks' directory$(tput sgr0)\n"
-  exit 1
-fi
-
-# exit if no argument or more than one argument was given
-if [[ -z "${1}" ]] && [[ "${can_run_without_arguments}" != 'true' ]]; then
-  usage
   exit 1
 fi
 
