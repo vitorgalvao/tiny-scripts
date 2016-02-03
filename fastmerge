@@ -106,13 +106,16 @@ push_and_close() {
   pull_remote
   git push "${remote}" master --quiet
 
-  if [[ "${maintainer_pr}" == 'true' ]]; then
-    ghi close --message "Merged as ${last_commit_local}." "${issue_number}" 1>/dev/null
-  else
-    ghi close --message "Thank you for the contribution. It was merged directly as ${last_commit_local} to keep commit history cleaner. Your contribution is still credited to you." "${issue_number}" 1>/dev/null
-  fi
+  if [[ "$?" -eq 0 ]]; then
+    local message
 
-  message 'Merged and closed issue.'
+    [[ "${maintainer_pr}" == 'true' ]] && message="Merged as ${last_commit_local}." || message"Thank you for the contribution. It was merged directly as ${last_commit_local} to keep commit history cleaner. Your contribution is still credited to you."
+
+    ghi close --message "${message}" "${issue_number}" 1>/dev/null
+    message 'Merged and closed issue.'
+  else
+    abort_patch 'revert' 'There was an error pushing the updates. Reverted to last successful state.'
+  fi
 }
 
 # exit if no argument was given
