@@ -37,7 +37,7 @@ usage() {
       -v, --cask-version             Give a version directly, instead of being prompted for it.
       -u, --cask-url                 Give a URL directly, instead of being prompted for it.
       -c, --closes-issue <number>    Adds 'Closes #<number>.' to the commit message.
-      -b, --blind-submit             Submit cask without asking for confirmation, if it passes audit.
+      -b, --blind-submit             Submit cask without asking for confirmation, if there are no errors.
       -d, --delete-branches          Use with caution! Deletes all local and remote branches named like update-<word>.
       -h, --help                     Show this help.
   " | sed -E 's/^ {4}//'
