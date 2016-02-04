@@ -38,7 +38,7 @@ usage() {
       -u, --cask-url                 Give a URL directly, instead of being prompted for it.
       -c, --closes-issue <number>    Adds 'Closes #<number>.' to the commit message.
       -b, --blind-submit             Submit cask without asking for confirmation, if there are no errors.
-      -d, --delete-branches          Use with caution! Deletes all local and remote branches named like update-<word>.
+      -d, --delete-branches          Deletes all local and remote branches named like cask-repair_update-<word>.
       -h, --help                     Show this help.
   " | sed -E 's/^ {4}//'
 }
@@ -167,12 +167,12 @@ delete_created_branches() {
   local local_branches remote_branches
 
   # delete local branches
-  local_branches=$(git branch --all | grep --extended-regexp '^ *update-.+$' | perl -pe 's|^ *||;s|\n| |')
+  local_branches=$(git branch --all | grep --extended-regexp '^ *cask-repair_update-.+$' | perl -pe 's|^ *||;s|\n| |')
   [[ -n "${local_branches}" ]] && git branch -D ${local_branches}
 
   # delete remote branches
   git fetch --prune "${remote_push}"
-  remote_branches=$(git branch --all | grep --extended-regexp "remotes/${remote_push}/update-.+$" | perl -pe 's|.*/||;s|\n| |')
+  remote_branches=$(git branch --all | grep --extended-regexp "remotes/${remote_push}/cask-repair_update-.+$" | perl -pe 's|.*/||;s|\n| |')
   [[ -n "${remote_branches}" ]] && git push "${remote_push}" --delete ${remote_branches}
 }
 
@@ -258,7 +258,7 @@ fi
 cask_name="${1}"
 [[ "${cask_name}" == *'.rb' ]] && cask_name=$(echo "${cask_name}" | sed 's|\.rb$||')
 cask_file="./${cask_name}.rb"
-cask_branch="update-${cask_name}"
+cask_branch="cask-repair_update-${cask_name}"
 [[ ! -f "${cask_file}" ]] && finish abort 'There is no such cask'
 
 # initial tasks
