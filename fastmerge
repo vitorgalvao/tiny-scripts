@@ -109,7 +109,7 @@ push_and_close() {
   if [[ "$?" -eq 0 ]]; then
     local message
 
-    [[ "${maintainer_pr}" == 'true' ]] && message="Merged as ${last_commit_local}." || message"Thank you for the contribution. It was merged directly as ${last_commit_local} to keep commit history cleaner. Your contribution is still credited to you."
+    [[ "${maintainer_pr}" == 'true' ]] && message="Merged as ${last_commit_local}." || message="Thank you for the contribution. It was merged directly as ${last_commit_local} to keep commit history cleaner. Your contribution is still credited to you."
 
     ghi close --message "${message}" "${issue_number}" 1>/dev/null
     message 'Merged and closed issue.'
