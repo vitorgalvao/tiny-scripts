@@ -270,7 +270,9 @@ git checkout -b "${cask_branch}" --quiet
 [[ "${show_home}" == 'true' ]] && brew cask home "${cask_file}"
 
 cask_appcast_info
-[[ "${cask_has_appcast}" == 'true' ]] && [[ "${show_appcast}" == 'true' ]] && open "$(brew cask _stanza appcast "${cask_file}")"
+if [[ "${cask_has_appcast}" == 'true' ]] && [[ "${show_appcast}" == 'true' ]]; then
+  [[ "${cask_appcast_url}" =~ ^https://github.com.*releases.atom$ ]] && open "${cask_appcast_url%.*}" || open "${cask_appcast_url}" # if appcast is from github releases, open the page instead of the feed
+fi
 
 # show cask's current state
 divide
