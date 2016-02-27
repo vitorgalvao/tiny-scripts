@@ -281,9 +281,9 @@ divide
 
 # set cask version
 if [[ -z "${given_cask_version}" ]]; then
-  read -p $'Type the new version (or leave blank to abort)\n> ' given_cask_version # ask for cask version, if not given previously
+  read -p $'Type the new version (or leave blank to use the current one)\n> ' given_cask_version # ask for cask version, if not given previously
 
-  [[ -z "${given_cask_version}" ]] && finish abort 'You decided to abort' # abort if no version was given
+  [[ -z "${given_cask_version}" ]] && given_cask_version=$(brew cask _stanza version "${cask_file}")
 fi
 
 if [[ "${given_cask_version}" == ':latest' ]] || [[ "${given_cask_version}" == 'latest' ]]; then # allow both ':latest' and 'latest' to be given
