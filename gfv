@@ -5,14 +5,25 @@ readonly program="$(basename "${0}")"
 # This script depends on imagemagick and ffmpeg for the conversion
 # ----------------------------------------------------------------
 depends_on() {
-  if [[ ! $(which "${1}") ]]; then
-    echo -e >&2 "\n$(tput setaf 1)This script requires ${1}. Please install it first.$(tput sgr0)\n"
+  readonly local all_deps=("${@}")
+  local missing_deps=()
+
+  for dep in "${all_deps[@]}"; do
+    if ! command -v "${dep}" &>/dev/null; then
+      missing_deps+=("${dep}")
+    fi
+  done
+
+  if [[ "${#missing_deps[@]}" -gt 0 ]]; then
+    tput setaf 1
+    echo -e '\nThis script has unmet dependencies. You need to install these first:'
+    printf '  %s\n' "${missing_deps[@]}"
+    tput sgr0
     exit 1
   fi
 }
 
-depends_on convert
-depends_on ffmpeg
+depends_on convert ffmpeg
 
 # Instructions on how to use the script
 # Shown when no arguments are given

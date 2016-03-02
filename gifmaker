@@ -11,8 +11,10 @@ syntax_error() {
 # This script depends on imagemagick for the conversion
 # -----------------------------------------------------
 depends_on() {
-  if [[ ! $(which "${1}") ]]; then
-    echo -e >&2 "\n$(tput setaf 1)This script requires ${1}. Please install it first.$(tput sgr0)\n"
+  readonly local dep="${1}"
+
+  if ! command -v "${dep}" &>/dev/null; then
+    echo -e >&2 "\n$(tput setaf 1)This script requires ${dep}. Please install it first.$(tput sgr0)\n"
     exit 1
   fi
 }
