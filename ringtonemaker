@@ -1,0 +1,76 @@
+#!/bin/bash
+
+readonly program="$(basename "${0}")"
+
+# check if 'ffmpeg' is installed and has the right codec
+if [[ -z "$(ffmpeg -codecs 2>/dev/null | grep libfaac)" ]]; then
+  echo -e "$(tput setaf 1)
+    This script requires 'ffmpeg' with 'libfaac'.
+    If you have [Homebrew](http://brew.sh), you can install it with 'brew install ffmpeg --with-faac'.
+  $(tput sgr0)" | sed -E 's/ {4}//' >&2
+  exit 1
+fi
+
+syntax_error() {
+  echo "${program}: ${1}" >&2
+  echo "Try \`${program} --help\` for more information." >&2
+  exit 1
+}
+
+usage() {
+  echo "
+    usage: ${program} [-d <duration>] [-s <time>] [-o <output_file>] -i <input_file>
+
+    options:
+      -d <number>, --duration <number>   Duration (in seconds) of the output file. Maximum is 40 seconds.
+      -i <file>, --input <file>          Path to input file.
+      -o <file>, --output <file>         Path to output file. If empty, will be next to the input file.
+      -s <time>, --start <time>          Start time from when to start cutting, in the form xx:xx:xx
+      -h, --help                         Show this help.
+  " | sed -E 's/^ {4}//'
+}
+
+# available flags
+while [[ "${1}" ]]; do
+  case "${1}" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -d | --duration)
+      duration="${2}"
+      shift
+      ;;
+    -i | --input)
+      input_file="${2}"
+      shift
+      ;;
+    -o | --output)
+      output_file="${2}"
+      shift
+      ;;
+    -s | --start)
+      start="${2}"
+      shift
+      ;;
+    -*)
+      syntax_error "unrecognized option: ${1}"
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
+
+if [[ ! -f "${input_file}" ]]; then
+  echo 'A valid path to an input file is required.'
+  usage
+  exit 1
+fi
+
+[[ -z "${output_file}" ]] && output_file="${input_file%.*}"
+[[ -z "${duration}" ]] || [[ "${duration}" -gt 40 ]] && duration='40'
+[[ -z "${start}" ]] && start='00:00:00'
+
+ffmpeg -i "${input_file}" -vn -acodec libfaac -f mp4 -ss "${start}" -t "${duration}" "${output_file}.m4r"
