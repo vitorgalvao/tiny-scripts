@@ -10,7 +10,7 @@ show_appcast='false' # by default, do not open the cask's appcast
 warning_messages=()
 
 # check if 'hub' is installed and configured
-if [[ ! $(which 'hub') ]] || [[ ! $(grep 'oauth_token:' "${HOME}/.config/hub" 2>/dev/null) ]]; then
+if [[ ! $(which 'hub') ]] || [[ -z "${GITHUB_TOKEN}" && ! $(grep 'oauth_token:' "${HOME}/.config/hub" 2>/dev/null) ]]; then
   echo -e "$(tput setaf 1)
     This script requires 'hub' installed and configured.
     If you have [Homebrew](http://brew.sh), you can install it with 'brew install hub'.
