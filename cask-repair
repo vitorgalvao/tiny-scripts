@@ -369,6 +369,7 @@ readonly commit_message="updated ${cask_name} (${cask_version})"
 readonly hub_message="$(echo -e "${commit_message}\n\n### Changes to a cask\n#### Editing an existing cask\n\n- [x] Commit message includes cask’s name (and new version, if applicable).\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.")"
 
 git commit "${cask_file}" --message "${commit_message}" --quiet
-git push --set-upstream "${remote_push}" "${cask_branch}" --quiet # --set-upstream is needed as workaround for hub to work with certain .gitconfig options to push default: https://github.com/github/hub/issues/789#issuecomment-72553866
+git push "${remote_push}" "${cask_branch}" --quiet
+git branch --set-upstream-to "${remote_push}" --quiet # needed as workaround for hub to work with certain .gitconfig options to push default: https://github.com/github/hub/issues/789#issuecomment-72553866; after that issue is fixed, this line may likely be completely removed
 [[ -z "${issue_to_close}" ]] && pr_link=$(hub pull-request -b "${submit_pr_to}" -m "${hub_message}") || pr_link=$(hub pull-request -b "${submit_pr_to}" -m "$(echo -e "${hub_message}\n\n---\n\nCloses #${issue_to_close}.")")
 [[ -n "${pr_link}" ]] && finish success "${pr_link}" || finish abort 'There was an error submitting the pull request. Have you forked the repo and made sure the pull and push remotes exist?'
