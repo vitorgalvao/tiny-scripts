@@ -306,7 +306,7 @@ if [[ -n "${given_cask_url}" ]]; then
 else
   # if url does not use interpolation, ask for it
   cask_bare_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*)['\"].*|\1|")
-  if [[ $(has_interpolation "${cask_bare_url}") == 'true' ]]; then
+  if [[ $(has_interpolation "${cask_bare_url}") == 'false' ]]; then
     read -p $'Paste the new URL (or leave blank to use the current one)\n> ' given_cask_url
 
     [[ -z "${given_cask_url}" ]] && given_cask_url=$(brew cask _stanza url "${cask_file}")
