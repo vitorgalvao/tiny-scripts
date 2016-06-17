@@ -36,6 +36,7 @@ usage() {
       -a, --open-appcast             Open the appcast for the given cask.
       -v, --cask-version             Give a version directly, instead of being prompted for it.
       -u, --cask-url                 Give a URL directly, instead of being prompted for it.
+      -e, --edit-cask                Opens cask for editing before trying first download.
       -c, --closes-issue <number>    Adds 'Closes #<number>.' to the commit message.
       -b, --blind-submit             Submit cask without asking for confirmation, if there are no errors.
       -d, --delete-branches          Deletes all local and remote branches named like cask-repair_update-<word>.
@@ -71,6 +72,9 @@ while [[ "${1}" ]]; do
     -u | --cask-url)
       given_cask_url="${2}"
       shift
+      ;;
+    -e | --edit-cask)
+      edit_on_start='true'
       ;;
     -c | --closes-issue)
       issue_to_close="${2}"
@@ -180,6 +184,11 @@ delete_created_branches() {
 update_cask_shas() {
   sha_change
   appcast_checkpoint_change
+}
+
+# define function to open cask in appropriate editor
+edit_cask() {
+  [[ -n "${EDITOR}" ]] && "${EDITOR}" "${cask_file}" || open -W "${cask_file}"
 }
 
 # define function to add warnings to be shown on review
@@ -319,6 +328,8 @@ else
   fi
 fi
 
+[[ "${edit_on_start}" == 'true' ]] && edit_cask
+
 [[ "$(is_version_latest)" == 'false' ]] && update_cask_shas || modify_stanza 'sha256' ':no_check' # calculate new sha256 values
 
 # check if everything is alright, else abort
@@ -350,7 +361,7 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
       break
     fi
   elif [[ "${cask_updated}" == 'e' ]]; then
-    [[ -n "${EDITOR}" ]] && "${EDITOR}" "${cask_file}" || open -W "${cask_file}" # open cask in appropriate editor
+    edit_cask
     [[ "$(is_version_latest)" == 'false' ]] && update_cask_shas # recheck sha256 values if version isn't :latest
     cask_updated='false'
     clear_warnings
