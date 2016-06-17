@@ -292,19 +292,17 @@ else
   modify_stanza 'version' "'${given_cask_version}'"
 fi
 
-# check if cask's url uses interpolation
-cask_bare_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*)['\"].*|\1|")
-[[ $(has_interpolation "${cask_bare_url}") == 'true' ]] && cask_url_uses_interpolation='true' || cask_url_uses_interpolation='false'
-
-# if url does not use interpolation, ask for it
-if [[ "${cask_url_uses_interpolation}" == 'false' ]]; then
-  if [[ -z "${given_cask_url}" ]]; then
+if [[ -n "${given_cask_url}" ]]; then
+  [[ $(has_interpolation "${given_cask_url}") == 'true' ]] && modify_stanza 'url' "\"${given_cask_url}\"" || modify_stanza 'url' "'${given_cask_url}'" # use appropriate quotes depending on if a url with interpolation was given
+else
+  # if url does not use interpolation, ask for it
+  cask_bare_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*)['\"].*|\1|")
+  if [[ $(has_interpolation "${cask_bare_url}") == 'true' ]]; then
     read -p $'Paste the new URL (or leave blank to use the current one)\n> ' given_cask_url
 
     [[ -z "${given_cask_url}" ]] && given_cask_url=$(brew cask _stanza url "${cask_file}")
   fi
 
-  [[ $(has_interpolation "${given_cask_url}") == 'true' ]] && modify_stanza 'url' "\"${given_cask_url}\"" || modify_stanza 'url' "'${given_cask_url}'" # use appropriate quotes depending on if a url with interpolation was given
   cask_url=$(brew cask _stanza url "${cask_file}")
 
   # check if the URL sends a 200 HTTP code, else abort
