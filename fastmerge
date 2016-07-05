@@ -100,6 +100,17 @@ apply_patch() {
 
   curl --location --silent "${patch_url}" | git am --quiet # get and apply patch
   [[ "$?" -ne 0 ]] && abort_patch 'revert' "There was an error applying the patch from ${url}. Reverted to last successful state." # if applying the patch was unsuccessful, warn and revert state
+
+  amend_message "${issue_number}"
+}
+
+amend_message() {
+  issue_number="${1}"
+  amended_message=$(git log --format=%B -n1 | sed "1 s/$/ (#${issue_number})/")
+
+  message "Amending commit message with issue number (#${issue_number})"
+
+  git commit --amend -F <(echo "${amended_message}")
 }
 
 push_and_close() {
