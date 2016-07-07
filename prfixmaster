@@ -115,7 +115,7 @@ amend_message() {
   issue_number="${1}"
   amended_message=$(git log --format=%B -n1 | sed "1 s/$/ (#${issue_number})/")
 
-  message "Amending commit message with issue number (#${issue_number})"
+  echo "Amending commit message with issue number (#${issue_number})"
 
   git commit --amend -F <(echo "${amended_message}")
 }
