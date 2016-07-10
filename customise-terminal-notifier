@@ -47,6 +47,11 @@ function make_icns() {
   local iconset="$(mktemp -d)"
   local output_icon="$(mktemp).icns"
 
+  if [[ "$(sips --getProperty hasAlpha "${file}" | awk 'END{print $2}')" == 'no' ]]; then
+    echo 'Image needs to have an alpha channel'
+    exit 1
+  fi
+
   sips --resampleHeightWidth 16 16 "${file}" --out "${iconset}/icon_16x16.png" &> /dev/null
   sips --resampleHeightWidth 32 32 "${file}" --out "${iconset}/icon_16x16@2x.png" &> /dev/null
   sips --resampleHeightWidth 32 32 "${file}" --out "${iconset}/icon_32x32.png" &> /dev/null
