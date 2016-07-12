@@ -2,55 +2,72 @@
 
 readonly program="$(basename "${0}")"
 
-# This script depends on imagemagick and ffmpeg for the conversion
-# ----------------------------------------------------------------
-depends_on() {
-  readonly local all_deps=("${@}")
-  local missing_deps=()
+# Check if ffmpeg is installed
+if [[ ! $(which 'ffmpeg') ]]; then
+  echo -e "$(tput setaf 1)
+    This script requires 'ffmpeg'.
+    If you have [Homebrew](http://brew.sh), you can install it with 'brew install ffmpeg'.
+  $(tput sgr0)" | sed -E 's/ {4}//' >&2
+  exit 1
+fi
 
-  for dep in "${all_deps[@]}"; do
-    if ! command -v "${dep}" &>/dev/null; then
-      missing_deps+=("${dep}")
-    fi
-  done
-
-  if [[ "${#missing_deps[@]}" -gt 0 ]]; then
-    tput setaf 1
-    echo -e '\nThis script has unmet dependencies. You need to install these first:'
-    printf '  %s\n' "${missing_deps[@]}"
-    tput sgr0
-    exit 1
-  fi
+syntax_error() {
+  echo "${program}: ${1}" >&2
+  echo "Try \`${program} --help\` for more information." >&2
+  exit 1
 }
 
-depends_on convert ffmpeg
-
-# Instructions on how to use the script
-# Shown when no arguments are given
-# -------------------------------------
 usage() {
-  echo "usage: ${program} <input_file> [<output_file>]"
+  echo "
+    usage: ${program} [options] <input_file> [<output_file>]
+
+    options:
+      -w <interger>, --width <integer>       Resize the gif proportionally.
+      -h, --help                     Show this help.
+  " | sed -E 's/^ {4}//'
 }
+
+# available flags
+while [[ "${1}" ]]; do
+  case "${1}" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -w | --width)
+      width="${2}"
+      shift
+      ;;
+    -*)
+      syntax_error "unrecognized option: ${1}"
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
 
 if [[ -z ${1} ]]; then
   usage
   exit 1
 fi
 
-# Make gif next to original video, if no output name given
-# --------------------------------------------------------
+# Make gif next to original video, if no output file given
 input_file="${1}"
+output_file="${2}"
 
-if [[ -z ${2} ]]; then
+if [[ -z "${output_file}" ]]; then
   input_file_name=$(basename "${input_file}")
   input_file_no_extension=${input_file_name%.*}
   input_file_dir=$(dirname "${input_file}")
   output_file="${input_file_dir}/${input_file_no_extension}.gif"
-else
-  output_file="${2}"
 fi
 
+# Make width same as original video, if none given
+[[ -z "${width}" ]] && width='-1'
 
 # Make the animated gif
-# ---------------------
-ffmpeg -i "${input_file}" -r 10 -f image2pipe -vcodec ppm - | convert -dispose Background - -layers Optimize "${output_file}"
+palette="$(mktemp).png"
+ffmpeg -i "${input_file}" -filter_complex "fps=10,scale=${width}:-1:flags=lanczos,palettegen" "${palette}"
+ffmpeg -i "${input_file}" -i "${palette}" -filter_complex "fps=10,scale=${width}:-1:flags=lanczos[x];[x][1:v]paletteuse" "${output_file}"
