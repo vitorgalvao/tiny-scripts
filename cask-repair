@@ -2,7 +2,7 @@
 
 readonly program="$(basename "${0}")"
 readonly submit_pr_to='caskroom:master'
-readonly browser_headers=(--header 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36')
+readonly user_agent=(--user_agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36')
 remote_pull='upstream' # use 'upstream' as default remote to pull from
 remote_push='origin' # use 'origin' as default remote to push to
 show_home='false' # by default, do not open the cask's homepage
@@ -104,7 +104,7 @@ http_status() {
   url="${1}"
   [[ "${2}" == 'follow_redirects' ]] && follow_redirects='--location' || follow_redirects='--no-location'
 
-  curl --silent --head "${follow_redirects}" "${browser_headers[@]}" --write-out '%{http_code}' "${url}" -o '/dev/null'
+  curl --silent --head "${follow_redirects}" "${user_agent[@]}" --write-out '%{http_code}' "${url}" -o '/dev/null'
 }
 
 # define function to check if a given string contains ruby-style interpolation
@@ -174,7 +174,7 @@ appcast_checkpoint_change() {
   cask_appcast_status=$(http_status "${cask_appcast_url}" 'no_follow_redirects')
   [[ "${cask_appcast_status}" != '200' ]] && add_warning warning "appcast is probably incorrect, as a non-200 (OK) HTTP response code was returned (${cask_appcast_status})"
 
-  cask_appcast_checkpoint=$(curl --silent --compressed --location "${browser_headers[@]}" "${cask_appcast_url}" | sed 's|<pubDate>[^<]*</pubDate>||g' | shasum --algorithm 256 | awk '{ print $1 }')
+  cask_appcast_checkpoint=$(curl --silent --compressed --location "${user_agent[@]}" "${cask_appcast_url}" | sed 's|<pubDate>[^<]*</pubDate>||g' | shasum --algorithm 256 | awk '{ print $1 }')
 
   modify_stanza 'checkpoint:' "'${cask_appcast_checkpoint}'"
 }
