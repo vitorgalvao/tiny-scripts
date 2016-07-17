@@ -28,6 +28,7 @@ usage() {
     options:
       -m, --maintainer                 Use when merging a contribution from a maintainer.
       -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
+      -s, --squash                     Use to squash commits before pushing.
       -h, --help                       Show this help.
   " | sed -E 's/^ {4}//'
 }
@@ -45,6 +46,9 @@ while [[ "${1}" ]]; do
     -r | --remote)
       remote="${2}"
       shift
+      ;;
+    -s | --squash)
+      squash_changes='true'
       ;;
     -*)
       syntax_error "unrecognized option: ${1}"
@@ -101,14 +105,23 @@ apply_patch() {
   curl --location --silent "${patch_url}" | git am --quiet # get and apply patch
   [[ "$?" -ne 0 ]] && abort_patch 'revert' "There was an error applying the patch from ${url}. Reverted to last successful state." # if applying the patch was unsuccessful, warn and revert state
 
+  [[ "${squash_changes}" == 'true' ]] && rebase_squash "${remote}/master"
   amend_message "${issue_number}"
+}
+
+rebase_squash() {
+  base_commit="${1}"
+
+  message "Squashing changes into a single commit…"
+
+  GIT_EDITOR="perl -pi -e 's/^pick\b/squash/ unless 1 .. 1'" git rebase --interactive "${base_commit}"
 }
 
 amend_message() {
   issue_number="${1}"
   amended_message=$(git log --format=%B -n1 | sed "1 s/$/ (#${issue_number})/")
 
-  message "Amending commit message with issue number (#${issue_number})"
+  message "Amending commit message with issue number (#${issue_number})…"
 
   git commit --amend -F <(echo "${amended_message}")
 }
