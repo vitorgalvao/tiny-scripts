@@ -27,6 +27,7 @@ usage() {
     options:
       -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
       -c, --continue                   Use after making your fixes, to push your changes and close the issue with a message. If you use it with uncommitted changes, they'll all be squashed (fixup) into the original patch; else your commits will be preserved.
+      -s, --squash                     Use to squash commits before pushing
       -h, --help                       Show this help.
   " | sed -E 's/^ {4}//'
 }
@@ -44,6 +45,9 @@ while [[ "${1}" ]]; do
       ;;
     -c | --continue)
       push_changes='yes'
+      ;;
+    -s | --squash)
+      squash_changes='yes'
       ;;
     -*)
       syntax_error "unrecognized option: ${1}"
@@ -91,6 +95,14 @@ apply_patch() {
   " | sed -E 's/^ {2}//'
 }
 
+rebase_squash() {
+  base_commit="${1}"
+
+  echo "Squashing changes into a single commit…"
+
+  GIT_EDITOR="perl -pi -e 's/^pick\b/squash/ unless 1 .. 1'" git rebase --interactive "${base_commit}"
+}
+
 push_and_close() {
   original_issue="$(cat ${issue_number_file})"
   uncommitted_changes="$(git status --porcelain)"
@@ -100,6 +112,10 @@ push_and_close() {
     git commit --all --allow-empty-message --message ''
     git reset --soft @~
     git commit --amend -C HEAD
+  fi
+
+  if [[ "${squash_changes}" == 'yes' ]]; then
+    rebase_squash "${remote}/master"
   fi
 
   amend_message "${original_issue}"
@@ -115,7 +131,7 @@ amend_message() {
   issue_number="${1}"
   amended_message=$(git log --format=%B -n1 | sed "1 s/$/ (#${issue_number})/")
 
-  echo "Amending commit message with issue number (#${issue_number})"
+  echo "Amending commit message with issue number (#${issue_number})…"
 
   git commit --amend -F <(echo "${amended_message}")
 }
