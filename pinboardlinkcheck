@@ -71,9 +71,13 @@ fi
 
 # get all your pinboard links
 links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | cut -d '"' -f 2 | sed '1d')
+link_countdown="$(wc -l <<< "${links}" | tr -d ' ')"
 
 # check each link individually
 for page in ${links} ; do
+  echo -n "[${link_countdown}] "
+  ((link_countdown--))
+
   status=$(curl --silent "${browser_headers[@]}" --write-out '%{http_code}' --output /dev/null "${page}")
 
   if [[ "${status:0:1}" == '2' ]]; then
