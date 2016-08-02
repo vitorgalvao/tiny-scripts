@@ -38,6 +38,9 @@ Script to get color palette from colourlovers and format it to use in processing
 ### pinboardlinkcheck
 Script to check the status code of links saved in your [pinboard](https://pinboard.in/) account
 
+### pinboardwaybackmachine
+Script to add to the [wayback machine](https://archive.org/web/) links saved in your [pinboard](https://pinboard.in/) account
+
 ### podbook
 Script to generate a podcast RSS feed for audiobooks
 
