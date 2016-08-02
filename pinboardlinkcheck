@@ -60,6 +60,7 @@ if [[ -n "${ask_for_token}" ]]; then
   echo 'Please insert your api token (will not be echoed)'
   echo 'You can get it at https://pinboard.in/settings/password'
   read -sp '> ' token
+  echo
 fi
 
 # exit if no token was set
