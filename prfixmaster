@@ -85,7 +85,7 @@ apply_patch() {
   [[ "${current_branch}" != 'master' ]] && git checkout master
   pull_remote
 
-  curl --location --silent "${patch_url}" | git am # get and apply patch
+  curl --location --silent "${patch_url}" | git am --3way # get and apply patch
 
   echo "${issue_number}" > "${issue_number_file}" # save issue number
 
