@@ -23,7 +23,6 @@ usage() {
 
     options:
       -d <number>, --duration <number>   Duration (in seconds) of the output file. Maximum is 40 seconds.
-      -i <file>, --input <file>          Path to input file.
       -o <file>, --output <file>         Path to output file. If empty, will be next to the input file.
       -s <time>, --start <time>          Start time from when to start cutting, in the form xx:xx:xx
       -h, --help                         Show this help.
@@ -39,10 +38,6 @@ while [[ "${1}" ]]; do
       ;;
     -d | --duration)
       duration="${2}"
-      shift
-      ;;
-    -i | --input)
-      input_file="${2}"
       shift
       ;;
     -o | --output)
@@ -62,6 +57,8 @@ while [[ "${1}" ]]; do
   esac
   shift
 done
+
+input_file="${1}"
 
 if [[ ! -f "${input_file}" ]]; then
   echo 'A valid path to an input file is required.'
