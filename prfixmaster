@@ -32,6 +32,12 @@ usage() {
   " | sed -E 's/^ {4}//'
 }
 
+# read remote from git config
+configured_remote="$(git config --get tiny-scripts.remote)"
+if [[ -n "${configured_remote}" ]]; then
+  remote="${configured_remote}"
+fi
+
 # available flags
 while [[ "${1}" ]]; do
   case "${1}" in
