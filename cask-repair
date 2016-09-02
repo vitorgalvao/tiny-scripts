@@ -174,7 +174,7 @@ appcast_checkpoint_change() {
   cask_appcast_status=$(http_status "${cask_appcast_url}" 'no_follow_redirects')
   [[ "${cask_appcast_status}" != '200' ]] && add_warning warning "appcast is probably incorrect, as a non-200 (OK) HTTP response code was returned (${cask_appcast_status})"
 
-  cask_appcast_checkpoint=$(curl --silent --compressed --location "${user_agent[@]}" "${cask_appcast_url}" | sed 's|<pubDate>[^<]*</pubDate>||g' | shasum --algorithm 256 | awk '{ print $1 }')
+  cask_appcast_checkpoint=$(curl --silent --compressed --location "${user_agent[@]}" "${cask_appcast_url}" | /usr/bin/sed 's|<pubDate>[^<]*</pubDate>||g' | shasum --algorithm 256 | awk '{ print $1 }')
 
   modify_stanza 'checkpoint:' "'${cask_appcast_checkpoint}'"
 }
