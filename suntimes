@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Show help
+if [[ "${1}" == '-h' ]] || [[ "${1}" == '--help' ]]; then
+  echo "This script checks the sunrise and sunset times for a given location (using the Wolfram Alpha API) and sends an email with the information. To set it up, run it with no arguments."
+
+  exit 0
+fi
+
+# Prepare configuration
+readonly config_dir="${HOME}/.config/suntimes"
+readonly config_file="${config_dir}/suntimes.config"
+[[ ! -d "$(basename "${config_file}")" ]] && mkdir -p "${config_dir}"
+
+# Make configuration file if it does not exist
+if [[ ! -f "${config_file}" ]]; then
+  echo "
+    api_key='' # Your Wolfram Alpha API key
+    city='' # The city you want to check times for
+    email='' # Email addresses to send the times to (comma-separated)
+  " | sed '/^\s*$/d' | sed -E 's/^ {4}//' > "${config_file}"
+
+  echo "A configuration file is needed for the script to work. It's prefilled with instrctions at ${config_file}"
+
+  exit 1
+fi
+
+# Run the script
+source "${config_file}"
+readonly details_file="$(mktemp)"
+
+curl --silent "http://api.wolframalpha.com/v2/query?input=sun+times+${city}&appid=${api_key}" > "${details_file}"
+readonly sunrise="$(grep sunrise "${details_file}" | head -1 | awk '{ print $3$4 }')"
+readonly sunset="$(grep sunset "${details_file}" | head -1 | awk '{ print $3$4 }')"
+
+mail -s "Sunrise and sunset times for ${city}" "${email}" <<EOF
+Sunrise: ${sunrise}
+Sunset:  ${sunset}
+EOF

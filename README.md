@@ -59,6 +59,9 @@ Script to rename files in a numerical sequence
 ### strongpassword
 Script to get a strong password by leveraging multiple sources
 
+### suntimes
+Script to email local sunrise and sunset times (via [Wolfram Alpha](http://www.wolframalpha.com/)) for a given location
+
 ### ubuntu-usb
 Script to facilitate installing ubuntu on a USB stick, from OS X
 
