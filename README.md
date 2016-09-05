@@ -51,7 +51,7 @@ Script to quickly pull, fix, and push [github](https://github.com/) pull request
 Script to quickly pull, fix, and push [github](https://github.com/) pull requests, merging directly to master and closing the previous pull request
 
 ### ringtonemaker
-Script to convert a video or audio file to an iPhone ringtone.
+Script to convert a video or audio file to an iPhone ringtone
 
 ### seren
 Script to rename files in a numerical sequence
