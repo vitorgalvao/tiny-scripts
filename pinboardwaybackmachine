@@ -55,6 +55,13 @@ if [[ -z "${token}" ]]; then
   exit 1
 fi
 
+# Check if token is correct
+token_check="$(curl --silent "https://api.pinboard.in/v1/user/api_token/?auth_token=${token}")"
+if [[ -z "${token_check}" ]]; then
+  echo 'The used Pinboard API token appears to be incorrect. Alternatively, Pinboard’s servers might be down.'
+  exit 1
+fi
+
 # get all your pinboard links
 links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | cut -d '"' -f 2 | sed '1d')
 link_countdown="$(wc -l <<< "${links}" | tr -d ' ')"
