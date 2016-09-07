@@ -14,9 +14,7 @@ usage() {
     usage: ${program} [options]
 
     options:
-      -t, --token <token>   Your Pinboard API token.
-      -a, --ask-for-token   Ask for your Pinboard API token on start.
-      -h, --help            Show this message.
+      -i, --include-unread    Also save unread bookmarks.
       -t, --token <token>     Your Pinboard API token.
       -a, --ask-for-token     Ask for your Pinboard API token on start.
       -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only, compatible with pinboardwaybackmachine).
@@ -31,6 +29,9 @@ while [[ "${1}" ]]; do
     -h | --help)
       usage
       exit 0
+      ;;
+    -i | --include-unread)
+      keep_unread='true'
       ;;
     -t | --token)
       token="${2}"
@@ -83,7 +84,12 @@ if [[ -n "${set_keychain_token}" ]]; then
 fi
 
 # get all your pinboard links
-links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | cut -d '"' -f 2 | sed '1d')
+if [[ "${keep_unread}" ]]; then
+  links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | cut -d '"' -f 2 | sed '1d')
+else
+  links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | grep --invert-match 'toread="yes"' | cut -d '"' -f 2 | sed '1d')
+fi
+
 link_countdown="$(wc -l <<< "${links}" | tr -d ' ')"
 
 # check each link individually
