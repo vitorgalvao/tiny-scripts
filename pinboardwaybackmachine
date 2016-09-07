@@ -17,6 +17,11 @@ usage() {
       -t, --token <token>   Your Pinboard API token.
       -a, --ask-for-token   Ask for your Pinboard API token on start.
       -h, --help            Show this message.
+      -t, --token <token>     Your Pinboard API token.
+      -a, --ask-for-token     Ask for your Pinboard API token on start.
+      -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only, compatible with pinboardwaybackmachine).
+      -u, --use-saved-token   Use Pinboard API token in Keychain (macOS-only, compatible with pinboardlinkcheck).
+      -h, --help              Show this message.
   " | sed -E 's/^ {4}//'
 }
 
@@ -34,6 +39,12 @@ while [[ "${1}" ]]; do
     -a | --ask-for-token)
       ask_for_token='true'
       ;;
+    -s | --save-token)
+      set_keychain_token='true'
+      ;;
+    -u | --use-saved-token)
+      get_keychain_token='true'
+      ;;
     -*)
       syntax_error "unrecognized option: ${1}"
       ;;
@@ -49,6 +60,9 @@ if [[ -n "${ask_for_token}" ]]; then
   echo
 fi
 
+# Use saved token (if any)
+[[ -n "${get_keychain_token}" ]] && token="$(security find-generic-password -a "${USER}" -s pinboard_api_token -w)"
+
 # exit if no token was set
 if [[ -z "${token}" ]]; then
   usage
@@ -60,6 +74,12 @@ token_check="$(curl --silent "https://api.pinboard.in/v1/user/api_token/?auth_to
 if [[ -z "${token_check}" ]]; then
   echo 'The used Pinboard API token appears to be incorrect. Alternatively, Pinboard’s servers might be down.'
   exit 1
+fi
+
+# Save token to Keychain
+if [[ -n "${set_keychain_token}" ]]; then
+  security add-generic-password -a "${USER}" -s pinboard_api_token -w "${token}"
+  exit 0
 fi
 
 # get all your pinboard links
