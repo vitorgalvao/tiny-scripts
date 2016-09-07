@@ -38,7 +38,7 @@ while [[ "${1}" ]]; do
       redirect_log='true'
       ;;
     -t | --token)
-      token="${1}"
+      token="${2}"
       shift
       ;;
     -a | --ask-for-token)
