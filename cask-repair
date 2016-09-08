@@ -276,8 +276,7 @@ fi
 [[ -n "${2}" ]] && finish abort 'You can only give one cask argument per run'
 
 # clean the cask's name, and check if it is valid
-cask_name="${1}"
-[[ "${cask_name}" == *'.rb' ]] && cask_name=$(echo "${cask_name}" | sed 's|\.rb$||')
+cask_name="${1%.rb}" # remove '.rb' extension, if present
 cask_file="./${cask_name}.rb"
 cask_branch="cask-repair_update-${cask_name}"
 [[ ! -f "${cask_file}" ]] && finish abort 'There is no such cask'
