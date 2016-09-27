@@ -26,6 +26,9 @@ Script to make animated gifs from a video file
 ### gifmaker
 Script to make animated gifs from sequences of images, with more control over FPS
 
+### gifprogress
+Script to convert a sequence of images to a gif, with a progress bar
+
 ### human-media-time
 Script to calculate the total running time of multiple media files, presenting the output in a human-readable way
 

@@ -1,0 +1,130 @@
+#!/bin/bash
+
+readonly program="$(basename "${0}")"
+
+depends_on() {
+  readonly local all_deps=("${@}")
+  local missing_deps=()
+
+  for dep in "${all_deps[@]}"; do
+    if ! command -v "${dep}" &>/dev/null; then
+      missing_deps+=("${dep}")
+    fi
+  done
+
+  if [[ "${#missing_deps[@]}" -gt 0 ]]; then
+    tput setaf 1
+    echo -e '\nThis script has unmet dependencies. You need to install these first:'
+    printf '  %s\n' "${missing_deps[@]}"
+    tput sgr0
+    exit 1
+  fi
+}
+
+syntax_error() {
+  echo "${program}: ${1}" >&2
+  echo "Try \`${program} --help\` for more information." >&2
+  exit 1
+}
+
+usage() {
+  echo "
+    usage: ${program} [options] <image_files>
+
+    options:
+      -c <color>, --bar-color <color>        Set the bar’s color. Defaults to '#fe562e'.
+      -s <integer>, --bar-height <integer>   Set the bar’s height in pixels. Defaults to '8'.
+      -p <string>, --bar-position <string>   Can be 'top' or 'bottom'. Defaults to 'bottom'.
+      -d <number>, --delay <number>          Delay between each frame, in seconds. Defaults to '1.5'.
+      -o <file>, --output-file <file>        File to output to. Defaults to 'output.gif' in the current directory.
+      -h, --help                     Show this help.
+  " | sed -E 's/^ {4}//'
+}
+
+# available flags
+while [[ "${1}" ]]; do
+  case "${1}" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -c | --bar-color)
+      bar_color="${2}"
+      shift
+      ;;
+    -s | --bar-height)
+      bar_height="${2}"
+      shift
+      ;;
+    -p | --bar-position)
+      bar_pos="${2}"
+      shift
+      ;;
+    -d | --delay)
+      seconds_delay="${2}"
+      shift
+      ;;
+    -o | --output-file)
+      output_file="${2}"
+      shift
+      ;;
+    -*)
+      syntax_error "unrecognized option: ${1}"
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
+
+# Sensible defaults, if no value is given
+[[ -z "${bar_color}" ]] && bar_color='#fe562e'
+[[ -z "${bar_height}" ]] && bar_height='8'
+[[ -z "${bar_pos}" ]] && bar_pos='bottom'
+[[ -z "${seconds_delay}" ]] && seconds_delay='1.5'
+[[ -z "${output_file}" ]] && output_file='output.gif'
+
+depends_on convert identify ffmpeg
+
+# abort if no file is given
+if [[ "$#" -eq 0 ]]; then
+  echo 'You need to give at least one image file (although less than 3 makes little sense).'
+  usage
+  exit 1
+fi
+
+# Variables and calculations.
+images=("$@")
+total_steps="$((${#images[@]} - 1))" # Remove one from the total number of elements in the images array since we will start counting steps from 0. This so so we can multiply by 0 (no bar on the first step) and map to the array correctly (zero-based).
+
+# Rely on first image for the size.
+canvas_width="$(identify -format '%[fx:w]' "${images[0]}")"
+canvas_height="$(identify -format '%[fx:h]' "${images[0]}")"
+
+bar_increment="$(((canvas_width + total_steps - 1) / total_steps))" # canvas_width/total_steps rounded up.
+[[ "${bar_pos}" == 'top' ]] && bar_ystart='0' || bar_ystart="$((canvas_height - bar_height))"
+bar_yend="$((bar_ystart + bar_height))"
+
+frame_delay="$(bc <<< "${seconds_delay} * 100")"
+
+tmp_bar_graphic="$(mktemp).png"
+tmp_dir="$(mktemp -d)"
+
+# Make bar graphics and overlay them on the original images.
+for step in $(seq -w 0 "${total_steps}"); do
+  bar_width="$((bar_increment * step))"
+
+  convert -size "${canvas_width}"x"${canvas_height}" canvas:transparent -fill "${bar_color}" -draw "rectangle 0,${bar_ystart} ${bar_width},${bar_yend}" "${tmp_bar_graphic}"
+
+  convert "${images[step]}" "${tmp_bar_graphic}" -composite "${tmp_dir}/${step}.png"
+done
+
+# Make gif.
+tmp_video="$(mktemp).mov"
+convert -delay "${frame_delay}" "${tmp_dir}/"*.png "${tmp_video}"
+
+# Same technique as [gfv](https://github.com/vitorgalvao/tiny-scripts/blob/master/gfv).
+palette="$(mktemp).png"
+ffmpeg -loglevel warning -i "${tmp_video}" -filter_complex "fps=10,scale=-1:-1:flags=lanczos,palettegen" "${palette}"
+ffmpeg -loglevel warning -i "${tmp_video}" -i "${palette}" -filter_complex "fps=10,scale=-1:-1:flags=lanczos[x];[x][1:v]paletteuse" "${output_file}"
