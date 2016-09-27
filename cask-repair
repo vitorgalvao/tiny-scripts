@@ -200,7 +200,13 @@ update_cask_shas() {
 
 # define function to open cask in appropriate editor
 edit_cask() {
-  [[ -n "${EDITOR}" ]] && eval "${EDITOR}" "${cask_file}" || open -W "${cask_file}"
+  echo 'Opening cask in default editor. If it is a GUI editor, you will need to completely quit it (⌘Q) before the script can contine.'
+
+  if [[ -n "${EDITOR}" ]]; then
+    eval "${EDITOR}" "${cask_file}"
+  else
+    [[ -n "${GIT_EDITOR}" ]] && eval "${GIT_EDITOR}" "${cask_file}" || open -W "${cask_file}"
+  fi
 }
 
 # define function to add warnings to be shown on review
