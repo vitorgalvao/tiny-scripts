@@ -30,17 +30,17 @@ usage() {
     usage: ${program} [options] <cask_name>
 
     options:
-      -l <remote>, --pull <remote>   Use to specify a remote to pull from (defaults to 'upstream').
-      -p <remote>, --push <remote>   Use to specify a remote to push to (defaults to 'origin').
-      -o, --open-home                Open the homepage for the given cask.
-      -a, --open-appcast             Open the appcast for the given cask.
-      -v, --cask-version             Give a version directly, instead of being prompted for it.
-      -u, --cask-url                 Give a URL directly, instead of being prompted for it.
-      -e, --edit-cask                Opens cask for editing before trying first download.
-      -c, --closes-issue <number>    Adds 'Closes #<number>.' to the commit message.
-      -b, --blind-submit             Submit cask without asking for confirmation, if there are no errors.
-      -d, --delete-branches          Deletes all local and remote branches named like cask-repair_update-<word>.
-      -h, --help                     Show this help.
+      -l <remote>, --pull <remote>           Use to specify a remote to pull from (defaults to 'upstream').
+      -p <remote>, --push <remote>           Use to specify a remote to push to (defaults to 'origin').
+      -o, --open-home                        Open the homepage for the given cask.
+      -a, --open-appcast                     Open the appcast for the given cask.
+      -v, --cask-version                     Give a version directly, instead of being prompted for it.
+      -u, --cask-url                         Give a URL directly, instead of being prompted for it.
+      -e, --edit-cask                        Opens cask for editing before trying first download.
+      -c <number>, --closes-issue <number>   Adds 'Closes #<number>.' to the commit message.
+      -b, --blind-submit                     Submit cask without asking for confirmation, if there are no errors.
+      -d, --delete-branches                  Deletes all local and remote branches named like cask-repair_update-<word>.
+      -h, --help                             Show this help.
   " | sed -E 's/^ {4}//'
 }
 
