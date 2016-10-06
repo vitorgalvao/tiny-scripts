@@ -394,7 +394,7 @@ cask_version="$(brew cask _stanza version ${cask_file})"
 
 # commit, push, submit pull request, clean
 readonly commit_message="Update ${cask_name} to ${cask_version}"
-readonly hub_message="$(echo -e "${commit_message}\n\n#### Checklist\n\n- [x] The commit message includes the cask’s name and version.\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.")"
+readonly hub_message="$(echo -e "${commit_message}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version.")"
 
 git commit "${cask_file}" --message "${commit_message}" --quiet
 git push --force "${remote_push}" "${cask_branch}" --quiet
