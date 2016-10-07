@@ -2,6 +2,7 @@
 
 readonly program="$(basename "${0}")"
 remote='upstream' # use 'upstream' as default remote
+squash_changes='true' # by default, squash changes
 
 # check if 'ghi' is installed and configured
 if [[ ! $(which 'ghi') ]] || ! security find-internet-password -s github.com -l 'ghi token' &> /dev/null; then
@@ -28,7 +29,8 @@ usage() {
     options:
       -m, --maintainer                 Use when merging a contribution from a maintainer.
       -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
-      -s, --squash                     Use to squash commits before pushing.
+      -s, --squash                     DEPRECATED. IT IS NOW THE DEFAULT.
+      -n, --no-squash                  Do not squash commits before pushing.
       -h, --help                       Show this help.
   " | sed -E 's/^ {4}//'
 }
@@ -54,7 +56,11 @@ while [[ "${1}" ]]; do
       shift
       ;;
     -s | --squash)
-      squash_changes='true'
+      echo -e "$(tput setaf 1)--squash is deprecated, and is now the deafult behaviour.$(tput sgr0)"
+      exit 1
+      ;;
+    -n | --no-squash)
+      squash_changes='false'
       ;;
     -*)
       syntax_error "unrecognized option: ${1}"
@@ -96,6 +102,14 @@ pull_remote() { # pull changes if local branch is behind
   [[ "${last_commit_local}" != "${last_commit_remote}" ]] && git pull --rebase "${remote}" master --quiet
 }
 
+rebase_squash() {
+  base_commit="${1}"
+
+  message "Squashing changes into a single commit…"
+
+  GIT_EDITOR="perl -pi -e 's/^pick\b/squash/ unless 1 .. 1'" git rebase --interactive "${base_commit}"
+}
+
 apply_patch() {
   url=$(perl -pe 's|(.*/pull/\d+).*|\1|' <<< "${1}") # clean url of extraneous information
   issue_number=$(sed 's|.*/||' <<< "${url}")
@@ -113,14 +127,6 @@ apply_patch() {
 
   [[ "${squash_changes}" == 'true' ]] && rebase_squash "${remote}/master"
   amend_message "${issue_number}"
-}
-
-rebase_squash() {
-  base_commit="${1}"
-
-  message "Squashing changes into a single commit…"
-
-  GIT_EDITOR="perl -pi -e 's/^pick\b/squash/ unless 1 .. 1'" git rebase --interactive "${base_commit}"
 }
 
 amend_message() {
