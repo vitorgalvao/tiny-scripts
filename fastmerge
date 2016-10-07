@@ -96,6 +96,14 @@ pull_remote() { # pull changes if local branch is behind
   [[ "${last_commit_local}" != "${last_commit_remote}" ]] && git pull --rebase "${remote}" master --quiet
 }
 
+rebase_squash() {
+  base_commit="${1}"
+
+  message "Squashing changes into a single commit…"
+
+  GIT_EDITOR="perl -pi -e 's/^pick\b/squash/ unless 1 .. 1'" git rebase --interactive "${base_commit}"
+}
+
 apply_patch() {
   url=$(perl -pe 's|(.*/pull/\d+).*|\1|' <<< "${1}") # clean url of extraneous information
   issue_number=$(sed 's|.*/||' <<< "${url}")
@@ -113,14 +121,6 @@ apply_patch() {
 
   [[ "${squash_changes}" == 'true' ]] && rebase_squash "${remote}/master"
   amend_message "${issue_number}"
-}
-
-rebase_squash() {
-  base_commit="${1}"
-
-  message "Squashing changes into a single commit…"
-
-  GIT_EDITOR="perl -pi -e 's/^pick\b/squash/ unless 1 .. 1'" git rebase --interactive "${base_commit}"
 }
 
 amend_message() {
