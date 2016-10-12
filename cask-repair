@@ -200,7 +200,7 @@ update_cask_shas() {
 
 # define function to open cask in appropriate editor
 edit_cask() {
-  echo 'Opening cask in default editor. If it is a GUI editor, you will need to completely quit it (⌘Q) before the script can contine.'
+  echo 'Opening cask in default editor. If it is a GUI editor, you will need to completely quit it (⌘Q) before the script can continue.'
 
   if [[ -n "${EDITOR}" ]]; then
     eval "${EDITOR}" "${cask_file}"
