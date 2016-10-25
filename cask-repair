@@ -368,7 +368,7 @@ until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
   if [[ "${cask_updated}" == 'blindly' ]] && [[ "${#warning_messages[@]}" -eq 0 ]]; then
     cask_updated='y'
   else
-    read -n1 -p 'Is everything correct? You can also make further manual edits (y/n/e) ' cask_updated
+    read -n1 -p 'Is everything correct? You can also make further manual edits and checksums recalculated (y/n/e) ' cask_updated
     echo # add an empty line
   fi
 
