@@ -29,7 +29,6 @@ usage() {
     options:
       -m, --maintainer                 Use when merging a contribution from a maintainer.
       -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
-      -s, --squash                     DEPRECATED. IT IS NOW THE DEFAULT.
       -n, --no-squash                  Do not squash commits before pushing.
       -h, --help                       Show this help.
   " | sed -E 's/^ {4}//'
@@ -54,10 +53,6 @@ while [[ "${1}" ]]; do
     -r | --remote)
       remote="${2}"
       shift
-      ;;
-    -s | --squash)
-      echo -e "$(tput setaf 1)--squash is deprecated, and is now the deafult behaviour.$(tput sgr0)"
-      exit 1
       ;;
     -n | --no-squash)
       squash_changes='false'

@@ -28,7 +28,6 @@ usage() {
     options:
       -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
       -c, --continue                   Use after making your fixes, to push your changes and close the issue with a message. If you use it with uncommitted changes, they'll all be squashed (fixup) into the original patch; else your commits will be preserved.
-      -s, --squash                     DEPRECATED. IT IS NOW THE DEFAULT.
       -n, --no-squash                  Do not squash commits before pushing.
       -h, --help                       Show this help.
   " | sed -E 's/^ {4}//'
@@ -53,10 +52,6 @@ while [[ "${1}" ]]; do
       ;;
     -c | --continue)
       push_changes='true'
-      ;;
-    -s | --squash)
-      echo -e "$(tput setaf 1)--squash is deprecated, and is now the deafult behaviour.$(tput sgr0)"
-      exit 1
       ;;
     -n | --no-squash)
       squash_changes='false'
