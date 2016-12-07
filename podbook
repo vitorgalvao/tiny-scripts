@@ -1,131 +1,290 @@
 #!/bin/bash
 
-IFS=$'\n'
 readonly program="$(basename "${0}")"
+readonly dropbox_public_id_file="${HOME}/.config/podbook"
+readonly audio_extentions=('aac' 'm4a' 'm4b' 'mp3')
+readonly audio_files_regex="$(sed 's/ /|/g;s/^/^.*\\.(/;s/$/)$/' <<< "${audio_extentions[@]}")"
 
-syntax_error() {
+function syntax_error {
   echo "${program}: ${1}" >&2
   echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
-# usage instructions
-usage() {
+function usage {
   echo "
     usage: ${program} [options]
 
     options:
-      -i <dropbox_id>, --id <dropbox_id>              Set your dropbox Public diretory ID.
-      -t <title>, --title <title>                     Set the podcast's title.
-      -d <description>, --description <description>   Set the podcast's description.
-      -h, --help                                      Show this message.
+      -t <string>, --title <string>    Book title. Defaults to the directory’s name.
+      -a <string>, --author <string>   Book author. Defaults to trying to extract it from the first audio file.
+      -c <url>, --cover <url>          URL to image of book cover. Defaults to trying to extract it from the first audio file.
+      -h, --help                       Show this help.
   " | sed -E 's/^ {4}//'
 }
 
-# options to use
+function color_message {
+  local color="${1}"
+  local message="${2}"
+  readonly local all_colors=('black' 'red' 'green' 'yellow' 'blue' 'magenta' 'cyan' 'white')
+
+  for i in "${!all_colors[@]}"; do
+    if [[ "${all_colors[${i}]}" == "${color}" ]]; then
+      local color_index="${i}"
+      echo -e "$(tput setaf "${i}")${message}$(tput sgr0)"
+    fi
+  done
+
+  if [[ -z "${color_index}" ]]; then
+    echo "${FUNCNAME[0]}: '${color}' is not a valid color."
+    exit 1
+  fi
+}
+
+function bold_message {
+  echo "$(tput bold)${1}$(tput sgr0)"
+}
+
+function fail_message {
+  color_message 'red' "${1}" >&2
+  exit 1
+}
+
+function warning_message {
+  color_message 'yellow' "${1}"
+}
+
+function absolutepath {
+  if [[ -e "${1}" ]]; then
+    [[ -d "${1}" ]] && (cd "${1}" && pwd -P) || (cd "$(dirname "${1}")" && echo "$(pwd -P)/$(basename ${1%/})")
+  else
+    echo "${FUNCNAME[0]}: no such file or directory: ${1}" >&2
+    return 1
+  fi
+}
+
+function is_number? {
+  [[ "${1}" =~ ^[0-9]+$ ]]
+}
+
+function fail_if_no_arguments {
+  if [[ "$#" -eq 0 ]]; then
+    usage
+    exit 1
+  fi
+}
+
+function fail_unless_dir {
+  [[ -d "${1}" ]] || fail_message 'You need to point the script at a directory.'
+}
+
+function fail_unless_in_public_dir {
+  [[ "${1}" == *'/Dropbox/Public/'* ]] || fail_message 'You need to point the script at a directory inside "/Dropbox/Public/".'
+}
+
+function check_dependencies {
+  readonly local dependency='eyeD3'
+
+  if ! command -v "${dependency}" &>/dev/null; then
+    fail_message "This script requires ${dependency}. Please install it first."
+  fi
+}
+
+function convert_to_public_url {
+  sed "s|.*/Dropbox/Public|https://dl.dropboxusercontent.com/u/$(get_dropbox_id)|" <<< "${1}"
+}
+
+function request_dropbox_id {
+  local dropbox_id
+  read -p 'Your Dropbox Public Folder (https://www.dropbox.com/help/16) ID: ' dropbox_id
+
+  echo -n "${dropbox_id}" > "${dropbox_public_id_file}"
+  get_dropbox_id
+}
+
+function get_dropbox_id {
+  [[ -f "${dropbox_public_id_file}" ]] || request_dropbox_id
+
+  local dropbox_id
+  dropbox_id="$(cat "${dropbox_public_id_file}")"
+
+  if is_number? "${dropbox_id}"; then
+    echo -n "${dropbox_id}"
+  else
+    warning_message 'The Dropbox Public Folder must be a number.'
+    request_dropbox_id
+  fi
+}
+
+function extract_cover {
+  local file_name book_dir book_cover
+  readonly file_name="${1}"
+  readonly book_dir="${2}"
+
+  eyeD3 --write-images="${book_dir}" "${file_name}" &> /dev/null
+  readonly book_cover="$(find "${book_dir}" -name 'FRONT_COVER.*')"
+  [[ -n "${book_cover}" ]] && echo -n "${book_cover}" || request_cover
+}
+
+function request_cover {
+  local book_cover
+
+  echo 'The book cover could not be automatically extracted.' >&2
+  read -p 'Insert URL to cover image: ' book_cover
+
+  echo -n "${book_cover}"
+}
+
+function extract_author {
+  local file_name book_dir book_author
+  readonly file_name="${1}"
+  readonly book_dir="${2}"
+
+  readonly book_author="$(eyeD3 "${file_name}" | sed 's/.\[[0-9]\{1,\}m//g' | grep '^artist: ' | sed 's/^artist: //')"
+  [[ -n "${book_author}" ]] && echo -n "${book_author}" || request_author
+}
+
+function request_author {
+  local book_author
+
+  echo 'The book author could not be automatically determined.' >&2
+  read -p 'Insert book author: ' book_author
+
+  echo -n "${book_author}"
+}
+
+function set_title {
+  local item_title="${1}"
+  local file_path="${2}"
+
+  eyeD3 --encoding='utf8' --title="${item_title}" "${file_path}" &> /dev/null
+}
+
+function inform_details {
+  local book_title book_author online_book_cover
+  readonly book_title="${1}"
+  readonly book_author="${2}"
+  readonly online_book_cover="${3}"
+
+  echo "
+    A feed will be built with the following details:
+
+    $(bold_message 'title:') ${book_title}
+    $(bold_message 'author:') ${book_author}
+    $(bold_message 'cover image:') ${online_book_cover}
+  " | sed -E 's/^ {4}//' >&2
+}
+
+function start_feed {
+  local book_title book_author book_cover book_feed
+  readonly book_title="${1}"
+  readonly book_author="${2}"
+  readonly book_cover="${3}"
+  readonly book_feed="${4}"
+
+  echo "
+    <?xml version='1.0' encoding='utf-8'?>
+    <rss version='2.0'>
+    <channel>
+    <title>${book_title}</title>
+    <description>by ${book_author}</description>
+    <image><url>${book_cover}</url></image>
+    <pubDate>$(date '+%a, %b %d %T %Z %Y')</pubDate>
+  " > ${book_feed}
+}
+
+function add_to_feed {
+  local item_title file_time file_url book_feed
+  item_title="${1}"
+  file_time="${2}"
+  file_url="${3}"
+  readonly book_feed="${4}"
+
+  echo "
+    <item>
+    <title>${item_title}</title>
+    <enclosure url=\"${file_url}\"/>
+    <pubDate>${file_time}</pubDate>
+    </item>
+  " >> "${book_feed}"
+}
+
+function end_feed {
+  readonly local book_feed="${1}"
+
+  echo "
+    </channel>
+    </rss>
+  " >> ${book_feed}
+}
+
+function main {
+  local book_dir online_book_dir book_feed first_audio_file book_title book_author book_cover online_book_cover file_counter file_time file_name item_title file_url
+  readonly book_dir="$(absolutepath "${1}")"
+  fail_unless_dir "${book_dir}"
+  fail_unless_in_public_dir "${book_dir}"
+  readonly online_book_dir="$(convert_to_public_url "${book_dir}")"
+  book_feed="${book_dir}/feed.rss"
+
+  readonly first_audio_file="$(find -E "${book_dir}" -iregex "${audio_files_regex}" | head -1)"
+  [[ -n "${given_title}" ]] && readonly book_title="${given_title}" || readonly book_title="$(basename "${book_dir}")"
+  [[ -n "${given_author}" ]] && readonly book_author="${given_author}" || readonly book_author="$(extract_author "${first_audio_file}" "${book_dir}")"
+  [[ -n "${given_cover}" ]] && readonly book_cover="${given_cover}" || readonly book_cover="$(extract_cover "${first_audio_file}" "${book_dir}")"
+  readonly online_book_cover="$(convert_to_public_url "${book_cover}")"
+
+  inform_details "${book_title}" "${book_author}" "${online_book_cover}"
+
+  start_feed "${book_title}" "${book_author}" "${online_book_cover}" "${book_feed}"
+
+  file_counter='0'
+  while IFS= read -r -d '' file; do
+    file_counter="$((file_counter + 1))"
+    file_time="$(date -v +"${file_counter}"M '+%a, %b %d %T %Z %Y')"
+    file_name="$(basename "${file}" | perl -MHTML::Entities -CS -pe'$_ = encode_entities($_, "&<")')"
+    item_title="${file_name%.*}"
+    file_url="${online_book_dir}/${file_name}"
+
+    set_title "${item_title}" "${file}"
+    add_to_feed "${item_title}" "${file_time}" "${file_url}" "${book_feed}"
+  done < <(find -E "${book_dir}" -iregex "${audio_files_regex}" -print0)
+
+  end_feed "${book_feed}"
+
+  convert_to_public_url "${book_feed}"
+}
+
+check_dependencies
+
 while [[ "${1}" ]]; do
   case "${1}" in
     -h | --help)
       usage
       exit 0
       ;;
-    -i | --id)
-      dropbox_id="${2}"
-      shift
-      ;;
     -t | --title)
-      podcast_title="${2}"
+      given_title="${2}"
       shift
       ;;
-    -d | --description)
-      podcast_description="${2}"
+    -a | --author)
+      given_author="${2}"
+      shift
+      ;;
+    -c | --cover)
+      given_cover="${2}"
       shift
       ;;
     -*)
       syntax_error "unrecognized option: ${1}"
       ;;
+    *)
+      break
+      ;;
   esac
   shift
 done
 
-# files
-dropbox_id_file="${HOME}/.podbook"
-podcast_file=$(echo -n "${podcast_title}.rss" | tr -d ' ')
+fail_if_no_arguments "$@"
 
-# check for dropbox_id
-if [[ -z "${dropbox_id}" ]]; then
-  if [[ -f "${dropbox_id_file}" ]]; then
-    dropbox_id=$(cat "${dropbox_id_file}")
-  else
-    echo -e "You need to set your Dropbox Public directory ID, via the '-i' flag.\nAlternatively, put a '.podbook' file inside your home diretory, with your id in a single line"
-    exit 1
-  fi
-fi
-
-# exit if title is missing
-if [[ -z "${podcast_title}" ]]; then
-  echo "You need to set a podcast title"
-  usage
-  exit 1
-fi
-
-# check if inside Dropbox/Public
-public_dir=$(pwd | perl -pe 's|.*(Dropbox/Public).*|\1|')
-if [[ -z "${public_dir}" ]]; then
-  echo "You need to be inside your 'Dropbox/Public' directory (or a subdirectory of it)"
-  exit 1
-fi
-
-# current subdirectory inside Dropbox/Public
-current_dir=$(pwd | perl -pe 's|.*(Dropbox/Public)(.*)|\2|')
-# if not a subdirectory, set it accordingly
-[[ -z "${current_dir}" ]] && current_dir="/"
-
-current_time=$(date "+%a, %b %d %T %Z %Y")
-
-file_types() {
-  find . -depth 1 -type f -name '*.m4a' -or -name '*.mp3' -or -name '*.mov' -or -name '*.mp4' -or -name '*.m4v' -or -name '*.pdf' -or -name '*.epub'
-}
-
-# get fist jpg or png in the directory for the artwork
-artwork=$(find . -depth 1 -type f -name '*jpg' -or -name '*jpeg' -or -name '*png' | head -1 | xargs basename | perl -MHTML::Entities -CS -pe'$_ = encode_entities($_, "&<")')
-
-# functions to write the xml
-xmlStart() {
-podcast_xml="<?xml version='1.0' encoding='utf-8'?>
-<rss version='2.0'>
-<channel>
-<title>${podcast_title}</title>
-<description>${podcast_description}</description>
-<image><url>https://dl.dropboxusercontent.com/u/${dropbox_id}${current_dir}/${artwork}</url></image>
-<pubDate>${current_time}</pubDate>"
-}
-
-xmlEnd() {
-podcast_xml+="</channel>
-</rss>"
-}
-
-xmlItem() {
-file_name=$(echo "${1}" | sed 's|\./||' | perl -MHTML::Entities -CS -pe'$_ = encode_entities($_, "&<")')
-item_title="${file_name%.*}"
-item_url="https://dl.dropboxusercontent.com/u/${dropbox_id}${current_dir}/${file_name}"
-
-podcast_xml+="<item>
-<title>${item_title}</title>
-<enclosure url=\"${item_url}\"/>
-</item>"
-}
-
-# write the xml
-xmlStart
-for file in $(file_types); do
-  xmlItem "${file}"
+for dir in "$@"; do
+  main "${dir}"
 done
-xmlEnd
-
-echo "${podcast_xml}" > "${podcast_file}"
-
-# copy the url of podcast_file to the clipboard
-echo -n "https://dl.dropboxusercontent.com/u/${dropbox_id}${current_dir}/${podcast_file}" | pbcopy
-echo "Podcast feed url copied to clipboard"
