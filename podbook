@@ -116,23 +116,8 @@ function get_dropbox_id {
   fi
 }
 
-function extract_cover {
-  local file_name book_dir book_cover
   readonly file_name="${1}"
-  readonly book_dir="${2}"
 
-  eyeD3 --write-images="${book_dir}" "${file_name}" &> /dev/null
-  readonly book_cover="$(find "${book_dir}" -name 'FRONT_COVER.*')"
-  [[ -n "${book_cover}" ]] && echo -n "${book_cover}" || request_cover
-}
-
-function request_cover {
-  local book_cover
-
-  echo 'The book cover could not be automatically extracted.' >&2
-  read -p 'Insert URL to cover image: ' book_cover
-
-  echo -n "${book_cover}"
 }
 
 function extract_author {
@@ -150,6 +135,25 @@ function request_author {
   read -p 'Insert book author: ' book_author
 
   echo -n "${book_author}"
+}
+
+function extract_cover {
+  local file_name book_dir book_cover
+  readonly file_name="${1}"
+  readonly book_dir="${2}"
+
+  eyeD3 --write-images="${book_dir}" "${file_name}" &> /dev/null
+  readonly book_cover="$(find "${book_dir}" -name 'FRONT_COVER.*')"
+  [[ -n "${book_cover}" ]] && echo -n "${book_cover}" || request_cover
+}
+
+function request_cover {
+  local book_cover
+
+  echo 'The book cover could not be automatically extracted.' >&2
+  read -p 'Insert URL to cover image: ' book_cover
+
+  echo -n "${book_cover}"
 }
 
 function set_title {
