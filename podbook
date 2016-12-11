@@ -197,7 +197,7 @@ function start_feed {
     <description>by ${book_author}</description>
     <image><url>${book_cover}</url></image>
     <pubDate>$(date '+%a, %b %d %T %Z %Y')</pubDate>
-  " > ${book_feed}
+  " > "${book_feed}"
 }
 
 function add_to_feed {
@@ -222,7 +222,7 @@ function end_feed {
   echo "
     </channel>
     </rss>
-  " >> ${book_feed}
+  " >> "${book_feed}"
 }
 
 function main {
