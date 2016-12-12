@@ -117,11 +117,12 @@ function get_dropbox_id {
 }
 
 function extract_title {
-  local file_name book_title
+  local file_name book_dir book_title
   readonly file_name="${1}"
+  readonly book_dir="${2}"
 
   readonly book_title="$(eyeD3 "${file_name}" | sed 's/.\[[0-9]\{1,\}m//g' | grep '^album: ' | sed 's/^album: //')"
-  [[ -n "${book_title}" ]] && echo -n "${book_title}"
+  [[ -n "${book_title}" ]] && echo -n "${book_title}" || basename "${book_dir}"
 }
 
 function extract_author {
@@ -234,8 +235,7 @@ function main {
   book_feed="${book_dir}/feed.rss"
 
   readonly first_audio_file="$(find -E "${book_dir}" -iregex "${audio_files_regex}" | head -1)"
-  [[ -n "${given_title}" ]] && readonly book_title="${given_title}" || readonly book_title="$(extract_title "${first_audio_file}")" || readonly book_title="$(basename "${book_dir}")"
-  [[ -n "${given_author}" ]] && readonly book_author="${given_author}" || readonly book_author="$(extract_author "${first_audio_file}" "${book_dir}")"
+  [[ -n "${given_title}" ]] && readonly book_title="${given_title}" || readonly book_title="$(extract_title "${first_audio_file}" "${book_dir}")"
   [[ -n "${given_author}" ]] && readonly book_author="${given_author}" || readonly book_author="$(extract_author "${first_audio_file}")"
   [[ -n "${given_cover}" ]] && readonly book_cover="${given_cover}" || readonly book_cover="$(extract_cover "${first_audio_file}" "${book_dir}")"
   readonly online_book_cover="$(convert_to_public_url "${book_cover}")"
