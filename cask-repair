@@ -268,7 +268,7 @@ if [[ -z "${1}" ]] && [[ "${can_run_without_arguments}" != 'true' ]]; then
 fi
 
 # exit if not inside a 'homebrew-*/Casks' directory
-casks_dir=$(pwd | perl -ne 'print m{homebrew-[^/]+/Casks}')
+casks_dir=$(pwd | perl -ne 'print m{homebrew-[^/]+/Casks}i')
 if [[ -z "${casks_dir}" ]]; then
   echo -e "\n$(tput setaf 1)You need to be inside a '/homebrew-*/Casks' directory$(tput sgr0)\n"
   exit 1
