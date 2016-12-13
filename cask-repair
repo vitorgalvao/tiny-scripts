@@ -154,7 +154,7 @@ sha_change() {
   cask_sha_deliberatedly_unchecked=$(grep 'sha256 :no_check # required as upstream package is updated in-place' "${cask_file}")
   [[ -n "${cask_sha_deliberatedly_unchecked}" ]] && return # abort function if cask deliberate uses ':no_check' with a version
 
-  # set sha256 as :no_check tempoparily, to prevent mismatch errors when fetching
+  # set sha256 as :no_check temporarily, to prevent mismatch errors when fetching
   modify_stanza 'sha256' ':no_check'
 
   brew cask fetch --force "${cask_file}"
