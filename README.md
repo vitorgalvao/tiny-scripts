@@ -33,7 +33,7 @@ Script to convert a sequence of images to a gif, with a progress bar
 Script to calculate the total running time of multiple media files, presenting the output in a human-readable way
 
 ### labelcolor
-Script to change label color of files in OS X
+Script to change label color of files in macOS
 
 ### lovecolor
 Script to get color palette from colourlovers and format it to use in processing
@@ -66,7 +66,7 @@ Script to get a strong password by leveraging multiple sources
 Script to email local sunrise and sunset times (via [Wolfram Alpha](http://www.wolframalpha.com/)) for a given location
 
 ### ubuntu-usb
-Script to facilitate installing ubuntu on a USB stick, from OS X
+Script to facilitate installing ubuntu on a USB stick, from macOS
 
 ### unsplashdownload
 Script to download images from [unsplash](https://unsplash.com/)’s last batch
