@@ -225,16 +225,20 @@ function start_feed {
 }
 
 function add_to_feed {
-  local item_title file_time file_url book_feed
+  local item_title file_time file_duration file_mime file_size file_url book_feed
   item_title="${1}"
   file_time="${2}"
-  file_url="${3}"
-  readonly book_feed="${4}"
+  file_duration="${3}"
+  file_mime="${4}"
+  file_size="${5}"
+  file_url="${6}"
+  readonly book_feed="${7}"
 
   echo "
     <item>
     <title>${item_title}</title>
-    <enclosure url=\"${file_url}\"/>
+    <enclosure url='${file_url}' length='${file_size}' type='${file_mime}' />
+    <itunes:duration>${file_duration}</itunes:duration>
     <pubDate>${file_time}</pubDate>
     </item>
   " >> "${book_feed}"
@@ -250,7 +254,7 @@ function end_feed {
 }
 
 function main {
-  local book_dir online_book_dir book_feed first_audio_file book_title book_author book_cover online_book_cover file_counter file_time file_name item_title file_url
+  local book_dir online_book_dir book_feed first_audio_file book_title book_author book_cover online_book_cover file_counter file_time file_duration file_mime file_size file_name item_title file_url
   readonly book_dir="$(absolutepath "${1}")"
   fail_unless_dir "${book_dir}"
   fail_unless_in_public_dir "${book_dir}"
@@ -279,7 +283,7 @@ function main {
     file_url="${online_book_dir}/${file_name}"
 
     set_title "${item_title}" "${file}"
-    add_to_feed "${item_title}" "${file_time}" "${file_url}" "${book_feed}"
+    add_to_feed "${item_title}" "${file_time}" "${file_duration}" "${file_mime}" "${file_size}" "${file_url}" "${book_feed}"
   done < <(find -E "${book_dir}" -iregex "${audio_files_regex}" -print0)
 
   end_feed "${book_feed}"
