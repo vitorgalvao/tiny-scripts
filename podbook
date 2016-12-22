@@ -169,6 +169,14 @@ function extract_duration {
   echo -n "${file_duration}"
 }
 
+function extract_mime {
+  local file_name file_mime
+  readonly file_name="${1}"
+
+  readonly file_mime="$(file --mime-type "${file_name}" | sed 's/.*: //')"
+  echo -n "${file_mime}"
+}
+
 function set_title {
   local item_title="${1}"
   local file_path="${2}"
@@ -256,6 +264,7 @@ function main {
     file_counter="$((file_counter + 1))"
     file_time="$(date -R -v +"${file_counter}"M)"
     file_duration="$(extract_duration "${file}")"
+    file_mime="$(extract_mime "${file}")"
     file_name="$(basename "${file}" | perl -MHTML::Entities -CS -pe'$_ = encode_entities($_, "&<")')"
     item_title="${file_name%.*}"
     file_url="${online_book_dir}/${file_name}"
