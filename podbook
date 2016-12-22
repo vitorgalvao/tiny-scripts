@@ -161,6 +161,14 @@ function request_cover {
   echo -n "${book_cover}"
 }
 
+function extract_duration {
+  local file_name file_duration
+  readonly file_name="${1}"
+
+  readonly file_duration="$(eyeD3 "${file_name}" | sed 's/.\[[0-9]\{1,\}m//g' | grep '^Time: ' | perl -pe 's/^Time: (\d+:\d+:\d+).*/\1/')"
+  echo -n "${file_duration}"
+}
+
 function set_title {
   local item_title="${1}"
   local file_path="${2}"
@@ -247,6 +255,7 @@ function main {
   while IFS= read -r -d '' file; do
     file_counter="$((file_counter + 1))"
     file_time="$(date -R -v +"${file_counter}"M)"
+    file_duration="$(extract_duration "${file}")"
     file_name="$(basename "${file}" | perl -MHTML::Entities -CS -pe'$_ = encode_entities($_, "&<")')"
     item_title="${file_name%.*}"
     file_url="${online_book_dir}/${file_name}"
