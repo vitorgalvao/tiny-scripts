@@ -126,5 +126,5 @@ convert -delay "${frame_delay}" "${tmp_dir}/"*.png "${tmp_video}"
 
 # Same technique as [gfv](https://github.com/vitorgalvao/tiny-scripts/blob/master/gfv).
 palette="$(mktemp).png"
-ffmpeg -loglevel warning -i "${tmp_video}" -filter_complex "fps=10,scale=-1:-1:flags=lanczos,palettegen" "${palette}"
-ffmpeg -loglevel warning -i "${tmp_video}" -i "${palette}" -filter_complex "fps=10,scale=-1:-1:flags=lanczos[x];[x][1:v]paletteuse" "${output_file}"
+ffmpeg -loglevel warning -i "${tmp_video}" -filter_complex 'fps=10,scale=-1:-1:flags=lanczos,palettegen' "${palette}"
+ffmpeg -loglevel warning -i "${tmp_video}" -i "${palette}" -filter_complex 'fps=10,scale=-1:-1:flags=lanczos[x];[x][1:v]paletteuse' "${output_file}"
