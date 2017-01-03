@@ -96,15 +96,15 @@ fi
 
 # Variables and calculations.
 images=("$@")
-total_steps="$((${#images[@]} - 1))" # Remove one from the total number of elements in the images array since we will start counting steps from 0. This so so we can multiply by 0 (no bar on the first step) and map to the array correctly (zero-based).
+total_steps="$(bc <<< "${#images[@]} - 1")" # Remove one from the total number of elements in the images array since we will start counting steps from 0. This is so we can multiply by 0 (no bar on the first step) and map to the array correctly (zero-based).
 
 # Rely on first image for the size.
 canvas_width="$(identify -format '%[fx:w]' "${images[0]}")"
 canvas_height="$(identify -format '%[fx:h]' "${images[0]}")"
 
-bar_increment="$(((canvas_width + total_steps - 1) / total_steps))" # canvas_width/total_steps rounded up.
-[[ "${bar_pos}" == 'top' ]] && bar_ystart='0' || bar_ystart="$((canvas_height - bar_height))"
-bar_yend="$((bar_ystart + bar_height))"
+bar_increment="$(bc <<< "(${canvas_width} + ${total_steps} - 1) / ${total_steps}")" # canvas_width/total_steps rounded up.
+[[ "${bar_pos}" == 'top' ]] && bar_ystart='0' || bar_ystart="$(bc <<< "${canvas_height} - ${bar_height}")"
+bar_yend="$(bc <<< "${bar_ystart} + ${bar_height}")"
 
 frame_delay="$(bc <<< "${seconds_delay} * 100")"
 
@@ -113,7 +113,7 @@ tmp_dir="$(mktemp -d)"
 
 # Make bar graphics and overlay them on the original images.
 for step in $(seq -w 0 "${total_steps}"); do
-  bar_width="$((bar_increment * step))"
+  bar_width="$(bc <<< "${bar_increment} * ${step_number}")"
 
   convert -size "${canvas_width}"x"${canvas_height}" canvas:transparent -fill "${bar_color}" -draw "rectangle 0,${bar_ystart} ${bar_width},${bar_yend}" "${tmp_bar_graphic}"
 
