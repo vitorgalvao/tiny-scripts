@@ -112,12 +112,14 @@ tmp_bar_graphic="$(mktemp).png"
 tmp_dir="$(mktemp -d)"
 
 # Make bar graphics and overlay them on the original images.
-for step in $(seq -w 0 "${total_steps}"); do
+for step_name in $(seq -w 0 "${total_steps}"); do
+  [[ "${step_name}" =~ ^0+$ ]] && step_number='0' || step_number="$(sed -E 's/^0+//' <<< "${step_name}")" # Remove leading zeros
+
   bar_width="$(bc <<< "${bar_increment} * ${step_number}")"
 
   convert -size "${canvas_width}"x"${canvas_height}" canvas:transparent -fill "${bar_color}" -draw "rectangle 0,${bar_ystart} ${bar_width},${bar_yend}" "${tmp_bar_graphic}"
 
-  convert "${images[step]}" "${tmp_bar_graphic}" -composite "${tmp_dir}/${step}.png"
+  convert "${images[step_number]}" "${tmp_bar_graphic}" -composite "${tmp_dir}/${step_name}.png"
 done
 
 # Make gif.
