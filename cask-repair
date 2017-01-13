@@ -2,36 +2,67 @@
 
 readonly program="$(basename "${0}")"
 readonly submit_pr_to='caskroom:master'
-readonly user_agent=(--user-agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36')
-remote_pull='upstream' # use 'upstream' as default remote to pull from
-remote_push='origin' # use 'origin' as default remote to push to
-show_home='false' # by default, do not open the cask's homepage
-show_appcast='false' # by default, do not open the cask's appcast
+readonly cask_repair_remote_name='cask-repair'
+readonly caskroom_origin_remote='https://github.com/caskroom/'
+readonly caskroom_taps=(homebrew-cask homebrew-versions homebrew-fonts homebrew-eid)
+readonly caskroom_taps_dir="$(brew --repository)/Library/Taps/caskroom"
+readonly user_agent=(--user-agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10) http://caskroom.io')
+readonly hub_config="${HOME}/.config/hub"
+
+show_home='false' # By default, do not open the cask's homepage
+show_appcast='false' # By default, do not open the cask's appcast
 warning_messages=()
 
-# check if 'hub' is installed and configured
-if ! command -v 'hub' &>/dev/null || [[ -z "${GITHUB_TOKEN}" && ! $(grep 'oauth_token:' "${HOME}/.config/hub" 2>/dev/null) ]]; then
-  echo -e "$(tput setaf 1)
-    This script requires 'hub' installed and configured.
-    If you have [Homebrew](http://brew.sh), you can install it with 'brew install hub'.
-    To configure it, run 'cd $(brew --repository) && hub issue'. Your Github password will be required, but is never stored.
-  $(tput sgr0)" | sed -E 's/ {4}//' >&2
-  exit 1
-fi
+function color_message {
+  local color="${1}"
+  local message="${2}"
+  readonly local all_colors=('black' 'red' 'green' 'yellow' 'blue' 'magenta' 'cyan' 'white')
 
-syntax_error() {
-  echo "${program}: ${1}" >&2
-  echo "Try \`${program} --help\` for more information." >&2
+  for i in "${!all_colors[@]}"; do
+    if [[ "${all_colors[${i}]}" == "${color}" ]]; then
+      local color_index="${i}"
+      echo -e "$(tput setaf "${i}")${message}$(tput sgr0)"
+    fi
+  done
+
+  if [[ -z "${color_index}" ]]; then
+    echo "${FUNCNAME[0]}: '${color}' is not a valid color."
+    exit 1
+  fi
+}
+
+function failure_message {
+  color_message 'red' "${1}" >&2
   exit 1
 }
 
-usage() {
+function success_message {
+  color_message 'green' "${1}"
+}
+
+function warning_message {
+  color_message 'yellow' "${1}"
+}
+
+function syntax_error {
+  failure_message "${program}: ${1}\nTry \`${program} --help\` for more information."
+}
+
+
+function require_hub {
+  if ! command -v 'hub' &>/dev/null; then
+    warning_message '`hub` was not found. Installing it…'
+    brew install hub
+  fi
+
+  [[ -z "${GITHUB_TOKEN}" && ! $(grep 'oauth_token:' "${hub_config}" 2>/dev/null) ]] && failure_message '`hub` is not configured.\nTo do it, run `cd $(brew --repository) && hub issue`. Your Github password will be required, but is never stored.'
+}
+
+function usage {
   echo "
     usage: ${program} [options] <cask_name>
 
     options:
-      -l <remote>, --pull <remote>           Use to specify a remote to pull from (defaults to 'upstream').
-      -p <remote>, --push <remote>           Use to specify a remote to push to (defaults to 'origin').
       -o, --open-home                        Open the homepage for the given cask.
       -a, --open-appcast                     Open the appcast for the given cask.
       -v, --cask-version                     Give a version directly, instead of being prompted for it.
@@ -39,25 +70,264 @@ usage() {
       -e, --edit-cask                        Opens cask for editing before trying first download.
       -c <number>, --closes-issue <number>   Adds 'Closes #<number>.' to the commit message.
       -b, --blind-submit                     Submit cask without asking for confirmation, if there are no errors.
-      -d, --delete-branches                  Deletes all local and remote branches named like cask-repair_update-<word>.
+      -i, --install-cask                     Installs your updated cask after submission.
+      -d, --delete-branches                  Deletes all local and remote branches named like ${cask_repair_remote_name}_update-<word>.
       -h, --help                             Show this help.
   " | sed -E 's/^ {4}//'
 }
 
-# available flags
+function ensure_caskroom_repos {
+  local current_caskroom_taps
+
+  current_caskroom_taps=($(HOMEBREW_NO_AUTO_UPDATE=1 brew tap | grep '^caskroom' | sed 's|^caskroom/|homebrew-|'))
+
+  for repo in "${caskroom_taps[@]}"; do
+    if grep --silent "${repo}" <<< "${current_caskroom_taps[@]}"; then
+      continue
+    else
+      warning_message "\`caskroom/${repo}\` not tapped. Tapping…"
+      HOMEBREW_NO_AUTO_UPDATE=1 brew tap "caskroom/${repo}"
+    fi
+  done
+}
+
+function cd_to_cask_tap {
+  local cask_file cask_file_location
+
+  cask_file="${1}"
+
+  cask_file_location="$(find "${caskroom_taps_dir}" -name "${cask_file}")"
+  [[ -z "${cask_file_location}" ]] && failure_message "No such cask was found in any official repo (${cask_name})."
+  cd "$(dirname "${cask_file_location}")" || failure_message "Failed to change to directory of ${cask_file}."
+}
+
+function require_correct_origin {
+  local origin_remote
+
+  origin_remote="$(git remote --verbose | grep '^origin' | head -1 | awk '{print $2}')"
+
+  grep --silent "^${caskroom_origin_remote}" <<< "${origin_remote}" || failure_message "\`origin\` is pointing to an incorrect remote (${origin_remote}). It must start with ${caskroom_origin_remote}."
+}
+
+function ensure_cask_repair_remote {
+  local git_username current_tap
+
+  readonly git_username="$(awk '/user:/{print $(NF)}' "${hub_config}" | head -1)"
+  readonly current_tap="$(git remote --verbose | grep '^origin' | head -1 | awk '{print $2}' | sed 's|.*/||')"
+
+  if ! git remote | grep --silent "${cask_repair_remote_name}"; then
+    warning_message "A \`${cask_repair_remote_name}\` remote does not exist. Creating it now…"
+
+    git config --local hub.protocol https
+    hub fork --no-remote
+    git remote add "${cask_repair_remote_name}" "https://github.com/${git_username}/${current_tap}"
+  fi
+}
+
+function http_status_code {
+  local url follow_redirects
+
+  url="${1}"
+  [[ "${2}" == 'follow_redirects' ]] && follow_redirects='--location' || follow_redirects='--no-location'
+
+  curl --silent --head "${follow_redirects}" "${user_agent[@]}" --write-out '%{http_code}' "${url}" --output '/dev/null'
+}
+
+function has_interpolation? {
+  local version="${1}"
+
+  [[ "${version}" =~ \#{version.*} ]]
+}
+
+function is_version_latest? {
+  local cask_file="${1}"
+
+  [[ "$(brew cask _stanza version ${cask_file})" == 'latest' ]]
+}
+
+function has_block_url? {
+  local cask_file="${1}"
+
+  grep --silent 'url do' "${cask_file}"
+}
+
+function has_language_stanza? {
+  local cask_file="${1}"
+
+  [[ -n "$(brew cask _stanza language "${cask_file}")" ]]
+}
+
+function modify_stanza {
+  local stanza_to_modify new_stanza_value cask_file
+
+  stanza_to_modify="${1}"
+  new_stanza_value="${2}"
+  cask_file="${3}"
+
+  perl -0777 -i -e'
+    $stanza_to_modify = shift(@ARGV);
+    $new_stanza_value = shift(@ARGV);
+    print <> =~ s|\A.*^\s*\Q$stanza_to_modify\E\s\K[^\n]*|$new_stanza_value|smr;
+  ' "${stanza_to_modify}" "${new_stanza_value}" "${cask_file}"
+}
+
+function modify_url {
+  local url cask_file
+
+  url="${1}"
+  cask_file="${2}"
+
+  [[ $(has_interpolation? "${url}") ]] && modify_stanza 'url' "\"${url}\"" "${cask_file}" || modify_stanza 'url' "'${url}'" "${cask_file}" # Use appropriate quotes depending on if a url with interpolation was given
+}
+
+function appcast_url {
+  local cask_file="${1}"
+
+  brew cask _stanza appcast "${cask_file}"
+}
+
+function has_appcast? {
+  local cask_file="${1}"
+
+  [[ -n "$(appcast_url "${cask_file}")" ]]
+}
+
+function sha_change {
+  local cask_sha_deliberatedly_unchecked downloaded_file package_sha cask_file
+
+  cask_file="${1}"
+
+  cask_sha_deliberatedly_unchecked="$(grep 'sha256 :no_check # required as upstream package is updated in-place' "${cask_file}")"
+  [[ -n "${cask_sha_deliberatedly_unchecked}" ]] && return # Abort function if cask deliberately uses :no_check with a version
+
+  # Set sha256 as :no_check temporarily, to prevent mismatch errors when fetching
+  modify_stanza 'sha256' ':no_check' "${cask_file}"
+
+  brew cask fetch --force "${cask_file}"
+  downloaded_file=$(brew cask fetch "${cask_file}" 2>/dev/null | tail -1 | sed 's/==> Success! Downloaded to -> //')
+  package_sha=$(shasum --algorithm 256 "${downloaded_file}" | awk '{ print $1 }')
+
+  modify_stanza 'sha256' "'${package_sha}'" "${cask_file}"
+}
+
+function appcast_checkpoint_change {
+  local cask_appcast_status cask_appcast_checkpoint cask_appcast_url cask_file
+
+  cask_appcast_url="${1}"
+  cask_file="${2}"
+
+  has_appcast? "${cask_file}" || return # Abort function if cask does not have an appcast
+
+  cask_appcast_status="$(http_status_code "${cask_appcast_url}" 'no_follow_redirects')"
+  [[ "${cask_appcast_status}" != '200' ]] && add_warning warning "appcast is probably incorrect, as a non-200 (OK) HTTP response code was returned (${cask_appcast_status})."
+
+  cask_appcast_checkpoint="$(brew cask _appcast_checkpoint --calculate "${cask_appcast_url}")"
+
+  modify_stanza 'checkpoint:' "'${cask_appcast_checkpoint}'" "${cask_file}"
+}
+
+function delete_created_branches {
+  local local_branches remote_branches
+
+  for dir in "${caskroom_taps_dir}"/*; do
+    cd "${dir}" || failure_message "Failed to delete branches. ${dir} does not exist."
+
+    if git remote | grep --silent "${cask_repair_remote_name}"; then # Proceed only if the correct remote exists
+      # Delete local branches
+      local_branches=$(git branch --all | grep --extended-regexp "^ *${cask_repair_remote_name}_update-.+$" | perl -pe 's|^ *||;s|\n| |')
+      [[ -n "${local_branches}" ]] && git branch -D ${local_branches}
+
+    # Delete remote branches
+      git fetch --prune "${cask_repair_remote_name}"
+      remote_branches=$(git branch --all | grep --extended-regexp "remotes/${cask_repair_remote_name}/${cask_repair_remote_name}_update-.+$" | perl -pe 's|.*/||;s|\n| |')
+      [[ -n "${remote_branches}" ]] && git push "${cask_repair_remote_name}" --delete ${remote_branches}
+    fi
+
+    cd ..
+  done
+}
+
+function update_cask_shas {
+  local cask_appcast_url cask_file
+
+  cask_appcast_url="${1}"
+  cask_file="${2}"
+
+  sha_change "${cask_file}"
+  appcast_checkpoint_change "${cask_appcast_url}" "${cask_file}"
+}
+
+function edit_cask {
+  local cask_file="${1}"
+
+  echo 'Opening cask in default editor. If it is a GUI editor, you will need to completely quit it (⌘Q) before the script can continue.'
+
+  if [[ -n "${EDITOR}" ]]; then
+    eval "${EDITOR}" "${cask_file}"
+  else
+    [[ -n "${GIT_EDITOR}" ]] && eval "${GIT_EDITOR}" "${cask_file}" || open -W "${cask_file}"
+  fi
+}
+
+function add_warning {
+  local message severity color
+
+  severity="${1}"
+  message="${2}"
+
+  [[ "${severity}" == 'warning' ]] && color="$(tput setaf 3)•$(tput sgr0)" || color="$(tput setaf 1)•$(tput sgr0)"
+
+  warning_messages+=("${color} ${message}")
+}
+
+function show_warnings {
+  if [[ "${#warning_messages[@]}" -gt 0 ]]; then
+    printf '%s\n' "${warning_messages[@]}"
+    divide
+  fi
+}
+
+function clear_warnings {
+  warning_messages=()
+}
+
+function clean {
+  local current_branch
+
+  current_branch="$(git rev-parse --abbrev-ref HEAD)"
+
+  git reset HEAD --hard --quiet
+  git checkout master --quiet
+  git branch -D "${current_branch}" --quiet
+  unset given_cask_version given_cask_url cask_updated
+}
+
+function skip {
+  local message="${1}"
+
+  clean
+  echo -e "${message}"
+}
+
+function abort {
+   local message="${1}"
+
+   clean
+   failure_message "\n${message}\n"
+ }
+
+trap 'abort "You aborted."' SIGINT
+
+function divide {
+  command -v 'hr' &>/dev/null && hr - || echo '--------------------'
+}
+
+# Available flags
 while [[ "${1}" ]]; do
   case "${1}" in
     -h | --help)
       usage
       exit 0
-      ;;
-    -l | --pull)
-      remote_pull="${2}"
-      shift
-      ;;
-    -p | --push)
-      remote_push="${2}"
-      shift
       ;;
     -o | --open-home)
       show_home='true'
@@ -81,8 +351,11 @@ while [[ "${1}" ]]; do
       shift
       ;;
     -b | --blind-submit)
-      cask_updated='blindly'
+      updated_blindly='true'
       ;;
+    -i | --install-cask)
+      install_now='true'
+    ;;
     -d | --delete-branches)
       can_run_without_arguments='true'
       delete_created_branches='true'
@@ -97,180 +370,9 @@ while [[ "${1}" ]]; do
   shift
 done
 
-# define function to get HTTP status codes of URLs
-http_status() {
-  local url follow_redirects
-
-  url="${1}"
-  [[ "${2}" == 'follow_redirects' ]] && follow_redirects='--location' || follow_redirects='--no-location'
-
-  curl --silent --head "${follow_redirects}" "${user_agent[@]}" --write-out '%{http_code}' "${url}" -o '/dev/null'
-}
-
-# define function to check if a given string contains ruby-style interpolation
-has_interpolation() {
-  [[ "${1}" =~ \#{version.*} ]] && echo 'true' || echo 'false'
-}
-
-# define function to check if cask is using :latest version
-is_version_latest() {
-  [[ "$(brew cask _stanza version ${cask_file})" == 'latest' ]] && echo 'true' || echo 'false'
-}
-
-# define function to check for block url
-has_block_url() {
-  [[ $(grep 'url do' "${cask_file}") ]] && echo 'true' || echo 'false'
-}
-
-# define function to modify stanzas
-modify_stanza() {
-  stanza_to_modify="${1}"
-  new_stanza_value="${2}"
-
-  perl -0777 -i -e'
-    $stanza_to_modify = shift(@ARGV);
-    $new_stanza_value = shift(@ARGV);
-    print <> =~ s|\A.*^\s*\Q$stanza_to_modify\E\s\K[^\n]*|$new_stanza_value|smr;
-  ' "${stanza_to_modify}" "${new_stanza_value}" "${cask_file}"
-}
-
-# define function to modify url with correct quotes
-modify_url() {
-  local url="${1}"
-
-  [[ $(has_interpolation "${url}") == 'true' ]] && modify_stanza 'url' "\"${url}\"" || modify_stanza 'url' "'${url}'" # use appropriate quotes depending on if a url with interpolation was given
-}
-
-# define function to get appcast url and existence
-cask_appcast_info() {
-  cask_appcast_url=$(brew cask _stanza appcast "${cask_file}")
-  [[ -n "${cask_appcast_url}" ]] && cask_has_appcast='true' || cask_has_appcast='false'
-}
-
-# define function to check and modify sha256
-sha_change() {
-  local cask_sha_deliberatedly_unchecked downloaded_file package_sha
-
-  cask_sha_deliberatedly_unchecked=$(grep 'sha256 :no_check # required as upstream package is updated in-place' "${cask_file}")
-  [[ -n "${cask_sha_deliberatedly_unchecked}" ]] && return # abort function if cask deliberate uses ':no_check' with a version
-
-  # set sha256 as :no_check temporarily, to prevent mismatch errors when fetching
-  modify_stanza 'sha256' ':no_check'
-
-  brew cask fetch --force "${cask_file}"
-  downloaded_file=$(brew cask fetch "${cask_file}" 2>/dev/null | tail -1 | sed 's/==> Success! Downloaded to -> //')
-  package_sha=$(shasum --algorithm 256 "${downloaded_file}" | awk '{ print $1 }')
-
-  modify_stanza 'sha256' "'${package_sha}'"
-}
-
-# define function to check and modify appcast's checkpoint sha256
-appcast_checkpoint_change() {
-  local cask_appcast_checkpoint cask_appcast_status
-
-  cask_appcast_info
-  [[ "${cask_has_appcast}" == 'false' ]] && return # abort function if cask does not have an appcast
-
-  cask_appcast_status=$(http_status "${cask_appcast_url}" 'no_follow_redirects')
-  [[ "${cask_appcast_status}" != '200' ]] && add_warning warning "appcast is probably incorrect, as a non-200 (OK) HTTP response code was returned (${cask_appcast_status})"
-
-  cask_appcast_checkpoint=$(curl --silent --compressed --location "${user_agent[@]}" "${cask_appcast_url}" | /usr/bin/sed 's|<pubDate>[^<]*</pubDate>||g' | shasum --algorithm 256 | awk '{ print $1 }')
-
-  modify_stanza 'checkpoint:' "'${cask_appcast_checkpoint}'"
-}
-
-delete_created_branches() {
-  local local_branches remote_branches
-
-  # delete local branches
-  local_branches=$(git branch --all | grep --extended-regexp '^ *cask-repair_update-.+$' | perl -pe 's|^ *||;s|\n| |')
-  [[ -n "${local_branches}" ]] && git branch -D ${local_branches}
-
-  # delete remote branches
-  git fetch --prune "${remote_push}"
-  remote_branches=$(git branch --all | grep --extended-regexp "remotes/${remote_push}/cask-repair_update-.+$" | perl -pe 's|.*/||;s|\n| |')
-  [[ -n "${remote_branches}" ]] && git push "${remote_push}" --delete ${remote_branches}
-}
-
-# define function to quickly call both sha changing functions
-update_cask_shas() {
-  sha_change
-  appcast_checkpoint_change
-}
-
-# define function to open cask in appropriate editor
-edit_cask() {
-  echo 'Opening cask in default editor. If it is a GUI editor, you will need to completely quit it (⌘Q) before the script can continue.'
-
-  if [[ -n "${EDITOR}" ]]; then
-    eval "${EDITOR}" "${cask_file}"
-  else
-    [[ -n "${GIT_EDITOR}" ]] && eval "${GIT_EDITOR}" "${cask_file}" || open -W "${cask_file}"
-  fi
-}
-
-# define function to add warnings to be shown on review
-add_warning() {
-  local message severity color
-
-  severity="${1}"
-  message="${2}"
-
-  [[ "${severity}" == 'warning' ]] && color="$(tput setaf 3)•$(tput sgr0)" || color="$(tput setaf 1)•$(tput sgr0)"
-
-  warning_messages+=("${color} ${message}")
-}
-
-# define function to show warnings if there are any
-show_warnings() {
-  if [[ "${#warning_messages[@]}" -gt 0 ]]; then
-    printf '%s\n' "${warning_messages[@]}"
-    divide
-  fi
-}
-
-clear_warnings() {
-  warning_messages=()
-}
-
-# define abort function, that will reset the state
-finish() {
-  git reset HEAD --hard --quiet
-  git checkout master --quiet
-  git branch -D "${cask_branch}" --quiet
-
-  # show message
-  if [[ "${1}" == 'abort' ]]; then
-    echo -e "\n$(tput setaf 1)${2}$(tput sgr0)\n"
-    exit 1
-  elif [[ "${1}" == 'success' ]]; then
-    echo -e "\n$(tput setaf 2)Submitted (${2})$(tput sgr0)\n"
-    exit 0
-  fi
-}
-
-# cleanup if aborted with ⌃C
-trap 'finish abort "You aborted"' SIGINT
-
-# define divider function
-divide() {
-  if [[ $(which hr) ]]; then
-    hr -
-  else
-    echo '--------------------'
-  fi
-}
-
-# exit if no argument or more than one argument was given
+# Exit if no argument or more than one argument was given
 if [[ -z "${1}" ]] && [[ "${can_run_without_arguments}" != 'true' ]]; then
   usage
-  exit 1
-fi
-
-# exit if not inside a 'homebrew-*/Casks' directory
-casks_dir=$(pwd | perl -ne 'print m{homebrew-[^/]+/Casks}i')
-if [[ -z "${casks_dir}" ]]; then
-  echo -e "\n$(tput setaf 1)You need to be inside a '/homebrew-*/Casks' directory$(tput sgr0)\n"
   exit 1
 fi
 
@@ -279,125 +381,156 @@ if [[ "${delete_created_branches}" == 'true' ]]; then
   exit 0
 fi
 
-[[ -n "${2}" ]] && finish abort 'You can only give one cask argument per run'
+require_hub
+ensure_caskroom_repos
+echo -n 'Updating taps… '
+brew update
 
-# clean the cask's name, and check if it is valid
-cask_name="${1%.rb}" # remove '.rb' extension, if present
-cask_file="./${cask_name}.rb"
-cask_branch="cask-repair_update-${cask_name}"
-[[ ! -f "${cask_file}" ]] && finish abort 'There is no such cask'
+for cask in "${@}"; do
+  # Clean the cask's name, and check if it is valid
+  cask_name="${cask%.rb}" # Remove '.rb' extension, if present
+  cask_file="./${cask_name}.rb"
+  cask_branch="${cask_repair_remote_name}_update-${cask_name}"
 
-# initial tasks
-git checkout master --quiet
-git pull --rebase "${remote_pull}" master --quiet
-git checkout -b "${cask_branch}" --quiet
+  cd_to_cask_tap "${cask_name}.rb"
+  require_correct_origin
+  ensure_cask_repair_remote
 
-# open home and appcast
-[[ "${show_home}" == 'true' ]] && brew cask home "${cask_file}"
-
-cask_appcast_info
-if [[ "${cask_has_appcast}" == 'true' ]] && [[ "${show_appcast}" == 'true' ]]; then
-  [[ "${cask_appcast_url}" =~ ^https://github.com.*releases.atom$ ]] && open "${cask_appcast_url%.*}" || open "${cask_appcast_url}" # if appcast is from github releases, open the page instead of the feed
-fi
-
-# show cask's current state
-divide
-cat "${cask_file}"
-divide
-
-# set cask version
-if [[ -z "${given_cask_version}" ]]; then
-  read -p $'Type the new version (or leave blank to use the current one)\n> ' given_cask_version # ask for cask version, if not given previously
-
-  [[ -z "${given_cask_version}" ]] && given_cask_version=$(brew cask _stanza version "${cask_file}")
-fi
-
-if [[ "${given_cask_version}" == ':latest' ]] || [[ "${given_cask_version}" == 'latest' ]]; then # allow both ':latest' and 'latest' to be given
-  modify_stanza 'version' ':latest'
-else
-  modify_stanza 'version' "'${given_cask_version}'"
-fi
-
-if [[ -n "${given_cask_url}" ]]; then
-  [[ $(has_block_url) == 'false' ]] && modify_url "${given_cask_url}" || echo 'Cask has block url, so it can only be modified manually (choose "e" when prompted)'
-else
-  # if url does not use interpolation and is not block, ask for it
-  cask_bare_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*)['\"].*|\1|")
-  if [[ $(has_interpolation "${cask_bare_url}") == 'false' ]] && [[ $(has_block_url) == 'false' ]]; then
-    read -p $'Paste the new URL (or leave blank to use the current one)\n> ' given_cask_url
-
-    [[ -z "${given_cask_url}" ]] && given_cask_url=$(brew cask _stanza url "${cask_file}") || modify_url "${given_cask_url}"
+  if has_language_stanza? "${cask_file}"; then
+    warning_message "${cask_name} has a language stanza. It cannot be updated via this script. Skipping…"
+    continue
   fi
 
-  cask_url=$(brew cask _stanza url "${cask_file}")
+  git rev-parse --verify "${cask_branch}" &>/dev/null && git checkout "${cask_branch}" --quiet || git checkout -b "${cask_branch}" --quiet # Create branch or checkout if it already exists
 
-  # check if the URL sends a 200 HTTP code, else abort
-  cask_url_status=$(http_status "${cask_url}" 'follow_redirects')
+  # Open home and appcast
+  [[ "${show_home}" == 'true' ]] && brew cask home "${cask_file}"
 
-  [[ "${cask_url}" =~ (github.com|bitbucket.org) ]] && cask_url_status='200' # if the download URL is from github or bitbucket, fake the status code
+  if has_appcast? "${cask_file}"; then
+    cask_appcast_url="$(appcast_url "${cask_file}")"
 
-  if [[ "${cask_url_status}" != '200' ]]; then
-    if [[ -z "${cask_url_status}" ]]; then
-      add_warning warning 'you need to use a valid URL'
-    else
-      add_warning warning "url is probably incorrect, as a non-200 (OK) HTTP response code was returned (${cask_url_status})"
+    if [[ "${show_appcast}" == 'true' ]]; then
+      [[ "${cask_appcast_url}" =~ ^https://github.com.*releases.atom$ ]] && open "${cask_appcast_url%.*}" || open "${cask_appcast_url}" # if appcast is from github releases, open the page instead of the feed
     fi
   fi
-fi
 
-[[ "${edit_on_start}" == 'true' ]] && edit_cask
-
-[[ "$(is_version_latest)" == 'false' ]] && update_cask_shas || modify_stanza 'sha256' ':no_check' # calculate new sha256 values
-
-# check if everything is alright, else abort
-[[ -z "${cask_updated}" ]] && cask_updated='false'
-until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
-  # fix style errors and check for style and audit errors
-  style_message=$(brew cask style --fix "${cask_file}" 2>/dev/null)
-  style_result="$?"
-  [[ "${style_result}" -ne 0 ]] && add_warning error "${style_message}"
-
-  audit_message=$(brew cask audit "${cask_file}" 2>/dev/null)
-  audit_result="$?"
-  [[ "${audit_result}" -ne 0 ]] && add_warning error "${audit_message}"
-
-  git --no-pager diff
+  # Show cask's current state
   divide
-  show_warnings
+  cat "${cask_file}"
+  divide
 
-  if [[ "${cask_updated}" == 'blindly' ]] && [[ "${#warning_messages[@]}" -eq 0 ]]; then
-    cask_updated='y'
-  else
-    read -n1 -p 'Is everything correct? You can also make further manual edits (y/n/e) ' cask_updated
-    echo # add an empty line
+  # Set cask version
+  if [[ -z "${given_cask_version}" ]]; then
+    read -p $'Type the new version (or leave blank to use current one, or use `s` to skip)\n> ' given_cask_version # Ask for cask version, if not given previously
+
+    if [[ "${given_cask_version}" == 's' ]]; then
+      skip 'Skipping…'
+      continue
+    fi
+
+    [[ -z "${given_cask_version}" ]] && given_cask_version=$(brew cask _stanza version "${cask_file}")
   fi
 
-  if [[ "${cask_updated}" == 'y' ]]; then
-    if [[ "${style_result}" -ne 0 ]] || [[ "${audit_result}" -ne 0 ]]; then
-      cask_updated='false'
-    else
-      echo 'Submitting…'
-      break
+  if [[ "${given_cask_version}" == ':latest' ]] || [[ "${given_cask_version}" == 'latest' ]]; then # Allow both ':latest' and 'latest' to be given
+    modify_stanza 'version' ':latest' "${cask_file}"
+  else
+    modify_stanza 'version' "'${given_cask_version}'" "${cask_file}"
+  fi
+
+  if [[ -n "${given_cask_url}" ]]; then
+    [[ $(has_block_url? "${cask_file}") ]] && warning_message 'Cask has block url, so it can only be modified manually (choose `[e]dit` when prompted).' || modify_url "${given_cask_url}" "${cask_file}"
+  else
+    # If url does not use interpolation and is not block, ask for it
+    cask_bare_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*)['\"].*|\1|")
+    if ! has_interpolation? "${cask_bare_url}" && ! has_block_url? "${cask_file}"; then
+      read -p $'Paste the new URL (or leave blank to use the current one)\n> ' given_cask_url
+
+      [[ -n "${given_cask_url}" ]] && modify_url "${given_cask_url}" "${cask_file}"
     fi
-  elif [[ "${cask_updated}" == 'e' ]]; then
-    edit_cask
-    [[ "$(is_version_latest)" == 'false' ]] && update_cask_shas # recheck sha256 values if version isn't :latest
-    cask_updated='false'
-    clear_warnings
-  elif [[ "${cask_updated}" == 'n' ]]; then
-    finish abort 'You decided to abort'
+
+    cask_url=$(brew cask _stanza url "${cask_file}")
+
+    # Check if the URL sends a 200 HTTP code, else abort
+    cask_url_status=$(http_status_code "${cask_url}" 'follow_redirects')
+
+    [[ "${cask_url}" =~ (github.com|bitbucket.org) ]] && cask_url_status='200' # If the download URL is from github or bitbucket, fake the status code
+
+    if [[ "${cask_url_status}" != '200' ]]; then
+      [[ -z "${cask_url_status}" ]] && add_warning warning 'you need to use a valid URL' || add_warning warning "url is probably incorrect, as a non-200 (OK) HTTP response code was returned (${cask_url_status})"
+    fi
+  fi
+
+  [[ "${edit_on_start}" == 'true' ]] && edit_cask "${cask_file}"
+
+   [[ $(is_version_latest? "${cask_file}") ]] && modify_stanza 'sha256' ':no_check' "${cask_file}" || update_cask_shas "${cask_appcast_url}" "${cask_file}" # Calculate new sha256 values
+
+  # Check if everything is alright, else abort
+  [[ -z "${cask_updated}" ]] && cask_updated='false'
+  until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
+    # fix style errors and check for style and audit errors
+    style_message=$(brew cask style --fix "${cask_file}" 2>/dev/null)
+    style_result="$?"
+    [[ "${style_result}" -ne 0 ]] && add_warning error "${style_message}"
+
+    audit_message=$(brew cask audit "${cask_file}" 2>/dev/null)
+    audit_result="$?"
+    [[ "${audit_result}" -ne 0 ]] && add_warning error "${audit_message}"
+
+    git --no-pager diff
+    divide
+    show_warnings
+
+    if [[ -n "${updated_blindly}" ]] && [[ "${#warning_messages[@]}" -eq 0 ]]; then
+      cask_updated='y'
+    else
+      read -n1 -p 'Is everything correct? ([y]es / [n]o / [e]dit) ' cask_updated
+      echo # Add an empty line
+    fi
+
+    if [[ "${cask_updated}" == 'y' ]]; then
+      if [[ "${style_result}" -ne 0 ]] || [[ "${audit_result}" -ne 0 ]]; then
+        cask_updated='false'
+      else
+        break
+      fi
+    elif [[ "${cask_updated}" == 'e' ]]; then
+      edit_cask "${cask_file}"
+      [[ $(is_version_latest? "${cask_file}") ]] && update_cask_shas "${cask_appcast_url}" "${cask_file}" # Recheck sha256 values if version isn't :latest
+      cask_updated='false'
+      clear_warnings
+    elif [[ "${cask_updated}" == 'n' ]]; then
+      abort 'You decided to abort.'
+    fi
+  done
+
+  # Skip if no changes were made, submit otherwise
+  if git diff-index --quiet HEAD --; then
+    skip 'No changes made to the cask. Skipping…'
+    continue
+  else
+    echo 'Submitting…'
+  fi
+
+  # Grab version as it ended up in the cask
+  cask_version="$(brew cask _stanza version ${cask_file})"
+
+  # Commit, push, submit pull request, clean
+  commit_message="Update ${cask_name} to ${cask_version}"
+  hub_message="$(echo -e "${commit_message}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version.")"
+
+  git commit "${cask_file}" --message "${commit_message}" --quiet
+  git push --force "${cask_repair_remote_name}" "${cask_branch}" --quiet
+  [[ -z "${issue_to_close}" ]] && pr_link=$(hub pull-request -b "${submit_pr_to}" -m "${hub_message}") || pr_link=$(hub pull-request -b "${submit_pr_to}" -m "$(echo -e "${hub_message}\n\n---\n\nCloses #${issue_to_close}.")")
+
+  if [[ -n "${pr_link}" ]]; then
+    if [[ -n "${install_now}" ]]; then
+      success_message 'Updating cask locally…'
+      brew cask reinstall "${cask_file}"
+    fi
+
+    success_message "\nSubmitted (${pr_link})\n"
+    clean
+  else
+    abort 'There was an error submitting the pull request. Please open a bug report on the repo for this script.'
   fi
 done
-
-# grab version as it ended up in the cask
-cask_version="$(brew cask _stanza version ${cask_file})"
-
-# commit, push, submit pull request, clean
-readonly commit_message="Update ${cask_name} to ${cask_version}"
-readonly hub_message="$(echo -e "${commit_message}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version.")"
-
-git commit "${cask_file}" --message "${commit_message}" --quiet
-git push --force "${remote_push}" "${cask_branch}" --quiet
-git branch --set-upstream-to "${remote_push}/${cask_branch}" --quiet # needed as workaround for hub to work with certain .gitconfig options to push default: https://github.com/github/hub/issues/789#issuecomment-72553866; after that issue is fixed, this line may likely be completely removed
-[[ -z "${issue_to_close}" ]] && pr_link=$(hub pull-request -b "${submit_pr_to}" -m "${hub_message}") || pr_link=$(hub pull-request -b "${submit_pr_to}" -m "$(echo -e "${hub_message}\n\n---\n\nCloses #${issue_to_close}.")")
-[[ -n "${pr_link}" ]] && finish success "${pr_link}" || finish abort 'There was an error submitting the pull request. Have you forked the repo and made sure the pull and push remotes exist?'
