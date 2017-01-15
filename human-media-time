@@ -9,22 +9,17 @@ if ARGV[0].nil?
   Will output the total running time of the files, in a human-readable way.".gsub(%r{^ {2}}, '')
 end
 
-ms = 0
+ms_values = ''
 split_time = {}
 human_time = ''
 
-ARGV.each do |file|
-  duration_in_ms = %x(mediainfo --Output='General;%Duration%' #{file.shellescape}).to_i
-  ms += duration_in_ms
-end
+ARGV.each { |file| ms_values += %x(mediainfo --Output='General;%Duration%,' #{file.shellescape}) }
+ms_total = ms_values.split(',').map(&:to_i).inject(0, :+)
 
-split_time['s'] = (ms / 1000) % 60
-split_time['m'] = (ms / (1000 * 60)) % 60
-split_time['h'] = (ms / (1000 * 60 * 60)) % 24
-split_time['d'] = (ms / (1000 * 60 * 60 * 24)) % 365
+split_time['s'] = (ms_total / 1000) % 60
+split_time['m'] = (ms_total / (1000 * 60)) % 60
+split_time['h'] = (ms_total / (1000 * 60 * 60)) % 24
+split_time['d'] = (ms_total / (1000 * 60 * 60 * 24)) % 365
 
-split_time.each do |key, value|
-  human_time = value.to_s + key + human_time if value > 0
-end
-
+split_time.each { |key, value| human_time = value.to_s + key + human_time if value > 0 }
 puts human_time
