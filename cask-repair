@@ -360,6 +360,9 @@ while [[ "${1}" ]]; do
       can_run_without_arguments='true'
       delete_created_branches='true'
       ;;
+    -p | -l | --pull | --push)
+      failure_message '--push and --pull have been deprecated. They no longer do anything.\nYou also no longer need to be inside a homebrew-*/Casks directory.\n\nFor a list of all changes, see https://github.com/vitorgalvao/tiny-scripts/pull/56'
+      ;;
     -*)
       syntax_error "unrecognized option: ${1}"
       ;;
