@@ -23,7 +23,7 @@ usage() {
 
     options:
       -w <interger>, --width <integer>       Resize the gif proportionally.
-      -h, --help                     Show this help.
+      -h, --help                             Show this help.
   " | sed -E 's/^ {4}//'
 }
 
