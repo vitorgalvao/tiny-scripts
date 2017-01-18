@@ -1,7 +1,6 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
-readonly dropbox_public_id_file="${HOME}/.config/podbook"
 readonly audio_extentions=('aac' 'm4a' 'm4b' 'mp3')
 readonly audio_files_regex="$(sed 's/ /|/g;s/^/^.*\\.(/;s/$/)$/' <<< "${audio_extentions[@]}")"
 
@@ -78,42 +77,31 @@ function fail_unless_dir {
   [[ -d "${1}" ]] || fail_message 'You need to point the script at a directory.'
 }
 
-function fail_unless_in_public_dir {
-  [[ "${1}" == *'/Dropbox/Public/'* ]] || fail_message 'You need to point the script at a directory inside "/Dropbox/Public/".'
+function fail_unless_in_dropbox_dir {
+  [[ "${1}" == *'/Dropbox/'* ]] || fail_message 'You need to point the script at a directory inside "/Dropbox/".'
 }
 
-function check_dependencies {
-  readonly local dependency='eyeD3'
+function depends_on {
+  readonly local all_deps=("${@}")
+  local missing_deps=()
 
-  if ! command -v "${dependency}" &>/dev/null; then
-    fail_message "This script requires ${dependency}. Please install it first."
+  for dep in "${all_deps[@]}"; do
+    command -v "${dep}" &>/dev/null || missing_deps+=("${dep}")
+  done
+
+  if [[ "${#missing_deps[@]}" -gt 0 ]]; then
+    tput setaf 1
+    echo -e '\nThis script has unmet dependencies. You need to install these first:'
+    printf '  %s\n' "${missing_deps[@]}"
+    tput sgr0
+    exit 1
   fi
 }
 
 function convert_to_public_url {
-  sed "s|.*/Dropbox/Public|https://dl.dropboxusercontent.com/u/$(get_dropbox_id)|" <<< "${1}"
-}
+  local relative_path="${1#*Dropbox/}" # Relative to the root of the Dropbox directory, as `dropdropbox_uploader.sh` needs
 
-function request_dropbox_id {
-  local dropbox_id
-  read -p 'Your Dropbox Public Folder (https://www.dropbox.com/help/16) ID: ' dropbox_id
-
-  echo -n "${dropbox_id}" > "${dropbox_public_id_file}"
-  get_dropbox_id
-}
-
-function get_dropbox_id {
-  [[ -f "${dropbox_public_id_file}" ]] || request_dropbox_id
-
-  local dropbox_id
-  dropbox_id="$(cat "${dropbox_public_id_file}")"
-
-  if is_number? "${dropbox_id}"; then
-    echo -n "${dropbox_id}"
-  else
-    warning_message 'The Dropbox Public Folder must be a number.'
-    request_dropbox_id
-  fi
+  dropbox_uploader.sh share "${relative_path}" | sed 's/ > Share link: //;s|//.*dropbox.com|//dl.dropboxusercontent.com|;s/?dl=0$//'
 }
 
 function extract_title {
@@ -121,7 +109,7 @@ function extract_title {
   readonly file_name="${1}"
   readonly book_dir="${2}"
 
-  readonly book_title="$(eyeD3 "${file_name}" | sed 's/.\[[0-9]\{1,\}m//g' | grep '^album: ' | sed 's/^album: //')"
+  readonly book_title="$(eyeD3 "${file_name}" | sed 's/.\[[0-9]\{1,\}m//g' | grep '^album: ' | cut -d' ' -f2-)"
   [[ -n "${book_title}" ]] && echo -n "${book_title}" || basename "${book_dir}"
 }
 
@@ -129,7 +117,7 @@ function extract_author {
   local file_name book_author
   readonly file_name="${1}"
 
-  readonly book_author="$(eyeD3 "${file_name}" | sed 's/.\[[0-9]\{1,\}m//g' | grep '^artist: ' | sed 's/^artist: //')"
+  readonly book_author="$(eyeD3 "${file_name}" | sed 's/.\[[0-9]\{1,\}m//g' | grep '^artist: ' | cut -d' ' -f2-)"
   [[ -n "${book_author}" ]] && echo -n "${book_author}" || request_author
 }
 
@@ -165,7 +153,7 @@ function extract_duration {
   local file_name file_duration
   readonly file_name="${1}"
 
-  readonly file_duration="$(eyeD3 "${file_name}" | sed 's/.\[[0-9]\{1,\}m//g' | grep '^Time: ' | perl -pe 's/^Time: (\d+:\d+:\d+).*/\1/')"
+  readonly file_duration="$(eyeD3 "${file_name}" | sed 's/.\[[0-9]\{1,\}m//g' | awk '/^Time:/{print $2}')"
   echo -n "${file_duration}"
 }
 
@@ -254,11 +242,10 @@ function end_feed {
 }
 
 function main {
-  local book_dir online_book_dir book_feed first_audio_file book_title book_author book_cover online_book_cover file_counter file_time file_duration file_mime file_size file_name item_title file_url
+  local book_dir book_feed first_audio_file book_title book_author book_cover online_book_cover file_counter file_time file_duration file_mime file_size item_title file_url
   readonly book_dir="$(absolutepath "${1}")"
   fail_unless_dir "${book_dir}"
-  fail_unless_in_public_dir "${book_dir}"
-  readonly online_book_dir="$(convert_to_public_url "${book_dir}")"
+  fail_unless_in_dropbox_dir "${book_dir}"
   book_feed="${book_dir}/feed.rss"
 
   readonly first_audio_file="$(find -E "${book_dir}" -iregex "${audio_files_regex}" | head -1)"
@@ -278,9 +265,8 @@ function main {
     file_duration="$(extract_duration "${file}")"
     file_mime="$(extract_mime "${file}")"
     file_size="$(extract_size "${file}")"
-    file_name="$(basename "${file}" | perl -MHTML::Entities -CS -pe'$_ = encode_entities($_, "&<")')"
-    item_title="${file_name%.*}"
-    file_url="${online_book_dir}/${file_name}"
+    item_title="$(basename "${file%.*}")"
+    file_url="$(convert_to_public_url "${file}")"
 
     set_title "${item_title}" "${file}"
     add_to_feed "${item_title}" "${file_time}" "${file_duration}" "${file_mime}" "${file_size}" "${file_url}" "${book_feed}"
@@ -291,7 +277,7 @@ function main {
   convert_to_public_url "${book_feed}"
 }
 
-check_dependencies
+depends_on 'eyeD3' 'dropbox_uploader.sh'
 
 while [[ "${1}" ]]; do
   case "${1}" in
