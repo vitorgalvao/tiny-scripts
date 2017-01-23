@@ -102,6 +102,12 @@ function convert_to_public_url {
   local relative_path="${1#*Dropbox/}" # Relative to the root of the Dropbox directory, as `dropdropbox_uploader.sh` needs
 
   dropbox_uploader.sh share "${relative_path}" | sed 's/ > Share link: //;s|//.*dropbox.com|//dl.dropboxusercontent.com|;s/?dl=0$//'
+
+  if [[ "$?" -ne 0 ]]; then
+    warning_message "${relative_path} not yet fully synced to Dropbox. Retring in 10 seconds…"
+    sleep 10
+    convert_to_public_url "${1}"
+  fi
 }
 
 function extract_title {
