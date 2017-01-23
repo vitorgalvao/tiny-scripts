@@ -137,7 +137,7 @@ function extract_cover {
 
   eyeD3 --write-images="${book_dir}" "${file_name}" &> /dev/null
   readonly book_cover="$(find "${book_dir}" -name 'FRONT_COVER.*')"
-  [[ -n "${book_cover}" ]] && echo -n "${book_cover}" || request_cover
+  [[ -n "${book_cover}" ]] && echo -n "${book_cover}"
 }
 
 function request_cover {
@@ -251,8 +251,7 @@ function main {
   readonly first_audio_file="$(find -E "${book_dir}" -iregex "${audio_files_regex}" | head -1)"
   [[ -n "${given_title}" ]] && readonly book_title="${given_title}" || readonly book_title="$(extract_title "${first_audio_file}" "${book_dir}")"
   [[ -n "${given_author}" ]] && readonly book_author="${given_author}" || readonly book_author="$(extract_author "${first_audio_file}")"
-  [[ -n "${given_cover}" ]] && readonly book_cover="${given_cover}" || readonly book_cover="$(extract_cover "${first_audio_file}" "${book_dir}")"
-  readonly online_book_cover="$(convert_to_public_url "${book_cover}")"
+  [[ -n "${given_cover}" ]] && readonly book_cover="${given_cover}" || readonly book_cover="$(extract_cover "${first_audio_file}" "${book_dir}")" && readonly online_book_cover="$(convert_to_public_url "${book_cover}")" || readonly online_book_cover="$(request_cover)"
 
   inform_details "${book_title}" "${book_author}" "${online_book_cover}"
 
