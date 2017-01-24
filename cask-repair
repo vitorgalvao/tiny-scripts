@@ -413,7 +413,7 @@ for cask in "${@}"; do
     cask_appcast_url="$(appcast_url "${cask_file}")"
 
     if [[ "${show_appcast}" == 'true' ]]; then
-      [[ "${cask_appcast_url}" =~ ^https://github.com.*releases.atom$ ]] && open "${cask_appcast_url%.*}" || open "${cask_appcast_url}" # if appcast is from github releases, open the page instead of the feed
+      [[ "${cask_appcast_url}" =~ ^https://github.com.*releases.atom$ ]] && open "${cask_appcast_url%.atom}" || open "${cask_appcast_url}" # if appcast is from github releases, open the page instead of the feed
     fi
   fi
 
