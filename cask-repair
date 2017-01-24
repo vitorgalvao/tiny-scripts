@@ -465,7 +465,7 @@ for cask in "${@}"; do
 
   [[ "${edit_on_start}" == 'true' ]] && edit_cask "${cask_file}"
 
-   [[ $(is_version_latest? "${cask_file}") ]] && modify_stanza 'sha256' ':no_check' "${cask_file}" || update_cask_shas "${cask_appcast_url}" "${cask_file}" # Calculate new sha256 values
+  [[ $(is_version_latest? "${cask_file}") ]] && modify_stanza 'sha256' ':no_check' "${cask_file}" || update_cask_shas "${cask_file}" # Calculate new sha256 values
 
   # Check if everything is alright, else abort
   [[ -z "${cask_updated}" ]] && cask_updated='false'
