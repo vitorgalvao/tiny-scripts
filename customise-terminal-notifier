@@ -2,14 +2,14 @@
 
 readonly program="$(basename "${0}")"
 
-syntax_error() {
+function syntax_error {
   echo "${program}: ${1}" >&2
   echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
 # instructions
-usage() {
+function usage {
   echo "
     usage: ${program} -i <file> -b <bundle_id>
 
@@ -42,7 +42,7 @@ while [[ "${1}" ]]; do
   shift
 done
 
-function make_icns() {
+function make_icns {
   local file="${1}"
   local iconset="$(mktemp -d)"
   local output_icon="$(mktemp).icns"
