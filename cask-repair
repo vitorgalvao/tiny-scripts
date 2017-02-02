@@ -371,7 +371,7 @@ while [[ "${1}" ]]; do
 done
 
 # Exit if no argument or more than one argument was given
-if [[ -z "${1}" ]] && [[ "${can_run_without_arguments}" != 'true' ]]; then
+if [[ -z "${1}" && "${can_run_without_arguments}" != 'true' ]]; then
   usage
   exit 1
 fi
@@ -431,7 +431,7 @@ for cask in "${@}"; do
     [[ -z "${given_cask_version}" ]] && given_cask_version=$(brew cask _stanza version "${cask_file}")
   fi
 
-  if [[ "${given_cask_version}" == ':latest' ]] || [[ "${given_cask_version}" == 'latest' ]]; then # Allow both ':latest' and 'latest' to be given
+  if [[ "${given_cask_version}" == ':latest' || "${given_cask_version}" == 'latest' ]]; then # Allow both ':latest' and 'latest' to be given
     modify_stanza 'version' ':latest' "${cask_file}"
   else
     modify_stanza 'version' "'${given_cask_version}'" "${cask_file}"
@@ -480,7 +480,7 @@ for cask in "${@}"; do
     divide
     show_warnings
 
-    if [[ -n "${updated_blindly}" ]] && [[ "${#warning_messages[@]}" -eq 0 ]]; then
+    if [[ -n "${updated_blindly}" && "${#warning_messages[@]}" -eq 0 ]]; then
       cask_updated='y'
     else
       read -n1 -p 'Is everything correct? ([y]es / [n]o / [e]dit) ' cask_updated
@@ -488,7 +488,7 @@ for cask in "${@}"; do
     fi
 
     if [[ "${cask_updated}" == 'y' ]]; then
-      if [[ "${style_result}" -ne 0 ]] || [[ "${audit_result}" -ne 0 ]]; then
+      if [[ "${style_result}" -ne 0 || "${audit_result}" -ne 0 ]]; then
         cask_updated='false'
       else
         break

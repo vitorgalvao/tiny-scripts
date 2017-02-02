@@ -59,7 +59,7 @@ function make_icns {
 }
 
 # stop executing if an option is missing
-if [[ -z "${icon}" ]] || [[ -z "${id}" ]]; then usage && exit 1; fi
+if [[ -z "${icon}" || -z "${id}" ]]; then usage && exit 1; fi
 
 # set variables
 tn_version="$(curl --location --silent 'https://github.com/alloy/terminal-notifier/releases.atom' | grep '<title>' | sed -n 2p | sed -E 's|.*<title>(.*)</title>.*|\1|')"

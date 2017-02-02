@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Show help
-if [[ "${1}" == '-h' ]] || [[ "${1}" == '--help' ]]; then
+if [[ "${1}" == '-h' || "${1}" == '--help' ]]; then
   echo "This script checks the sunrise and sunset times for a given location (using the Wolfram Alpha API) and sends an email with the information. To set it up, run it with no arguments."
 
   exit 0

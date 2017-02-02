@@ -67,7 +67,7 @@ if [[ ! -f "${input_file}" ]]; then
 fi
 
 [[ -z "${output_file}" ]] && output_file="${input_file%.*}"
-[[ -z "${duration}" ]] || [[ "${duration}" -gt 40 ]] && duration='40'
+[[ -z "${duration}" || "${duration}" -gt 40 ]] && duration='40'
 [[ -z "${start}" ]] && start='00:00:00'
 
 ffmpeg -i "${input_file}" -vn -acodec libfaac -f mp4 -ss "${start}" -t "${duration}" "${output_file}.m4r"
