@@ -77,10 +77,6 @@ function fail_unless_dir {
   [[ -d "${1}" ]] || fail_message 'You need to point the script at a directory.'
 }
 
-function fail_unless_in_dropbox_dir {
-  [[ "${1}" == *'/Dropbox/'* ]] || fail_message 'You need to point the script at a directory inside "/Dropbox/".'
-}
-
 function depends_on {
   readonly local all_deps=("${@}")
   local missing_deps=()
@@ -98,16 +94,11 @@ function depends_on {
   fi
 }
 
-function convert_to_public_url {
-  local relative_path="${1#*Dropbox/}" # Relative to the root of the Dropbox directory, as `dropdropbox_uploader.sh` needs
+function upload_file {
+  local file_name="${1}"
 
-  dropbox_uploader.sh share "${relative_path}" | sed 's/ > Share link: //;s|//.*dropbox.com|//dl.dropboxusercontent.com|;s/?dl=0$//'
-
-  if [[ "$?" -ne 0 ]]; then
-    warning_message "${relative_path} not yet fully synced to Dropbox. Retring in 10 seconds…"
-    sleep 10
-    convert_to_public_url "${1}"
-  fi
+  echo "Uploading $(basename "${file_name}")…" >&2
+  curl --silent --upload-file "${file_name}" https://transfer.sh/
 }
 
 function extract_title {
@@ -143,7 +134,7 @@ function extract_cover {
 
   eyeD3 --write-images="${book_dir}" "${file_name}" &> /dev/null
   readonly book_cover="$(find "${book_dir}" -name 'FRONT_COVER.*')"
-  [[ -n "${book_cover}" ]] && echo -n "${book_cover}"
+  [[ -n "${book_cover}" ]] && upload_file "${book_cover}" || request_cover
 }
 
 function request_cover {
@@ -187,17 +178,17 @@ function set_title {
 }
 
 function inform_details {
-  local book_title book_author online_book_cover
+  local book_title book_author book_cover
   readonly book_title="${1}"
   readonly book_author="${2}"
-  readonly online_book_cover="${3}"
+  readonly book_cover="${3}"
 
   echo "
     A feed will be built with the following details:
 
     $(bold_message 'title:') ${book_title}
     $(bold_message 'author:') ${book_author}
-    $(bold_message 'cover image:') ${online_book_cover}
+    $(bold_message 'cover image:') ${book_cover}
   " | sed -E 's/^ {4}//' >&2
 }
 
@@ -248,20 +239,19 @@ function end_feed {
 }
 
 function main {
-  local book_dir book_feed first_audio_file book_title book_author book_cover online_book_cover file_counter file_time file_duration file_mime file_size item_title file_url
+  local book_dir book_feed first_audio_file book_title book_author book_cover file_counter file_time file_duration file_mime file_size item_title file_url
   readonly book_dir="$(absolutepath "${1}")"
   fail_unless_dir "${book_dir}"
-  fail_unless_in_dropbox_dir "${book_dir}"
   book_feed="${book_dir}/feed.rss"
 
   readonly first_audio_file="$(find -E "${book_dir}" -iregex "${audio_files_regex}" | head -1)"
   [[ -n "${given_title}" ]] && readonly book_title="${given_title}" || readonly book_title="$(extract_title "${first_audio_file}" "${book_dir}")"
   [[ -n "${given_author}" ]] && readonly book_author="${given_author}" || readonly book_author="$(extract_author "${first_audio_file}")"
-  [[ -n "${given_cover}" ]] && readonly book_cover="${given_cover}" || readonly book_cover="$(extract_cover "${first_audio_file}" "${book_dir}")" && readonly online_book_cover="$(convert_to_public_url "${book_cover}")" || readonly online_book_cover="$(request_cover)"
+  [[ -n "${given_cover}" ]] && readonly book_cover="${given_cover}" || readonly book_cover="$(extract_cover "${first_audio_file}" "${book_dir}")"
 
-  inform_details "${book_title}" "${book_author}" "${online_book_cover}"
+  inform_details "${book_title}" "${book_author}" "${book_cover}"
 
-  start_feed "${book_title}" "${book_author}" "${online_book_cover}" "${book_feed}"
+  start_feed "${book_title}" "${book_author}" "${book_cover}" "${book_feed}"
 
   file_counter='0'
   while IFS= read -r -d '' file; do
@@ -271,7 +261,7 @@ function main {
     file_mime="$(extract_mime "${file}")"
     file_size="$(extract_size "${file}")"
     item_title="$(basename "${file%.*}")"
-    file_url="$(convert_to_public_url "${file}")"
+    file_url="$(upload_file "${file}")"
 
     set_title "${item_title}" "${file}"
     add_to_feed "${item_title}" "${file_time}" "${file_duration}" "${file_mime}" "${file_size}" "${file_url}" "${book_feed}"
@@ -279,10 +269,10 @@ function main {
 
   end_feed "${book_feed}"
 
-  convert_to_public_url "${book_feed}"
+  upload_file "${book_feed}"
 }
 
-depends_on 'eyeD3' 'dropbox_uploader.sh'
+depends_on 'eyeD3'
 
 while [[ "${1}" ]]; do
   case "${1}" in
@@ -312,8 +302,8 @@ while [[ "${1}" ]]; do
   shift
 done
 
-fail_if_no_arguments "$@"
+fail_if_no_arguments "${@}"
 
-for dir in "$@"; do
+for dir in "${@}"; do
   main "${dir}"
 done
