@@ -134,7 +134,13 @@ function extract_cover {
 
   eyeD3 --write-images="${book_dir}" "${file_name}" &> /dev/null
   readonly book_cover="$(find "${book_dir}" -name 'FRONT_COVER.*')"
-  [[ -n "${book_cover}" ]] && upload_file "${book_cover}" || request_cover
+
+  if [[ -n "${book_cover}" ]]; then
+    upload_file "${book_cover}"
+    rm "${book_cover}"
+  else
+    request_cover
+  fi
 }
 
 function request_cover {
