@@ -1,6 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
+export readonly MACOS_VERSION='10.12' # Latest macOS version, so commands like `fetch` are not dependent on the contributor’s OS
 readonly submit_pr_to='caskroom:master'
 readonly cask_repair_remote_name='cask-repair'
 readonly caskroom_origin_remote_regex='(https://|git@)github.com[/:]caskroom/'
