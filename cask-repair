@@ -280,7 +280,7 @@ function add_warning {
 
 function show_warnings {
   if [[ "${#warning_messages[@]}" -gt 0 ]]; then
-    printf '%s\n' "${warning_messages[@]}"
+    printf '%s\n' "${warning_messages[@]}" >&2
     divide
   fi
 }
