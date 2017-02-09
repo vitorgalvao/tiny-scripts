@@ -71,6 +71,7 @@ function usage {
       -e, --edit-cask                        Opens cask for editing before trying first download.
       -c <number>, --closes-issue <number>   Adds 'Closes #<number>.' to the commit message.
       -b, --blind-submit                     Submit cask without asking for confirmation, if there are no errors.
+      -f, --fail-on-error                    If there are any errors with the submission, abort.
       -i, --install-cask                     Installs your updated cask after submission.
       -d, --delete-branches                  Deletes all local and remote branches named like ${cask_repair_remote_name}_update-<word>.
       -h, --help                             Show this help.
@@ -351,6 +352,9 @@ while [[ "${1}" ]]; do
     -b | --blind-submit)
       updated_blindly='true'
       ;;
+    -f | --fail-on-error)
+      abort_on_error='true'
+      ;;
     -i | --install-cask)
       install_now='true'
     ;;
@@ -480,6 +484,7 @@ for cask in "${@}"; do
     git --no-pager diff
     divide
     show_warnings
+    [[ -n "${abort_on_error}" && "${#warning_messages[@]}" -gt 0 ]] && abort 'The submission has warnings and you elected to abort on errors.'
 
     if [[ -n "${updated_blindly}" && "${#warning_messages[@]}" -eq 0 ]]; then
       cask_updated='y'
