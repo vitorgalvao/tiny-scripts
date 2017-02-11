@@ -107,7 +107,7 @@ function extract_title {
   readonly file_name="${1}"
   readonly book_dir="${2}"
 
-  readonly book_title="$(eyeD3 "${file_name}" | sed 's/.\[[0-9]\{1,\}m//g' | grep '^album: ' | cut -d' ' -f2-)"
+  readonly book_title="$(eyeD3 "${file_name}" 2> /dev/null | sed 's/.\[[0-9]\{1,\}m//g' | grep '^album: ' | cut -d' ' -f2-)"
   [[ -n "${book_title}" ]] && echo -n "${book_title}" || sed 's/_/:/g' < <(basename "${book_dir}")
 }
 
@@ -115,7 +115,7 @@ function extract_author {
   local file_name book_author
   readonly file_name="${1}"
 
-  readonly book_author="$(eyeD3 "${file_name}" | sed 's/.\[[0-9]\{1,\}m//g' | grep '^artist: ' | cut -d' ' -f2-)"
+  readonly book_author="$(eyeD3 "${file_name}" 2> /dev/null | sed 's/.\[[0-9]\{1,\}m//g' | grep '^artist: ' | cut -d' ' -f2-)"
   [[ -n "${book_author}" ]] && echo -n "${book_author}" || request_author
 }
 
@@ -157,7 +157,7 @@ function extract_duration {
   local file_name file_duration
   readonly file_name="${1}"
 
-  readonly file_duration="$(eyeD3 "${file_name}" | sed 's/.\[[0-9]\{1,\}m//g' | awk '/^Time:/{print $2}')"
+  readonly file_duration="$(eyeD3 "${file_name}" 2> /dev/null | sed 's/.\[[0-9]\{1,\}m//g' | awk '/^Time:/{print $2}')"
   echo -n "${file_duration}"
 }
 
