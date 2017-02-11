@@ -15,7 +15,7 @@ function usage {
     usage: ${program} [options]
 
     options:
-      -t <string>, --title <string>    Book title. Defaults to trying to extract it from the first audio file or the directory’s name (in that order).
+      -t <string>, --title <string>    Book title. Defaults to trying to extract it from the first audio file or the directory’s name (in that order). In the latter case, `_` will be interpreted as `:`.
       -a <string>, --author <string>   Book author. Defaults to trying to extract it from the first audio file.
       -c <url>, --cover <url>          URL to image of book cover. Defaults to trying to extract it from the first audio file.
       -n, --no-tag-overwrite           Do not overwrite audio file tags. By default they are overwritten with extracted/given details.
@@ -108,7 +108,7 @@ function extract_title {
   readonly book_dir="${2}"
 
   readonly book_title="$(eyeD3 "${file_name}" | sed 's/.\[[0-9]\{1,\}m//g' | grep '^album: ' | cut -d' ' -f2-)"
-  [[ -n "${book_title}" ]] && echo -n "${book_title}" || basename "${book_dir}"
+  [[ -n "${book_title}" ]] && echo -n "${book_title}" || sed 's/_/:/g' < <(basename "${book_dir}")
 }
 
 function extract_author {
