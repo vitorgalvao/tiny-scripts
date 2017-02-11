@@ -305,19 +305,19 @@ while [[ "${1}" ]]; do
       exit 0
       ;;
     -t | --title)
-      given_title="${2}"
+      readonly given_title="${2}"
       shift
       ;;
     -a | --author)
-      given_author="${2}"
+      readonly given_author="${2}"
       shift
       ;;
     -c | --cover)
-      given_cover="${2}"
+      readonly given_cover="${2}"
       shift
       ;;
     -n | --no-tag-overwrite)
-      overwrite_tags='false'
+      readonly overwrite_tags='false'
       ;;
     -*)
       syntax_error "unrecognized option: ${1}"
