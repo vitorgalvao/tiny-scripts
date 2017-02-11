@@ -190,7 +190,7 @@ function fix_tags {
     readonly local cover_file_extension="$([[ "${book_cover}" = *.* ]] && echo ".${book_cover##*.}" || echo '')"
     readonly local tmp_cover="$(mktemp)${cover_file_extension}"
     curl --silent "${book_cover}" --output "${tmp_cover}"
-    readonly local downloaded_cover='true'
+    readonly downloaded_cover='true'
   fi
 
   eyeD3 --remove-all "${file_name}" &> /dev/null # Remove all tags
