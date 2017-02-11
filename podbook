@@ -194,7 +194,7 @@ function fix_tags {
   fi
 
   eyeD3 --remove-all "${file_name}" &> /dev/null # Remove all tags
-  eyeD3 --encoding="utf8" --add-image="${book_cover}":FRONT_COVER --artist="${book_author}" --title="${item_title}" "${file_name}" &> /dev/null
+  eyeD3 --encoding="utf8" --add-image="${tmp_cover}":FRONT_COVER --artist="${book_author}" --title="${item_title}" "${file_name}" &> /dev/null
 }
 
 function inform_details {
