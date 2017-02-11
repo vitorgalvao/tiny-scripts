@@ -291,6 +291,7 @@ function main {
 
   end_feed "${book_feed}"
 
+  echo
   upload_file "${book_feed}"
   rm "${book_feed}"
 }
