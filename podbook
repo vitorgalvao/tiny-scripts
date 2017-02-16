@@ -213,16 +213,18 @@ function inform_details {
 }
 
 function start_feed {
-  local book_title book_author book_cover book_feed
+  local book_title book_author book_cover book_feed book_dir book_duration
   readonly book_title="${1}"
   readonly book_author="${2}"
   readonly book_cover="${3}"
   readonly book_feed="${4}"
+  readonly book_dir="${5}"
+  readonly book_duration="$(human-media-time "${book_dir}")"
 
   echo "
     <rss xmlns:dc='http://purl.org/dc/elements/1.1/' xmlns:sy='http://purl.org/rss/1.0/modules/syndication/' xmlns:admin='http://webns.net/mvcb/' xmlns:atom='http://www.w3.org/2005/Atom/' xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:content='http://purl.org/rss/1.0/modules/content/' xmlns:itunes='http://www.itunes.com/dtds/podcast-1.0.dtd' version='2.0'>
     <channel>
-    <title>${book_title}</title>
+    <title>${book_title} (${book_duration})</title>
     <description>by ${book_author}</description>
     <image><url>${book_cover}</url></image>
     <pubDate>$(date -R)</pubDate>
@@ -271,7 +273,7 @@ function main {
 
   inform_details "${book_title}" "${book_author}" "${book_cover}"
 
-  start_feed "${book_title}" "${book_author}" "${book_cover}" "${book_feed}"
+  start_feed "${book_title}" "${book_author}" "${book_cover}" "${book_feed}" "${book_dir}"
 
   file_counter='0'
   while IFS= read -r -d '' file; do
@@ -296,7 +298,7 @@ function main {
   rm "${book_feed}"
 }
 
-depends_on 'eyeD3'
+depends_on 'eyeD3' 'human-media-time'
 
 while [[ "${1}" ]]; do
   case "${1}" in
