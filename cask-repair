@@ -79,6 +79,10 @@ function usage {
   " | sed -E 's/^ {4}//'
 }
 
+function current_tap {
+  git remote --verbose | grep '^origin' | head -1 | awk '{print $2}' | sed 's|.*/||'
+}
+
 function ensure_caskroom_repos {
   local current_caskroom_taps
 
@@ -113,9 +117,9 @@ function require_correct_origin {
 }
 
 function ensure_cask_repair_remote {
-  local current_tap
+  local this_tap
 
-  readonly current_tap="$(git remote --verbose | grep '^origin' | head -1 | awk '{print $2}' | sed 's|.*/||')"
+  readonly this_tap="$(current_tap)"
 
   if ! git remote | grep --silent "${cask_repair_remote_name}"; then
     warning_message "A \`${cask_repair_remote_name}\` remote does not exist. Creating it now…"
@@ -530,6 +534,8 @@ for cask in "${@}"; do
     if [[ -n "${install_now}" ]]; then
       success_message 'Updating cask locally…'
       brew cask reinstall "${cask_file}"
+    else
+      echo -e "\nYou can upgrade the cask right now from your personal branch:\n  brew cask reinstall https://raw.githubusercontent.com/${github_username}/$(current_tap)/${cask_branch}/Casks/${cask_name}.rb"
     fi
 
     success_message "\nSubmitted (${pr_link})\n"
