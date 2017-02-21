@@ -117,16 +117,12 @@ function require_correct_origin {
 }
 
 function ensure_cask_repair_remote {
-  local this_tap
-
-  readonly this_tap="$(current_tap)"
-
   if ! git remote | grep --silent "${cask_repair_remote_name}"; then
     warning_message "A \`${cask_repair_remote_name}\` remote does not exist. Creating it now…"
 
     git config --local hub.protocol https
     hub fork --no-remote
-    git remote add "${cask_repair_remote_name}" "https://github.com/${github_username}/${this_tap}"
+    git remote add "${cask_repair_remote_name}" "https://github.com/${github_username}/$(current_tap)"
   fi
 }
 
