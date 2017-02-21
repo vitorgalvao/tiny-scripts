@@ -9,7 +9,7 @@ readonly caskroom_taps=(homebrew-cask homebrew-versions homebrew-fonts homebrew-
 readonly caskroom_taps_dir="$(brew --repository)/Library/Taps/caskroom"
 readonly user_agent=(--user-agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10) http://caskroom.io')
 readonly hub_config="${HOME}/.config/hub"
-readonly git_username="$(awk '/user:/{print $(NF)}' "${hub_config}" 2>/dev/null | head -1)"
+readonly github_username="$(awk '/user:/{print $(NF)}' "${hub_config}" 2>/dev/null | head -1)"
 
 show_home='false' # By default, do not open the cask's homepage
 show_appcast='false' # By default, do not open the cask's appcast
@@ -122,7 +122,7 @@ function ensure_cask_repair_remote {
 
     git config --local hub.protocol https
     hub fork --no-remote
-    git remote add "${cask_repair_remote_name}" "https://github.com/${git_username}/${current_tap}"
+    git remote add "${cask_repair_remote_name}" "https://github.com/${github_username}/${this_tap}"
   fi
 }
 
@@ -520,7 +520,7 @@ for cask in "${@}"; do
   # Commit, push, submit pull request, clean
   commit_message="Update ${cask_name} to ${cask_version}"
   hub_message="$(echo -e "${commit_message}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version.")"
-  submit_pr_from="${git_username}:${cask_branch}"
+  submit_pr_from="${github_username}:${cask_branch}"
 
   git commit "${cask_file}" --message "${commit_message}" --quiet
   git push --force "${cask_repair_remote_name}" "${cask_branch}" --quiet
