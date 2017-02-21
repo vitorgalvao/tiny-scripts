@@ -9,7 +9,7 @@ readonly caskroom_taps=(homebrew-cask homebrew-versions homebrew-fonts homebrew-
 readonly caskroom_taps_dir="$(brew --repository)/Library/Taps/caskroom"
 readonly user_agent=(--user-agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10) http://caskroom.io')
 readonly hub_config="${HOME}/.config/hub"
-readonly git_username="$(awk '/user:/{print $(NF)}' "${hub_config}" | head -1)"
+readonly git_username="$(awk '/user:/{print $(NF)}' "${hub_config}" 2>/dev/null | head -1)"
 
 show_home='false' # By default, do not open the cask's homepage
 show_appcast='false' # By default, do not open the cask's appcast
