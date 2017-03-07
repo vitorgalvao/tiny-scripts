@@ -4,7 +4,7 @@ readonly program="$(basename "${0}")"
 export readonly MACOS_VERSION='10.12' # Latest macOS version, so commands like `fetch` are not dependent on the contributor’s OS
 readonly submit_pr_to='caskroom:master'
 readonly cask_repair_remote_name='cask-repair'
-readonly caskroom_origin_remote_regex='(https://|git@)github.com[/:]caskroom/'
+readonly caskroom_origin_remote_regex='(https://|git@)github.com[/:]Caskroom/'
 readonly caskroom_taps=(homebrew-cask homebrew-versions homebrew-fonts homebrew-eid homebrew-drivers)
 readonly caskroom_taps_dir="$(brew --repository)/Library/Taps/caskroom"
 readonly user_agent=(--user-agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10) http://caskroom.io')
@@ -113,7 +113,7 @@ function require_correct_origin {
 
   origin_remote="$(git remote --verbose | grep '^origin' | head -1 | awk '{print $2}')"
 
-  grep --silent --extended-regexp "^${caskroom_origin_remote_regex}" <<< "${origin_remote}" || failure_message "\`origin\` is pointing to an incorrect remote (${origin_remote}). Its beginning must match ${caskroom_origin_remote_regex}."
+  grep --silent --ignore-case --extended-regexp "^${caskroom_origin_remote_regex}" <<< "${origin_remote}" || failure_message "\`origin\` is pointing to an incorrect remote (${origin_remote}). Its beginning must match ${caskroom_origin_remote_regex}."
 }
 
 function ensure_cask_repair_remote {
