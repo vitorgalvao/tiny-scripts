@@ -11,13 +11,13 @@ function depends_on {
   fi
 }
 
-syntax_error() {
+function syntax_error {
   echo "${program}: ${1}" >&2
   echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
-usage() {
+function usage {
   echo "
     usage: ${program} [-d <duration>] [-s <time>] [-o <output_file>] <input_file>
 
