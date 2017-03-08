@@ -76,5 +76,7 @@ Script to facilitate installing ubuntu on a USB stick, from macOS
 ### unsplashdownload
 Script to download images from [unsplash](https://unsplash.com/)’s last batch
 
+---
+
 #### License
 The Unlicense (Public Domain, essentially)
