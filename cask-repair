@@ -10,6 +10,7 @@ readonly caskroom_taps_dir="$(brew --repository)/Library/Taps/caskroom"
 readonly user_agent=(--user-agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10) http://caskroom.io')
 readonly hub_config="${HOME}/.config/hub"
 readonly github_username="$(awk '/user:/{print $(NF)}' "${hub_config}" 2>/dev/null | head -1)"
+readonly submission_error_log="$(mktemp)"
 
 show_home='false' # By default, do not open the cask's homepage
 show_appcast='false' # By default, do not open the cask's appcast
@@ -298,6 +299,7 @@ function clean {
   git reset HEAD --hard --quiet
   git checkout master --quiet
   git branch -D "${current_branch}" --quiet
+  rm "${submission_error_log}"
   unset given_cask_version given_cask_url cask_updated
 }
 
@@ -523,7 +525,15 @@ for cask in "${@}"; do
   submit_pr_from="${github_username}:${cask_branch}"
 
   git commit "${cask_file}" --message "${commit_message}" --quiet
-  git push --force "${cask_repair_remote_name}" "${cask_branch}" --quiet
+  git push --force "${cask_repair_remote_name}" "${cask_branch}" --quiet 2> "${submission_error_log}"
+
+  # Fix common push errors
+  if [[ "$?" -ne 0 ]] && grep --quiet 'shallow update not allowed' "${submission_error_log}"; then
+    echo 'Push failed due to shallow repo. Unshallowing…'
+    HOMEBREW_NO_AUTO_UPDATE=1 brew tap --full "caskroom/$(current_tap)"
+    git push --force "${cask_repair_remote_name}" "${cask_branch}" --quiet
+  fi
+
   [[ -z "${issue_to_close}" ]] && pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "${hub_message}") || pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "$(echo -e "${hub_message}\n\n---\n\nCloses #${issue_to_close}.")")
 
   if [[ -n "${pr_link}" ]]; then
