@@ -1,3 +1,8 @@
+To support my continued open-source work, pick a method:
+
+[<img src='https://upload.wikimedia.org/wikipedia/commons/5/53/PayPal_2014_logo.svg' height='18' alt='Support via Paypal'>](https://www.paypal.me/vitorgalvao)&nbsp;&nbsp;
+[<img src='https://upload.wikimedia.org/wikipedia/commons/c/c5/Bitcoin_logo.svg' height='15' alt='Support via Bitcoin'>](http://vitorgalvao.com/bitcoin_tip_jar.html)
+
 # Collection of small scripts
 
 The easiest way to get these is via [this repository](https://github.com/vitorgalvao/homebrew-tiny-scripts), as the install will take care of any eventual dependencies that are not already available on your system.
