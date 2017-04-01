@@ -161,17 +161,26 @@ function has_language_stanza? {
 }
 
 function modify_stanza {
-  local stanza_to_modify new_stanza_value cask_file
+  local stanza_to_modify new_stanza_value cask_file stanza_match_regex last_stanza_match stanza_start ending_comma
 
   stanza_to_modify="${1}"
   new_stanza_value="${2}"
   cask_file="${3}"
 
+  stanza_match_regex="^\s*${stanza_to_modify} "
+  last_stanza_match="$(grep "${stanza_match_regex}" "${cask_file}" | tail -1)"
+  stanza_start="$(perl -pe "s/(${stanza_match_regex}).*/\1/" <<< "${last_stanza_match}")"
+  if grep --quiet ',$' <<< "${last_stanza_match}"; then
+    ending_comma=','
+  fi
+
   perl -0777 -i -e'
-    $stanza_to_modify = shift(@ARGV);
+    $last_stanza_match = shift(@ARGV);
+    $stanza_start = shift(@ARGV);
     $new_stanza_value = shift(@ARGV);
-    print <> =~ s|\A.*^\s*\Q$stanza_to_modify\E\s\K[^\n]*|$new_stanza_value|smr;
-  ' "${stanza_to_modify}" "${new_stanza_value}" "${cask_file}"
+    $ending_comma = shift(@ARGV);
+    print <> =~ s|\Q$last_stanza_match\E|$stanza_start$new_stanza_value$ending_comma|r;
+  ' "${last_stanza_match}" "${stanza_start}" "${new_stanza_value}" "${ending_comma}" "${cask_file}"
 }
 
 function modify_url {
