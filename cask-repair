@@ -170,7 +170,7 @@ function modify_stanza {
   perl -0777 -i -e'
     $stanza_to_modify = shift(@ARGV);
     $new_stanza_value = shift(@ARGV);
-    print <> =~ s|\A.*^\s*\Q$stanza_to_modify\E\s\K[^\n]*|$new_stanza_value|smr;
+    print <> =~ s|\A.*^\s*\Q$stanza_to_modify\E\s\K[^\n]*['\''"]|$new_stanza_value|smr;
   ' "${stanza_to_modify}" "${new_stanza_value}" "${cask_file}"
 }
 
