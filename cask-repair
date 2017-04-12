@@ -556,6 +556,6 @@ for cask in "${@}"; do
     success_message "\nSubmitted (${pr_link})\n"
     clean
   else
-    abort 'There was an error submitting the pull request. Please open a bug report on the repo for this script.'
+    abort 'There was an error submitting the pull request. Please open a bug report on the repo for this script (https://github.com/vitorgalvao/tiny-scripts).'
   fi
 done
