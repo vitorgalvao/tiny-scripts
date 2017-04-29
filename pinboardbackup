@@ -14,11 +14,12 @@ usage() {
     usage: ${program} [options]
 
     options:
-      -i, --include-unread    Also save unread bookmarks.
+      -j, --json              Export as JSON (default is XML).
+      -o, --output <file>     File to export to (defaults to saving in your home).
       -t, --token <token>     Your Pinboard API token.
       -a, --ask-for-token     Ask for your Pinboard API token on start.
-      -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only, compatible with pinboardbackup, pinboardlinkcheck).
-      -u, --use-saved-token   Use Pinboard API token in Keychain (macOS-only, compatible with pinboardbackup, pinboardlinkcheck).
+      -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only, compatible with pinboardlinkcheck, pinboardwaybackmachine).
+      -u, --use-saved-token   Use Pinboard API token in Keychain (macOS-only, compatible with pinboardlinkcheck, pinboardwaybackmachinek).
       -h, --help              Show this message.
   " | sed -E 's/^ {4}//'
 }
@@ -30,8 +31,12 @@ while [[ "${1}" ]]; do
       usage
       exit 0
       ;;
-    -i | --include-unread)
-      keep_unread='true'
+    -j | --json)
+      export_format='json'
+      ;;
+    -o | --output)
+      output_file="${2}"
+      shift
       ;;
     -t | --token)
       token="${2}"
@@ -52,6 +57,10 @@ while [[ "${1}" ]]; do
   esac
   shift
 done
+
+# Defaults for unset variables
+[[ -z "${export_format}" ]] && export_format='xml'
+[[ -z "${output_file}" ]] && output_file="${HOME}/pinboardbackup.${export_format}"
 
 # Ask for api token, if option is set
 if [[ -n "${ask_for_token}" ]]; then
@@ -83,19 +92,19 @@ if [[ -n "${set_keychain_token}" ]]; then
   exit 0
 fi
 
-# Get all your pinboard links
-if [[ "${keep_unread}" ]]; then
-  links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | cut -d '"' -f 2 | sed '1d')
-else
-  links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | grep --invert-match 'toread="yes"' | cut -d '"' -f 2 | sed '1d')
+# Backup
+if [[ ! -f "${output_file}" ]]; then
+  mkdir -p "$(dirname "${output_file}")"
+  touch "${output_file}"
 fi
 
-link_countdown="$(wc -l <<< "${links}" | tr -d ' ')"
+last_update="$(curl --silent "https://api.pinboard.in/v1/posts/update?auth_token=${token}" | grep 'update time' | sed -E 's/.*"(.*)".*/\1/')"
 
-# Check each link individually
-for page in ${links} ; do
-  echo "[${link_countdown}] Archiving ${page}…"
-  ((link_countdown--))
+if head -1 "${output_file}" | grep --quiet "${last_update}"; then
+  echo 'All bookmarks saved (no change since last backup).'
+  exit 0
+fi
 
-  curl --location --silent --output /dev/null "https://web.archive.org/save/${page}"
-done
+echo -e "Last saved on: ${last_update}\n" > "${output_file}"
+curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}&format=${export_format}" >> "${output_file}"
+echo 'All bookmarks saved.'

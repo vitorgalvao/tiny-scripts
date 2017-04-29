@@ -20,8 +20,8 @@ usage() {
       -i, --include-unread    Also check unread bookmarks.
       -t, --token <token>     Your Pinboard API token.
       -a, --ask-for-token     Ask for your Pinboard API token on start.
-      -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only, compatible with pinboardwaybackmachine).
-      -u, --use-saved-token   Use Pinboard API token in Keychain (macOS-only, compatible with pinboardwaybackmachine).
+      -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only, compatible with pinboardbackup, pinboardwaybackmachine).
+      -u, --use-saved-token   Use Pinboard API token in Keychain (macOS-only, compatible with pinboardbackup, pinboardwaybackmachine).
       -h, --help              Show this message.
   " | sed -E 's/^ {4}//'
 }

@@ -43,6 +43,9 @@ Script to change label color of files in macOS
 ### lovecolor
 Script to get color palette from colourlovers and format it to use in processing
 
+### pinboardbackup
+Script to backup all bookmarks in your [pinboard](https://pinboard.in/) account
+
 ### pinboardlinkcheck
 Script to check the status code of links saved in your [pinboard](https://pinboard.in/) account
 
