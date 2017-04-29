@@ -9,7 +9,7 @@ syntax_error() {
   exit 1
 }
 
-# instructions
+# Instructions
 usage() {
   echo "
     usage: ${program} [options]
@@ -26,12 +26,12 @@ usage() {
   " | sed -E 's/^ {4}//'
 }
 
-# set color for verbose messages
+# Set color for verbose messages
 bad() { echo "$(tput setab 1)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
 good() { echo "$(tput setab 2)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
 warning() { echo "$(tput setab 3)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
 
-# set options
+# Set options
 while [[ "${1}" ]]; do
   case "${1}" in
     -h | --help)
@@ -68,12 +68,12 @@ while [[ "${1}" ]]; do
   shift
 done
 
-# location for log files
+# Location for log files
 [[ -z "${log_dir}" ]] && log_dir="${HOME}"
 log_file="${log_dir}/pinboardlinkcheck.log"
 [[ -n "${redirect_log}" ]] && redirect_log_file="${log_dir}/pinboardlinkcheck-redirects.log"
 
-# ask for api token, if option is set
+# Ask for api token, if option is set
 if [[ -n "${ask_for_token}" ]]; then
   echo 'Please insert your api token (will not be echoed)'
   echo 'You can get it at https://pinboard.in/settings/password'
@@ -84,7 +84,7 @@ fi
 # Use saved token (if any)
 [[ -n "${get_keychain_token}" ]] && token="$(security find-generic-password -a "${USER}" -s pinboard_api_token -w)"
 
-# exit if no token was set
+# Exit if no token was set
 if [[ -z "${token}" ]]; then
   usage
   exit 1
@@ -103,7 +103,7 @@ if [[ -n "${set_keychain_token}" ]]; then
   exit 0
 fi
 
-# get all your pinboard links
+# Get all your pinboard links
 if [[ "${keep_unread}" ]]; then
   links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | cut -d '"' -f 2 | sed '1d')
 else
@@ -112,7 +112,7 @@ fi
 
 link_countdown="$(wc -l <<< "${links}" | tr -d ' ')"
 
-# check each link individually
+# Check each link individually
 for page in ${links} ; do
   echo -n "[${link_countdown}] "
   ((link_countdown--))
@@ -127,19 +127,19 @@ for page in ${links} ; do
     bad "${status}" "${page}"
   fi
 
-  # append to log file
+  # Append to log file
   echo "${status} ${page}" >> "${log_file}"
 done
 
-# cleanup
-# remove every link with a '200' code from the log
+# Cleanup
+# Remove every link with a '200' code from the log
 sed -i '' '/^200/d' "${log_file}"
 
-# order links by status code
+# Order links by status code
 ordered_links=$(cat "${log_file}" | sort)
 echo "${ordered_links}" > "${log_file}"
 
-# move 301 links to redirect log, if specified
+# Move 301 links to redirect log, if specified
 if [[ -n "${redirect_log}" ]]; then
   redirectlinks=$(cat "${log_file}" | grep '^301' | sed 's/^301 //')
 
@@ -149,6 +149,6 @@ if [[ -n "${redirect_log}" ]]; then
     echo "${page} → ${redirect_url}" >> "${redirect_log_file}"
   done
 
-  # remove 301s from the main log
+  # Remove 301s from the main log
   sed -i '' '/^301/d' "${log_file}"
 fi
