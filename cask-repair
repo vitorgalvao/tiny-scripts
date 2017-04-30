@@ -259,13 +259,6 @@ function delete_created_branches {
   done
 }
 
-function update_cask_shas {
-  local cask_file="${1}"
-
-  sha_change "${cask_file}"
-  appcast_checkpoint_change "${cask_file}"
-}
-
 function edit_cask {
   local cask_file="${1}"
 
@@ -475,7 +468,12 @@ for cask in "${@}"; do
 
   [[ "${edit_on_start}" == 'true' ]] && edit_cask "${cask_file}"
 
-  is_version_latest? "${cask_file}" && modify_stanza 'sha256' ':no_check' "${cask_file}" || update_cask_shas "${cask_file}" # Calculate new sha256 values
+  if is_version_latest? "${cask_file}"; then
+    modify_stanza 'sha256' ':no_check' "${cask_file}"
+  else
+    sha_change "${cask_file}"
+    appcast_checkpoint_change "${cask_file}"
+  fi
 
   # Check if everything is alright, else abort
   [[ -z "${cask_updated}" ]] && cask_updated='false'
@@ -509,7 +507,10 @@ for cask in "${@}"; do
       fi
     elif [[ "${cask_updated}" == 'e' ]]; then
       edit_cask "${cask_file}"
-      is_version_latest? "${cask_file}" || update_cask_shas "${cask_file}" # Recheck sha256 values if version isn't :latest
+      if ! is_version_latest? "${cask_file}"; then # Recheck sha256 values if version isn't :latest
+        sha_change "${cask_file}"
+        appcast_checkpoint_change "${cask_file}"
+      fi
       cask_updated='false'
       clear_warnings
     elif [[ "${cask_updated}" == 'n' ]]; then
