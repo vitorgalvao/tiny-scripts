@@ -82,6 +82,7 @@ fi
 # “#10” is necessary for using base10
 for file_to_rename in "${@}"; do
   num=$(printf "%.${leading_zeros}d" "$((10#${num}+1))")
+  file_extension="$([[ "${file_name}" = *.* ]] && echo ".${file_name##*.}" || echo '')"
 
-  mv -n"${be_verbose}" "${file_to_rename}" "$(dirname "${file_to_rename}")/${string_to_prepend}${num}${string_to_append}.${file_to_rename##*.}"
+  mv -n"${be_verbose}" "${file_to_rename}" "$(dirname "${file_to_rename}")/${string_to_prepend}${num}${string_to_append}${file_extension}"
 done
