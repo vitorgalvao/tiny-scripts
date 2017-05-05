@@ -2,7 +2,7 @@
 
 readonly program="$(basename "${0}")"
 
-syntax_error() {
+function syntax_error {
   echo "${program}: ${1}" >&2
   echo "Try \`${program} --help\` for more information." >&2
   exit 1
@@ -12,8 +12,7 @@ IFS=$'\n'
 
 # Instructions on how to use the script
 # Shown with '-h', or when no arguments are given
-# -----------------------------------------------
-usage() {
+function usage {
   echo "
     usage: \$1 [options] <files>
 
@@ -27,40 +26,39 @@ usage() {
   " | sed -E 's/^ {4}//'
 }
 
-if [[ -z "$1" ]]; then
+if [[ "${#}" -eq 0 ]]; then
   usage
   exit 1
 fi
 
 # Available flags to use with the script
-# --------------------------------------
-while [[ "$1" ]]; do
-  case "$1" in
+while [[ "${1}" ]]; do
+  case "${1}" in
     -h | --help)
       usage
       exit 0
       ;;
     -s | --starting-number)
-      starting_num="$2"
+      starting_num="${2}"
       shift
       ;;
     -l | --sequence-length)
-      leading_zeros="$2"
+      leading_zeros="${2}"
       shift
       ;;
     -p | --prepend)
-      stringToPrepend="$2"
+      string_to_prepend="${2}"
       shift
       ;;
     -a | --append)
-      stringToAppend="$2"
+      string_to_append="${2}"
       shift
       ;;
     -v | --verbose)
-      beVerbose="v"
+      be_verbose="v"
       ;;
     -*)
-      syntax_error "unrecognized option: $1"
+      syntax_error "unrecognized option: ${1}"
       ;;
     *)
       break
@@ -70,27 +68,20 @@ while [[ "$1" ]]; do
 done
 
 # Determines the starting number, depending on if one was picked
-# --------------------------------------------------------------
-if [[ "${starting_num}" ]]; then
-  num=$((${starting_num}-1))
-else
-  num=0
-fi
+[[ "${starting_num}" ]] && num=$((${starting_num}-1)) || num=0
 
 # If no sequence length is given,
 # it will be set accordingly to what the last number
 # in the sequence is (depending on the starting number)
-# -----------------------------------------------------
 if [[ -z "${leading_zeros}" ]]; then
-  sequence_end=$(($(echo -n "$#")+${num}))
-  leading_zeros=$(echo -n "${sequence_end}" | wc -c | tr -d ' ')
+  sequence_end="$(($(echo -n "${#}")+${num}))"
+  leading_zeros="$(echo -n "${sequence_end}" | wc -c | tr -d ' ')"
 fi
 
 # The actual renaming part
 # “#10” is necessary for using base10
-# -----------------------------------
-for file_to_rename in $@; do
+for file_to_rename in "${@}"; do
   num=$(printf "%.${leading_zeros}d" "$((10#${num}+1))")
 
-  mv -n${beVerbose} "${file_to_rename}" "$(dirname ${file_to_rename})/${stringToPrepend}${num}${stringToAppend}.${file_to_rename##*.}"
+  mv -n"${be_verbose}" "${file_to_rename}" "$(dirname "${file_to_rename}")/${string_to_prepend}${num}${string_to_append}.${file_to_rename##*.}"
 done
