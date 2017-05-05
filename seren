@@ -68,7 +68,7 @@ while [[ "${1}" ]]; do
 done
 
 # Determines the starting number, depending on if one was picked
-[[ "${starting_num}" ]] && num=$((${starting_num}-1)) || num=0
+num="$([[ -n "${starting_num}" ]] && bc <<< "${starting_num} - 1" || echo '0')"
 
 # If no sequence length is given,
 # it will be set accordingly to what the last number
@@ -79,9 +79,8 @@ if [[ -z "${leading_zeros}" ]]; then
 fi
 
 # The actual renaming part
-# “#10” is necessary for using base10
 for file_to_rename in "${@}"; do
-  num=$(printf "%.${leading_zeros}d" "$((10#${num}+1))")
+  num="$(printf "%.${sequence_length}d" "$(bc <<< "${num} + 1")")"
   file_extension="$([[ "${file_name}" = *.* ]] && echo ".${file_name##*.}" || echo '')"
 
   mv -n"${be_verbose}" "${file_to_rename}" "$(dirname "${file_to_rename}")/${string_to_prepend}${num}${string_to_append}${file_extension}"
