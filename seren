@@ -18,7 +18,7 @@ function usage {
 
     options:
       -s <num>, --starting-number <num>   Sets starting number for the sequence (defaults to 1).
-      -l <num>, --sequence-length <num>   Sets sequence length (defaults to what'll accomodate the number of files).
+      -l <num>, --leading-zeros <num>     Sets the amount of leading zeros (defaults to what'll accomodate the number of files).
       -p <string>, --prepend <string>     Sets name to prepend to the sequence number (defaults to nothing).
       -a <string>, --append <string>      Sets name to append to the sequence number (defaults to nothing).
       -v, --verbose                       Be verbose.
@@ -42,8 +42,8 @@ while [[ "${1}" ]]; do
       starting_num="${2}"
       shift
       ;;
-    -l | --sequence-length)
-      leading_zeros="${2}"
+    -l | --leading-zeros)
+      sequence_length="$(bc <<< "${2} + 1")"
       shift
       ;;
     -p | --prepend)
@@ -73,9 +73,9 @@ num="$([[ -n "${starting_num}" ]] && bc <<< "${starting_num} - 1" || echo '0')"
 # If no sequence length is given,
 # it will be set accordingly to what the last number
 # in the sequence is (depending on the starting number)
-if [[ -z "${leading_zeros}" ]]; then
-  sequence_end="$(($(echo -n "${#}")+${num}))"
-  leading_zeros="$(echo -n "${sequence_end}" | wc -c | tr -d ' ')"
+if [[ -z "${sequence_length}" ]]; then
+  sequence_end="$(bc <<< "${#} + ${num}")"
+  sequence_length="${#sequence_end}"
 fi
 
 # The actual renaming part
