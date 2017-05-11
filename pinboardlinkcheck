@@ -91,9 +91,8 @@ if [[ -z "${token}" ]]; then
 fi
 
 # Check if token is correct
-token_check="$(curl --silent "https://api.pinboard.in/v1/user/api_token/?auth_token=${token}")"
-if [[ -z "${token_check}" ]]; then
-  echo 'The used Pinboard API token appears to be incorrect. Alternatively, Pinboard’s servers might be down.'
+if ! curl --fail --silent "https://api.pinboard.in/v1/user/api_token/?auth_token=${token}"; then
+  echo "The used Pinboard API token appears to be incorrect. Alternatively, Pinboard’s servers might be down." >&2
   exit 1
 fi
 
