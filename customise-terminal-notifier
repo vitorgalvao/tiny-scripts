@@ -62,7 +62,7 @@ function make_icns {
 if [[ -z "${icon}" || -z "${id}" ]]; then usage && exit 1; fi
 
 # set variables
-tn_version="$(curl --location --silent 'https://github.com/alloy/terminal-notifier/releases.atom' | grep '<title>' | sed -n 2p | sed -E 's|.*<title>(.*)</title>.*|\1|')"
+tn_version='1.7.2' # freezing at this version since subsequent ones no longer provide an app bundle
 tmp_dir="$(mktemp -d -t 'terminal-notifier')"
 app="${tmp_dir}/terminal-notifier-${tn_version}/terminal-notifier.app"
 
