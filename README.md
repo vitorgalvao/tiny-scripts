@@ -31,9 +31,6 @@ Script to make animated gifs from a video file
 ### gifmaker
 Script to make animated gifs from sequences of images, with more control over FPS
 
-### gifprogress
-Script to convert a sequence of images to a gif, with a progress bar
-
 ### human-media-time
 Script to calculate the total running time of multiple media files, presenting the output in a human-readable way
 
@@ -60,6 +57,9 @@ Script to quickly pull, fix, and push [github](https://github.com/) pull request
 
 ### prfixmaster
 Script to quickly pull, fix, and push [github](https://github.com/) pull requests, merging directly to master and closing the previous pull request
+
+### progressbar
+Overlay a progress bar on moving pictures
 
 ### ringtonemaker
 Script to convert a video or audio file to an iPhone ringtone

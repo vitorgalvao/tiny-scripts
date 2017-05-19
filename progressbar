@@ -1,0 +1,175 @@
+#!/bin/bash
+
+readonly program="$(basename "${0}")"
+
+# Defaults
+bar_color='#f12b24'
+bar_height_percent='1'
+bar_pos='bottom'
+seconds_delay='1.5'
+output_file='output.gif'
+
+function message {
+  echo "${1}"
+}
+
+function wrong_arguments {
+  tput setaf 1
+  echo 'You need either give multiple images or one video file as arguments' >&2
+  tput sgr0
+  exit 1
+}
+
+function depends_on {
+  readonly local all_deps=("${@}")
+  local missing_deps=()
+
+  for dep in "${all_deps[@]}"; do
+    if ! command -v "${dep}" &>/dev/null; then
+      missing_deps+=("${dep}")
+    fi
+  done
+
+  if [[ "${#missing_deps[@]}" -gt 0 ]]; then
+    tput setaf 1
+    echo -e '\nThis script has unmet dependencies. You need to install these first:'
+    printf '  %s\n' "${missing_deps[@]}"
+    tput sgr0
+    exit 1
+  fi
+}
+
+function syntax_error {
+  echo "${program}: ${1}" >&2
+  echo "Try \`${program} --help\` for more information." >&2
+  exit 1
+}
+
+function usage {
+  echo "
+    usage: ${program} [options] [file ...]
+
+    options:
+      -c, --bar-color <color>           Set the bar’s color. Defaults to '#f12b24'.
+      -s, --bar-height <integer>        Set the bar’s height as a percent of the total height. Defaults to '1'.
+      -p, --bar-position [top|bottom]   Can be 'top' or 'bottom'. Defaults to 'bottom'.
+      -d, --delay <number>              Delay between each frame, in seconds. Defaults to '1.5'. Ignored when input is a video.
+      -o, --output-file <file>          File to output to. Defaults to 'output.gif' in the current directory. Give it a .mov extension to save as video instead.
+      -h, --help                        Show this help.
+  " | sed -E 's/^ {4}//'
+}
+
+# Available flags
+while [[ "${1}" ]]; do
+  case "${1}" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -c | --bar-color)
+      bar_color="${2}"
+      shift
+      ;;
+    -s | --bar-height)
+      bar_height_percent="${2}"
+      shift
+      ;;
+    -p | --bar-position)
+      bar_pos="${2}"
+      shift
+      ;;
+    -d | --delay)
+      seconds_delay="${2}"
+      shift
+      ;;
+    -o | --output-file)
+      output_file="${2}"
+      shift
+      ;;
+    -*)
+      syntax_error "unrecognized option: ${1}"
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
+
+trap 'exit 1' SIGINT
+
+depends_on convert identify ffmpeg ffprobe
+
+# Determine if working from images or video
+[[ "${#}" -eq 0 ]] && wrong_arguments
+
+if [[ "${#}" -eq 1 ]]; then
+  [[ "$(file --mime-type --brief "${1}")" != 'video'* ]] && wrong_arguments
+
+  readonly converting_from='video'
+  readonly tmp_ffmpeg_img_dir="$(mktemp -d)"
+
+  message 'Extracting images from video…'
+  ffmpeg -loglevel error -i "${1}" "${tmp_ffmpeg_img_dir}/image%9d.png"
+
+  readonly images=("${tmp_ffmpeg_img_dir}"/*)
+else
+  readonly converting_from='images'
+  readonly images=("${@}")
+
+  for file in "${images[@]}"; do
+    [[ "$(file --mime-type --brief "${file}")" != 'image'* ]] && wrong_arguments
+  done
+fi
+
+message 'Generating progress bar…'
+readonly total_steps="$(bc <<< "${#images[@]} - 1")" # Remove one from the total number of elements in the images array since we will start counting steps from 0. This is for the logic of having no bar on the first step and to map to the array correctly
+
+# Rely on first image for the size.
+readonly canvas_width="$(identify -format '%[fx:w]' "${images[0]}")"
+readonly canvas_height="$(identify -format '%[fx:h]' "${images[0]}")"
+readonly bar_height_px="$(bc <<< "${canvas_height} * ${bar_height_percent} / 100")"
+
+[[ "${bar_pos}" == 'top' ]] && readonly bar_ystart='0' || readonly bar_ystart="$(bc <<< "${canvas_height} - ${bar_height_px}")"
+readonly bar_yend="$(bc <<< "${bar_ystart} + ${bar_height_px}")"
+
+readonly tmp_bar_graphic="$(mktemp).png"
+readonly tmp_fused_img_dir="$(mktemp -d)"
+
+# Make bar graphics and overlay them on the original images.
+for step_name in $(seq -w 0 "${total_steps}"); do
+  [[ "${step_name}" =~ ^0+$ ]] && step_number='0' || step_number="$(sed -E 's/^0+//' <<< "${step_name}")" # Remove leading zeros
+
+  if [[ "${step_number}" -eq 0 ]]; then
+    bar_width='0' # First frame shold never have a bar. Without this we'd have to divide by zero.
+  elif [[ "${step_number}" -eq "${total_steps}" ]]; then
+    bar_width="${canvas_width}" # Last frame should always fill the full width. Without this we may get a fractional result slightly smaller.
+  else
+    bar_width="$(bc -l <<< "${canvas_width} / ${total_steps} * ${step_number}")"
+  fi
+
+  convert -size "${canvas_width}"x"${canvas_height}" canvas:transparent -fill "${bar_color}" -draw "rectangle 0,${bar_ystart} ${bar_width},${bar_yend}" "${tmp_bar_graphic}"
+  convert "${images[step_number]}" "${tmp_bar_graphic}" -composite "${tmp_fused_img_dir}/${step_name}.png"
+done
+
+# Make gif
+message 'Creating gif…'
+readonly tmp_video="$(mktemp).mov"
+
+if [[ "${converting_from}" == 'images' ]]; then
+  readonly frame_delay="$(bc <<< "${seconds_delay} * 100")"
+  convert -delay "${frame_delay}" "${tmp_fused_img_dir}/"*.png "${tmp_video}"
+else
+  ffmpeg -loglevel error -pattern_type glob -i "${tmp_fused_img_dir}/*.png" "${tmp_video}"
+fi
+
+if [[ "${output_file}" == *'.mov' ]]; then
+  mv "${tmp_video}" "${output_file}"
+else
+  # Same technique as [gfv](https://github.com/vitorgalvao/tiny-scripts/blob/master/gfv)
+  readonly palette="$(mktemp).png"
+  ffmpeg -loglevel error -i "${tmp_video}" -filter_complex 'fps=10,scale=-1:-1:flags=lanczos,palettegen' "${palette}"
+  ffmpeg -loglevel error -i "${tmp_video}" -i "${palette}" -filter_complex 'fps=10,scale=-1:-1:flags=lanczos[x];[x][1:v]paletteuse' "${output_file}"
+fi
+
+message "Saved to ${output_file}"
