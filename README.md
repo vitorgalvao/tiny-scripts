@@ -59,7 +59,7 @@ Script to quickly pull, fix, and push [github](https://github.com/) pull request
 Script to quickly pull, fix, and push [github](https://github.com/) pull requests, merging directly to master and closing the previous pull request
 
 ### progressbar
-Overlay a progress bar on moving pictures
+Overlay a progress bar on videos or gifs
 
 ### ringtonemaker
 Script to convert a video or audio file to an iPhone ringtone
