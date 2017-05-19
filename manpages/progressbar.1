@@ -1,0 +1,45 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "PROGRESSBAR" "1" "May 2017" "Vítor Galvão" "progressbar"
+.
+.SH "NAME"
+\fBprogressbar\fR \- overlay a progress bar on videos and gifs
+.
+.SH "SYNOPSIS"
+\fBprogressbar [options]\fR [file \.\.\.]
+.
+.SH "DESCRIPTION"
+Convert a sequence of images or a video file to a gif or video with a progress bar\.
+.
+.P
+Initially built to make short snippets of looping instructionals clearer as to where they start\.
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-c, \-\-bar\-color <color>\fR
+Set the bar\'s color\. Default: \fB#f12b24\fR\.
+.
+.TP
+\fB\-s, \-\-bar\-height <number>\fR
+Set the bar\'s height as a percent of the total height\. Default: \fB1\fR\.
+.
+.TP
+\fB\-p, \-\-bar\-position [top|bottom]\fR
+Default: \fBbottom\fR\.
+.
+.TP
+\fB\-d, \-\-delay <number>\fR
+Delay between each frame, in seconds\. Ignored when input is a video\. Default: \fB1\.5\fR\.
+.
+.TP
+\fB\-o, \-\-output\-file <file>\fR
+File to output to\. Give it a \.mov extension to save as a video, or any other to save as gif\. Default: \fBoutput\.gif\fR in the current directory\.
+.
+.TP
+\fB\-h, \-\-help\fR
+Show help\.
+.
+.SH "AUTHORS"
+Vítor Galvão
