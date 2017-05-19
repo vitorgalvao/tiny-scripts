@@ -50,11 +50,11 @@ function usage {
     usage: ${program} [options] [file ...]
 
     options:
-      -c, --bar-color <color>           Set the bar’s color. Defaults to '#f12b24'.
-      -s, --bar-height <integer>        Set the bar’s height as a percent of the total height. Defaults to '1'.
-      -p, --bar-position [top|bottom]   Can be 'top' or 'bottom'. Defaults to 'bottom'.
-      -d, --delay <number>              Delay between each frame, in seconds. Defaults to '1.5'. Ignored when input is a video.
-      -o, --output-file <file>          File to output to. Defaults to 'output.gif' in the current directory. Give it a .mov extension to save as video instead.
+      -c, --bar-color <color>           Default: #f12b24.
+      -s, --bar-height <integer>        Bar’s height as a percent of the total height. Default: 1.
+      -p, --bar-position [top|bottom]   Default: bottom.
+      -d, --delay <number>              Delay between each frame, in seconds. Default: 1.5.
+      -o, --output-file <file>          File to output to. Default: output.gif in current directory.
       -h, --help                        Show this help.
   " | sed -E 's/^ {4}//'
 }
