@@ -4,5 +4,5 @@ cd "$(dirname "${0}")" || exit 1
 
 for md_file in *md; do
   file_no_extension="${md_file%.*}"
-  sed "s/’/'/g;s/[“”]/\"/g;s/[—–]/-/g" progressbar.md | ronn --manual "${file_no_extension}" --organization 'Vítor Galvão' --roff > "${file_no_extension}.1"
+  sed "s/’/'/g;s/[“”]/\"/g;s/[—–]/-/g;s/…/.../g" progressbar.md | ronn --manual "${file_no_extension}" --organization 'Vítor Galvão' --roff > "${file_no_extension}.1"
 done
