@@ -19,9 +19,6 @@ Script to allow copy/cut/paste between different terminal windows (it’s meant 
 ### customise-terminal-notifier
 Script to setup terminal-notifier with a custom icon
 
-### dropboxtimer
-Script to add files to your dropbox, and delete them a set number of days later
-
 ### fastmerge
 Script to quickly pull and push [github](https://github.com/) pull requests to keep commit history cleaner, merging directly to master and closing the pull request
 
