@@ -145,7 +145,7 @@ function has_interpolation? {
 function is_version_latest? {
   local cask_file="${1}"
 
-  [[ "$(brew cask _stanza version ${cask_file})" == 'latest' ]]
+  [[ "$(brew cask _stanza version "${cask_file}")" == 'latest' ]]
 }
 
 function has_block_url? {
@@ -247,12 +247,12 @@ function delete_created_branches {
     if git remote | grep --silent "${cask_repair_remote_name}"; then # Proceed only if the correct remote exists
       # Delete local branches
       local_branches=$(git branch --all | grep --extended-regexp "^ *${cask_repair_remote_name}_update-.+$" | perl -pe 's|^ *||;s|\n| |')
-      [[ -n "${local_branches}" ]] && git branch -D ${local_branches}
+      [[ -n "${local_branches}" ]] && git branch -D "${local_branches}"
 
     # Delete remote branches
       git fetch --prune "${cask_repair_remote_name}"
       remote_branches=$(git branch --all | grep --extended-regexp "remotes/${cask_repair_remote_name}/${cask_repair_remote_name}_update-.+$" | perl -pe 's|.*/||;s|\n| |')
-      [[ -n "${remote_branches}" ]] && git push "${cask_repair_remote_name}" --delete ${remote_branches}
+      [[ -n "${remote_branches}" ]] && git push "${cask_repair_remote_name}" --delete "${remote_branches}"
     fi
 
     cd ..
@@ -427,7 +427,7 @@ for cask in "${@}"; do
 
   # Set cask version
   if [[ -z "${given_cask_version}" ]]; then
-    read -p $'Type the new version (or leave blank to use current one, or use `s` to skip)\n> ' given_cask_version # Ask for cask version, if not given previously
+    read -rp $'Type the new version (or leave blank to use current one, or use `s` to skip)\n> ' given_cask_version # Ask for cask version, if not given previously
 
     if [[ "${given_cask_version}" == 's' ]]; then
       skip 'Skipping…'
@@ -449,7 +449,7 @@ for cask in "${@}"; do
     # If url does not use interpolation and is not block, ask for it
     cask_bare_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*)['\"].*|\1|")
     if ! has_interpolation? "${cask_bare_url}" && ! has_block_url? "${cask_file}"; then
-      read -p $'Paste the new URL (or leave blank to use the current one)\n> ' given_cask_url
+      read -rp $'Paste the new URL (or leave blank to use the current one)\n> ' given_cask_url
 
       [[ -n "${given_cask_url}" ]] && modify_url "${given_cask_url}" "${cask_file}"
     fi
@@ -495,7 +495,7 @@ for cask in "${@}"; do
     if [[ -n "${updated_blindly}" && "${#warning_messages[@]}" -eq 0 ]]; then
       cask_updated='y'
     else
-      read -n1 -p 'Is everything correct? ([y]es / [n]o / [e]dit) ' cask_updated
+      read -rn1 -p 'Is everything correct? ([y]es / [n]o / [e]dit) ' cask_updated
       echo # Add an empty line
     fi
 
@@ -527,7 +527,7 @@ for cask in "${@}"; do
   fi
 
   # Grab version as it ended up in the cask
-  cask_version="$(brew cask _stanza version ${cask_file})"
+  cask_version="$(brew cask _stanza version "${cask_file}")"
 
   # Commit, push, submit pull request, clean
   commit_message="Update ${cask_name} to ${cask_version}"
@@ -538,7 +538,7 @@ for cask in "${@}"; do
   git push --force "${cask_repair_remote_name}" "${cask_branch}" --quiet 2> "${submission_error_log}"
 
   # Fix common push errors
-  if [[ "$?" -ne 0 ]] && grep --quiet 'shallow update not allowed' "${submission_error_log}"; then
+  if [[ "${?}" -ne 0 ]] && grep --quiet 'shallow update not allowed' "${submission_error_log}"; then
     echo 'Push failed due to shallow repo. Unshallowing…'
     HOMEBREW_NO_AUTO_UPDATE=1 brew tap --full "caskroom/$(current_tap)"
     git push --force "${cask_repair_remote_name}" "${cask_branch}" --quiet
