@@ -3,14 +3,14 @@
 readonly program="$(basename "${0}")"
 readonly browser_headers=(--header 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36')
 
-syntax_error() {
+function syntax_error {
   echo "${program}: ${1}" >&2
   echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
 # Instructions
-usage() {
+function usage {
   echo "
     usage: ${program} [options]
 
@@ -27,9 +27,9 @@ usage() {
 }
 
 # Set color for verbose messages
-bad() { echo "$(tput setab 1)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
-good() { echo "$(tput setab 2)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
-warning() { echo "$(tput setab 3)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
+function bad { echo "$(tput setab 1)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
+function good { echo "$(tput setab 2)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
+function warning { echo "$(tput setab 3)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
 
 # Set options
 while [[ "${1}" ]]; do
@@ -77,7 +77,7 @@ log_file="${log_dir}/pinboardlinkcheck.log"
 if [[ -n "${ask_for_token}" ]]; then
   echo 'Please insert your api token (will not be echoed)'
   echo 'You can get it at https://pinboard.in/settings/password'
-  read -sp '> ' token
+  read -rsp '> ' token
   echo
 fi
 
@@ -104,9 +104,9 @@ fi
 
 # Get all your pinboard links
 if [[ "${keep_unread}" ]]; then
-  links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | cut -d '"' -f 2 | sed '1d')
+  links="$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | cut -d '"' -f 2 | sed '1d')"
 else
-  links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | grep --invert-match 'toread="yes"' | cut -d '"' -f 2 | sed '1d')
+  links="$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | grep --invert-match 'toread="yes"' | cut -d '"' -f 2 | sed '1d')"
 fi
 
 link_countdown="$(wc -l <<< "${links}" | tr -d ' ')"
@@ -116,7 +116,7 @@ for page in ${links} ; do
   echo -n "[${link_countdown}] "
   ((link_countdown--))
 
-  status=$(curl --silent "${browser_headers[@]}" --write-out '%{http_code}' --output /dev/null "${page}")
+  status="$(curl --silent "${browser_headers[@]}" --write-out '%{http_code}' --output /dev/null "${page}")"
 
   if [[ "${status:0:1}" == '2' ]]; then
     good "${status}" "${page}"
@@ -135,15 +135,15 @@ done
 sed -i '' '/^200/d' "${log_file}"
 
 # Order links by status code
-ordered_links=$(cat "${log_file}" | sort)
+ordered_links=$(sort "${log_file}")
 echo "${ordered_links}" > "${log_file}"
 
 # Move 301 links to redirect log, if specified
 if [[ -n "${redirect_log}" ]]; then
-  redirectlinks=$(cat "${log_file}" | grep '^301' | sed 's/^301 //')
+  redirectlinks="$(grep '^301' "${log_file}" | sed 's/^301 //')"
 
   for page in ${redirectlinks}; do
-    redirect_url=$(curl --silent "${browser_headers[@]}" --write-out '%{redirect_url}' --output /dev/null "${page}")
+    redirect_url="$(curl --silent "${browser_headers[@]}" --write-out '%{redirect_url}' --output /dev/null "${page}")"
     echo "${page} → ${redirect_url}"
     echo "${page} → ${redirect_url}" >> "${redirect_log_file}"
   done

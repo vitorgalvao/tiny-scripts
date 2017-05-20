@@ -2,14 +2,14 @@
 
 readonly program="$(basename "${0}")"
 
-syntax_error() {
+function syntax_error {
   echo "${program}: ${1}" >&2
   echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
 # Instructions
-usage() {
+function usage {
   echo "
     usage: ${program} [options]
 
@@ -57,7 +57,7 @@ done
 if [[ -n "${ask_for_token}" ]]; then
   echo 'Please insert your api token (will not be echoed)'
   echo 'You can get it at https://pinboard.in/settings/password'
-  read -sp '> ' token
+  read -rsp '> ' token
   echo
 fi
 
@@ -84,9 +84,9 @@ fi
 
 # Get all your pinboard links
 if [[ "${keep_unread}" ]]; then
-  links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | cut -d '"' -f 2 | sed '1d')
+  links="$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | cut -d '"' -f 2 | sed '1d')"
 else
-  links=$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | grep --invert-match 'toread="yes"' | cut -d '"' -f 2 | sed '1d')
+  links="$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | grep --invert-match 'toread="yes"' | cut -d '"' -f 2 | sed '1d')"
 fi
 
 link_countdown="$(wc -l <<< "${links}" | tr -d ' ')"

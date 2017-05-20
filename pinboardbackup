@@ -2,14 +2,14 @@
 
 readonly program="$(basename "${0}")"
 
-syntax_error() {
+function syntax_error {
   echo "${program}: ${1}" >&2
   echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
 # Instructions
-usage() {
+function usage {
   echo "
     usage: ${program} [options]
 
@@ -66,7 +66,7 @@ done
 if [[ -n "${ask_for_token}" ]]; then
   echo 'Please insert your api token (will not be echoed)'
   echo 'You can get it at https://pinboard.in/settings/password'
-  read -sp '> ' token
+  read -rsp '> ' token
   echo
 fi
 
