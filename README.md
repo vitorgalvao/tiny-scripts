@@ -73,9 +73,6 @@ Script to email local sunrise and sunset times (via [Wolfram Alpha](http://www.w
 ### ubuntu-usb
 Script to facilitate installing ubuntu on a USB stick, from macOS
 
-### unsplashdownload
-Script to download images from [unsplash](https://unsplash.com/)’s last batch
-
 ---
 
 #### License
