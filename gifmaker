@@ -73,11 +73,11 @@ done
 
 # Calculate the frame drop rate
 # -----------------------------
-rate_calculation="$((${start_rate} / ${end_rate}))"
+rate_calculation="$((start_rate / end_rate))"
 
 # Add only the necessary images to an array
 # -----------------------------------------
-for (( i = 1; i < ${#}; i += ${rate_calculation} )); do
+for (( i = 1; i < ${#}; i += rate_calculation )); do
   images_array+=("${!i}")
 done
 
