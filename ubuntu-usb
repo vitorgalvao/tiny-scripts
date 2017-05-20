@@ -1,15 +1,15 @@
 #!/bin/bash
 
-read -n0 -p 'Important: make sure you have your USB flash drive removed.
+read -rn0 -p 'Important: make sure you have your USB flash drive removed.
 Press ↩ to continue running the script'
 
 # get ubuntu disk
-read -p 'Set the full path to your Ubuntu iso (you can drop the file on top of this terminal window)
+read -rp 'Set the full path to your Ubuntu iso (you can drop the file on top of this terminal window)
 > ' ubuntu_iso
 
 # save list of connected disks
 diskutil list > /tmp/diskutillist1
-read -n0 -p 'Insert your USB flash drive now, and after it gets mounted, press ↩'
+read -rn0 -p 'Insert your USB flash drive now, and after it gets mounted, press ↩'
 diskutil list > /tmp/diskutillist2
 
 # get disk to save to
