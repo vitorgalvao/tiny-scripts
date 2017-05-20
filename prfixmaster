@@ -126,9 +126,7 @@ push_and_close() {
 
   # push and close issue
   pull_remote
-  git push "${remote}" master
-
-  [[ "$?" -eq 0 ]] && ghi close --message "Thank you for the contribution. It needed some fixes, so they were made in ${last_commit_local}. Your contribution is still included (and still credited to you), with the appropriate modifications. Please feel free to ask about any of the changes." "${original_issue}"
+  git push "${remote}" master && ghi close --message "Thank you for the contribution. It needed some fixes, so they were made in ${last_commit_local}. Your contribution is still included (and still credited to you), with the appropriate modifications. Please feel free to ask about any of the changes." "${original_issue}"
 }
 
 amend_message() {
