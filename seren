@@ -81,7 +81,7 @@ fi
 # The actual renaming part
 for file_to_rename in "${@}"; do
   num="$(printf "%.${sequence_length}d" "$(bc <<< "${num} + 1")")"
-  file_extension="$([[ "${file_name}" = *.* ]] && echo ".${file_name##*.}" || echo '')"
+  file_extension="$([[ "${file_to_rename}" = *.* ]] && echo ".${file_to_rename##*.}" || echo '')"
 
   mv -n"${be_verbose}" "${file_to_rename}" "$(dirname "${file_to_rename}")/${string_to_prepend}${num}${string_to_append}${file_extension}"
 done
