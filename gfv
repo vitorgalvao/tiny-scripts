@@ -3,21 +3,20 @@
 readonly program="$(basename "${0}")"
 
 # Check if ffmpeg is installed
-if [[ ! $(which 'ffmpeg') ]]; then
+if ! command -v 'ffmpeg' &>/dev/null; then
   echo -e "$(tput setaf 1)
-    This script requires 'ffmpeg'.
-    If you have [Homebrew](http://brew.sh), you can install it with 'brew install ffmpeg'.
+    This script requires 'ffmpeg'. Please install it first.
   $(tput sgr0)" | sed -E 's/ {4}//' >&2
   exit 1
 fi
 
-syntax_error() {
+function syntax_error {
   echo "${program}: ${1}" >&2
   echo "Try \`${program} --help\` for more information." >&2
   exit 1
 }
 
-usage() {
+function usage {
   echo "
     usage: ${program} [options] <input_file> [<output_file>]
 
@@ -48,7 +47,7 @@ while [[ "${1}" ]]; do
   shift
 done
 
-if [[ -z ${1} ]]; then
+if [[ "${#}" -eq 0 ]]; then
   usage
   exit 1
 fi
@@ -58,9 +57,9 @@ input_file="${1}"
 output_file="${2}"
 
 if [[ -z "${output_file}" ]]; then
-  input_file_name=$(basename "${input_file}")
-  input_file_no_extension=${input_file_name%.*}
-  input_file_dir=$(dirname "${input_file}")
+  input_file_name="$(basename "${input_file}")"
+  input_file_no_extension="${input_file_name%.*}"
+  input_file_dir="$(dirname "${input_file}")"
   output_file="${input_file_dir}/${input_file_no_extension}.gif"
 fi
 
