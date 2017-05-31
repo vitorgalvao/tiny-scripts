@@ -144,8 +144,7 @@ if [[ -n "${redirect_log}" ]]; then
 
   for page in ${redirectlinks}; do
     redirect_url="$(curl --silent "${browser_headers[@]}" --write-out '%{redirect_url}' --output /dev/null "${page}")"
-    echo "${page} → ${redirect_url}"
-    echo "${page} → ${redirect_url}" >> "${redirect_log_file}"
+    echo "${page} → ${redirect_url}" | tee -a "${redirect_log_file}"
   done
 
   # Remove 301s from the main log
