@@ -18,6 +18,7 @@ function usage {
       -r, --redirect-log      If set, links with 301 (Moved permanently) will be on their own log.
       -l, --log-dir <dir>     Directory to save logs to. Defaults to the home directory.
       -i, --include-unread    Also check unread bookmarks.
+      -g, --ignore <list>     Comma-separated list of lines to ignore (delete) from log.
       -t, --token <token>     Your Pinboard API token.
       -a, --ask-for-token     Ask for your Pinboard API token on start.
       -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only, compatible with pinboardbackup, pinboardwaybackmachine).
@@ -47,6 +48,10 @@ while [[ "${1}" ]]; do
       ;;
     -i | --include-unread)
       keep_unread='true'
+      ;;
+    -g | --ignore)
+      ignore_list_comma="${2}"
+      shift
       ;;
     -t | --token)
       token="${2}"
@@ -149,4 +154,13 @@ if [[ -n "${redirect_log}" ]]; then
 
   # Remove 301s from the main log
   sed -i '' '/^301/d' "${log_file}"
+fi
+
+# Remove ignored lines, if specified
+if [[ -n "${ignore_list_comma}" ]]; then
+  IFS=, read -r -a ignore_list_array <<< "${ignore_list_comma}"
+
+  for element in "${ignore_list_array[@]}"; do
+    sed -i '' "\|${element}|d" "${log_file}"
+  done
 fi
