@@ -37,6 +37,9 @@ Script to change label color of files in macOS
 ### lovecolor
 Script to get color palette from colourlovers and format it to use in processing
 
+### mtgwallpaper
+Script to download Magic: The Gathering wallpapers
+
 ### pinboardbackup
 Script to backup all bookmarks in your [pinboard](https://pinboard.in/) account
 

@@ -1,0 +1,108 @@
+#!/bin/bash
+
+readonly program="$(basename "${0}")"
+readonly config_file="${HOME}/.config/mtgwallpaper"
+readonly valid_dimensions=('2560x1600' '1920x1080' '1280x960' 'iPhone' 'Tablet' 'Facebook')
+
+function error_message {
+  echo -e "$(tput setaf 1)${1}$(tput sgr0)" >&2
+  exit 1
+}
+
+function wrong_setting {
+  error_message "${1}\nRun \`${program} --init\` to create/overwrite the settings file with sensible defaults."
+}
+
+function string_in_array? {
+  local string="${1}"
+
+  for value in "${@:2}"; do
+    [[ "${string}" == "${value}" ]] && return 0
+  done
+  return 1
+}
+
+function create_default_config {
+  echo "Creating a configuration with sensible defaults on ${config_file}" >&2
+
+  echo "wallpaper_directory=\"\${HOME}/Pictures/MTG_wallpapers\"
+    maximum_wallpaper_count=\"10\"
+    wallpaper_dimensions=\"2560x1600\" # Valid options (capitalisation matters): ${valid_dimensions[*]}
+    last_walpaper_url=\"\" # Do not touch, as it will be automatically updated" | sed -E 's/^ {4}//' > "${config_file}"
+}
+
+function usage {
+  echo "
+    usage: ${program} [options]
+    options:
+      -i, --init       Create a settings file with sensible defaults (overwrites any existing one) and exit.
+      -e, --edit       Open the configuration file in a text editor and exit.
+      -d, --download   Run the script to get new wallpapers.
+      -h, --help       Show this help.
+  " | sed -E 's/^ {4}//'
+}
+
+# Available flags
+while [[ "${1}" ]]; do
+  case "${1}" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -i | --init)
+      create_default_config
+      exit 0
+      ;;
+    -e | --edit)
+      open -t "${config_file}"
+      exit 0
+      ;;
+    -d | --download)
+      start_download='true'
+      ;;
+    -*)
+      syntax_error "unrecognized option: ${1}"
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
+
+trap 'exit 1' SIGINT
+
+[[ -n "${start_download}" ]] || error_message 'You need to give the `--download` flag to download wallpapers.'
+
+# Make sure all settings are valid
+[[ -f "${config_file}" ]] && source "${config_file}" || wrong_setting 'There is no settings file.'
+[[ -n "${wallpaper_directory}" ]] || wrong_setting "wallpaper_directory in ${config_file} is missing."
+[[ "${maximum_wallpaper_count}" =~ ^[0-9]+$ ]] || failure "maximum_wallpaper_count if ${config_file} needs to be a whole number."
+string_in_array? "${wallpaper_dimensions}" "${valid_dimensions[@]}" || failure "wallpaper_dimensions in ${config_file} needs to be one of ${valid_dimensions[*]}."
+
+if [[ ! -d "${wallpaper_directory}" ]]; then
+  if ! mkdir -p "${wallpaper_directory}"; then
+    error_message "You don’t have permissions to create ${wallpaper_directory}."
+  fi
+fi
+
+# Main section
+cd "${wallpaper_directory}" || exit 1
+
+recent_wallpaper_urls="$(curl --silent 'http://magic.wizards.com/en/articles/media/wallpapers' | grep "download.*${wallpaper_dimensions}" | sed -E 's/.*href="([^"]*).*/\1/')"
+
+# Update latest wallpaper url
+most_recent_wallpaper_url="$(head -1 <<< "${recent_wallpaper_urls}")"
+sed -i '' '/last_walpaper_url/d' "${config_file}"
+echo "last_walpaper_url=\"${most_recent_wallpaper_url}\" # Do not touch, as it will be automatically updated" >> "${config_file}"
+
+# Download new wallpapers
+for wallpaper_url in ${recent_wallpaper_urls}; do
+  [[ "${wallpaper_url}" == "${most_recent_wallpaper_url}" ]] && break
+  curl --silent --remote-name "${wallpaper_url}"
+done
+
+# Delete old wallpapers
+while [[ "$(ls -1 | wc -l)" -gt "${maximum_wallpaper_count}" ]]; do
+  rm "$(ls -1t | tail -1)"
+done
