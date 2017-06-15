@@ -215,7 +215,10 @@ function sha_change {
   # Set sha256 as :no_check temporarily, to prevent mismatch errors when fetching
   modify_stanza 'sha256' ':no_check' "${cask_file}"
 
-  brew cask fetch --force "${cask_file}"
+  if ! brew cask fetch --force "${cask_file}"; then
+    clean
+    failure_message "There was an error fetching ${cask_file}. Please check your connection and try again."
+  fi
   downloaded_file=$(brew cask fetch "${cask_file}" 2>/dev/null | tail -1 | sed 's/==> Success! Downloaded to -> //')
   package_sha=$(shasum --algorithm 256 "${downloaded_file}" | awk '{ print $1 }')
 
