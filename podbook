@@ -228,24 +228,28 @@ function start_feed {
     <description>by ${book_author}</description>
     <image><url>${book_cover}</url></image>
     <pubDate>$(date -R)</pubDate>
+    <itunes:type>serial</itunes:type>
   " > "${book_feed}"
 }
 
 function add_to_feed {
-  local item_title file_time file_duration file_mime file_size file_url book_feed
+  local item_title file_counter file_time file_duration file_mime file_size file_url book_feed
   item_title="${1}"
-  file_time="${2}"
-  file_duration="${3}"
-  file_mime="${4}"
-  file_size="${5}"
-  file_url="${6}"
-  readonly book_feed="${7}"
+  file_counter="${2}"
+  file_time="${3}"
+  file_duration="${4}"
+  file_mime="${5}"
+  file_size="${6}"
+  file_url="${7}"
+  readonly book_feed="${8}"
 
   echo "
     <item>
     <title>${item_title}</title>
     <enclosure url='${file_url}' length='${file_size}' type='${file_mime}' />
     <itunes:duration>${file_duration}</itunes:duration>
+    <itunes:season>1</itunes:season>
+    <itunes:episode>${file_counter}</itunes:episode>
     <pubDate>${file_time}</pubDate>
     </item>
   " >> "${book_feed}"
@@ -277,7 +281,7 @@ function main {
 
   file_counter='0'
   while IFS= read -r -d '' file; do
-    file_counter="$((file_counter + 1))"
+    file_counter="$(bc <<< "${file_counter} + 1")"
     file_time="$(date -R -v +"${file_counter}"M)"
     file_duration="$(extract_duration "${file}")"
     file_mime="$(extract_mime "${file}")"
@@ -288,7 +292,7 @@ function main {
 
     file_url="$(upload_file "${file}")"
 
-    add_to_feed "${item_title}" "${file_time}" "${file_duration}" "${file_mime}" "${file_size}" "${file_url}" "${book_feed}"
+    add_to_feed "${item_title}" "${file_counter}" "${file_time}" "${file_duration}" "${file_mime}" "${file_size}" "${file_url}" "${book_feed}"
   done < <(find -E "${book_dir}" -iregex "${audio_files_regex}" -print0)
 
   end_feed "${book_feed}"
