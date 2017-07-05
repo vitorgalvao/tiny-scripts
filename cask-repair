@@ -252,7 +252,7 @@ function delete_created_branches {
       local_branches=$(git branch --all | grep --extended-regexp "^ *${cask_repair_remote_name}_update-.+$" | perl -pe 's|^ *||;s|\n| |')
       [[ -n "${local_branches}" ]] && git branch -D ${local_branches}
 
-    # Delete remote branches
+      # Delete remote branches
       git fetch --prune "${cask_repair_remote_name}"
       remote_branches=$(git branch --all | grep --extended-regexp "remotes/${cask_repair_remote_name}/${cask_repair_remote_name}_update-.+$" | perl -pe 's|.*/||;s|\n| |')
       [[ -n "${remote_branches}" ]] && git push "${cask_repair_remote_name}" --delete ${remote_branches}
