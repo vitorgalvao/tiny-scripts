@@ -3,13 +3,13 @@
 readonly program="$(basename "${0}")"
 export readonly MACOS_VERSION='10.12' # Latest macOS version, so commands like `fetch` are not dependent on the contributor’s OS
 readonly submit_pr_to='caskroom:master'
-readonly cask_repair_remote_name='cask-repair'
 readonly caskroom_origin_remote_regex='(https://|git@)github.com[/:]caskroom/'
 readonly caskroom_taps=(homebrew-cask homebrew-versions homebrew-fonts homebrew-eid homebrew-drivers)
 readonly caskroom_taps_dir="$(brew --repository)/Library/Taps/caskroom"
 readonly user_agent=(--user-agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10) http://caskroom.io')
 readonly hub_config="${HOME}/.config/hub"
 readonly github_username="$(awk '/user:/{print $(NF)}' "${hub_config}" 2>/dev/null | head -1)"
+readonly cask_repair_remote_name="${github_username}"
 readonly submission_error_log="$(mktemp)"
 
 show_home='false' # By default, do not open the cask's homepage
@@ -121,9 +121,7 @@ function ensure_cask_repair_remote {
   if ! git remote | grep --silent "${cask_repair_remote_name}"; then
     warning_message "A \`${cask_repair_remote_name}\` remote does not exist. Creating it now…"
 
-    git config --local hub.protocol https
-    hub fork --no-remote
-    git remote add "${cask_repair_remote_name}" "https://github.com/${github_username}/$(current_tap)"
+    hub fork
   fi
 }
 
