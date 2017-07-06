@@ -3,13 +3,14 @@
 readonly program="$(basename "${0}")"
 export readonly MACOS_VERSION='10.12' # Latest macOS version, so commands like `fetch` are not dependent on the contributor’s OS
 readonly submit_pr_to='caskroom:master'
-readonly cask_repair_remote_name='cask-repair'
 readonly caskroom_origin_remote_regex='(https://|git@)github.com[/:]caskroom/'
 readonly caskroom_taps=(homebrew-cask homebrew-versions homebrew-fonts homebrew-eid homebrew-drivers)
 readonly caskroom_taps_dir="$(brew --repository)/Library/Taps/caskroom"
 readonly user_agent=(--user-agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10) http://caskroom.io')
 readonly hub_config="${HOME}/.config/hub"
 readonly github_username="$(awk '/user:/{print $(NF)}' "${hub_config}" 2>/dev/null | head -1)"
+readonly cask_repair_remote_name="${github_username}"
+readonly cask_repair_branch_prefix='cask_repair_update'
 readonly submission_error_log="$(mktemp)"
 
 show_home='false' # By default, do not open the cask's homepage
@@ -75,7 +76,7 @@ function usage {
       -b, --blind-submit                     Submit cask without asking for confirmation, if there are no errors.
       -f, --fail-on-error                    If there are any errors with the submission, abort.
       -i, --install-cask                     Installs your updated cask after submission.
-      -d, --delete-branches                  Deletes all local and remote branches named like ${cask_repair_remote_name}_update-<word>.
+      -d, --delete-branches                  Deletes all local and remote branches named like ${cask_repair_branch_prefix}-<word>.
       -h, --help                             Show this help.
   " | sed -E 's/^ {4}//'
 }
@@ -121,9 +122,7 @@ function ensure_cask_repair_remote {
   if ! git remote | grep --silent "${cask_repair_remote_name}"; then
     warning_message "A \`${cask_repair_remote_name}\` remote does not exist. Creating it now…"
 
-    git config --local hub.protocol https
-    hub fork --no-remote
-    git remote add "${cask_repair_remote_name}" "https://github.com/${github_username}/$(current_tap)"
+    hub fork
   fi
 }
 
@@ -249,12 +248,12 @@ function delete_created_branches {
 
     if git remote | grep --silent "${cask_repair_remote_name}"; then # Proceed only if the correct remote exists
       # Delete local branches
-      local_branches=$(git branch --all | grep --extended-regexp "^ *${cask_repair_remote_name}_update-.+$" | perl -pe 's|^ *||;s|\n| |')
+      local_branches=$(git branch --all | grep --extended-regexp "^ *${cask_repair_branch_prefix}-.+$" | perl -pe 's|^ *||;s|\n| |')
       [[ -n "${local_branches}" ]] && git branch -D ${local_branches}
 
       # Delete remote branches
       git fetch --prune "${cask_repair_remote_name}"
-      remote_branches=$(git branch --all | grep --extended-regexp "remotes/${cask_repair_remote_name}/${cask_repair_remote_name}_update-.+$" | perl -pe 's|.*/||;s|\n| |')
+      remote_branches=$(git branch --all | grep --extended-regexp "remotes/${cask_repair_remote_name}/${cask_repair_branch_prefix}-.+$" | perl -pe 's|.*/||;s|\n| |')
       [[ -n "${remote_branches}" ]] && git push "${cask_repair_remote_name}" --delete ${remote_branches}
     fi
 
@@ -399,7 +398,7 @@ for cask in "${@}"; do
   # Clean the cask's name, and check if it is valid
   cask_name="${cask%.rb}" # Remove '.rb' extension, if present
   cask_file="./${cask_name}.rb"
-  cask_branch="${cask_repair_remote_name}_update-${cask_name}"
+  cask_branch="${cask_repair_branch_prefix}-${cask_name}"
 
   cd_to_cask_tap "${cask_name}.rb"
   require_correct_origin
