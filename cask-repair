@@ -10,7 +10,7 @@ readonly user_agent=(--user-agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10) ht
 readonly hub_config="${HOME}/.config/hub"
 readonly github_username="$(awk '/user:/{print $(NF)}' "${hub_config}" 2>/dev/null | head -1)"
 readonly cask_repair_remote_name="${github_username}"
-readonly cask_repair_branch_prefix="cask_repair_update"
+readonly cask_repair_branch_prefix='cask_repair_update'
 readonly submission_error_log="$(mktemp)"
 
 show_home='false' # By default, do not open the cask's homepage
