@@ -277,7 +277,7 @@ function add_warning {
   local message severity color
 
   severity="${1}"
-  message="${2}"
+  message="$(sed '/./,$!d' <<< "${2}")" # Remove leading blank lines, so audit errors related to ruby still show
 
   [[ "${severity}" == 'warning' ]] && color="$(tput setaf 3)•$(tput sgr0)" || color="$(tput setaf 1)•$(tput sgr0)"
 
