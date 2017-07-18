@@ -482,11 +482,11 @@ for cask in "${@}"; do
   until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
     # fix style errors and check for style and audit errors
     style_message=$(brew cask style --fix "${cask_file}" 2>/dev/null)
-    style_result="$?"
+    style_result="${?}"
     [[ "${style_result}" -ne 0 ]] && add_warning error "${style_message}"
 
     audit_message=$(brew cask audit "${cask_file}" 2>/dev/null)
-    audit_result="$?"
+    audit_result="${?}"
     [[ "${audit_result}" -ne 0 ]] && add_warning error "${audit_message}"
 
     git --no-pager diff
