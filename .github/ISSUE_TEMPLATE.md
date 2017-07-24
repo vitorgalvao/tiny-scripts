@@ -6,6 +6,6 @@ Unfortunately, I won’t keep shooting in the dark. I’m happy to take a pull r
 
 If you still open the issue for that problem without further information, it’ll be closed without review.
 
-If reporting any other issue, delete this template and go ahead.
+A possible solution might be to [specify your public key](https://github.com/vitorgalvao/tiny-scripts/issues/20#issuecomment-316447787). If that works for you please do let me know in the issue, together with the `cask-repair` version you’re using.
 
-Thank you.
+If reporting any other issue, delete this template and go ahead.
