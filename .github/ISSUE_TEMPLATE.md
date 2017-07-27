@@ -1,11 +1,15 @@
-If you’re opening an issue to report `Error creating pull request: Unprocessable Entity (HTTP 422)` in `cask-repair`, don’t.
+If you’re opening an issue to report `Error creating pull request: Unprocessable Entity (HTTP 422)` in `cask-repair`:
 
-As I’ve mentioned on several occasions, I’m pretty tired of debugging that specific issue. It is `hub`-related (search for the error on Google) and generally happens with certain git configs. I can’t test them all. You can see from the other issues (e.g. [#20](https://github.com/vitorgalvao/tiny-scripts/issues/20)) how much time I’ve already wasted on it.
+1. [Test your ssh connection to GitHub](https://help.github.com/articles/testing-your-ssh-connection/).
+2. Add the following to your `~/.ssh/config` file (correct the last line with the actual path):
 
-Unfortunately, I won’t keep shooting in the dark. I’m happy to take a pull request that squashes the problem for good, but don’t intend to waste much longer trying to diagnose it. It only affects a small set of users and is no longer worth the commitment and frustration.
+```git
+Host github.com
+Hostname github.com
+User git
+IdentityFile /path/to/ssh/key
+```
 
-If you still open the issue for that problem without further information, it’ll be closed without review.
-
-A possible solution might be to [specify your public key](https://github.com/vitorgalvao/tiny-scripts/issues/20#issuecomment-316447787). If that works for you please do let me know in the issue, together with the `cask-repair` version you’re using.
+---
 
 If reporting any other issue, delete this template and go ahead.
