@@ -533,7 +533,7 @@ for cask in "${@}"; do
 
   # Commit, push, submit pull request, clean
   commit_message="Update ${cask_name} to ${cask_version}"
-  hub_message="$(echo -e "${commit_message}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version.\n\nAdditionally, if **updating a cask**:\n\n- [ ] [If the \`sha256\` changed but the \`version\` didn’t](https://github.com/caskroom/homebrew-cask/blob/master/doc/cask_language_reference/stanzas/sha256.md#updating-the-sha256),\n      provide public confirmation by the developer: {{link}}")"
+  hub_message="$(echo -e "${commit_message}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version.\n\nAdditionally, if **updating a cask**:\n\n- [ ] If the \`sha256\` changed but the \`version\` didn’t,\n      provide public confirmation ([How?](https://github.com/caskroom/homebrew-cask/blob/master/doc/cask_language_reference/stanzas/sha256.md#updating-the-sha256)): {{link}}")"
   submit_pr_from="${github_username}:${cask_branch}"
 
   git commit "${cask_file}" --message "${commit_message}" --quiet
