@@ -47,7 +47,7 @@ function syntax_error {
 
 function usage {
   echo "
-    usage: ${program} [options] [file ...]
+    usage: ${program} [options] <file...>
 
     options:
       -c, --bar-color <color>           Default: #f12b24.
