@@ -17,6 +17,7 @@ function wrong_arguments {
   tput setaf 1
   echo 'You need either give multiple images or one video file as arguments' >&2
   tput sgr0
+  usage
   exit 1
 }
 
