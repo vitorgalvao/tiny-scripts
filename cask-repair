@@ -298,6 +298,8 @@ function clear_warnings {
 function clean {
   local current_branch
 
+  [[ "$(dirname "$(dirname "${PWD}")")" == "${caskroom_taps_dir}" ]] || return # Do not try to clean if not in a tap dir (e.g. if script was manually aborted too fast)
+
   current_branch="$(git rev-parse --abbrev-ref HEAD)"
 
   git reset HEAD --hard --quiet
