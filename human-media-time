@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
+require 'open3'
 require 'optparse'
-require 'shellwords'
 
 # Options
 ARGV.push('--help') if ARGV.empty?
@@ -17,7 +17,7 @@ ms_values = ''
 split_time = {}
 human_time = ''
 
-ARGV.each { |file| ms_values += %x(mediainfo --Output='General;%Duration%,' #{file.shellescape}) }
+ARGV.each { |file| ms_values += Open3.capture2('mediainfo', '--Output=General;%Duration%,', file).first }
 ms_total = ms_values.split(',').map(&:to_i).inject(0, :+)
 
 split_time['s'] = (ms_total / 1000) % 60
