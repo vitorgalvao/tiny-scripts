@@ -52,6 +52,6 @@ if defined? options[:precision]
   end
 end
 
-split_time.each { |key, value| human_time = value.to_s + key + human_time if value > 0 }
+split_time.each { |key, value| human_time = value.to_s + key + ' ' + human_time if value > 0 }
 human_time = "0#{options[:precision]}" if human_time.empty? # If the desired precision leads to zero the previous line strips it, making the variable empty
 puts human_time
