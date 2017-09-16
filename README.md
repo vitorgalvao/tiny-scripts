@@ -16,9 +16,6 @@ Script to quickly repair outdated/broken Casks from homebrew-cask
 ### crafts
 Script to allow copy/cut/paste between different terminal windows (it’s meant to be sourced from the shell, not called directly)
 
-### customise-terminal-notifier
-Script to setup terminal-notifier with a custom icon
-
 ### fastmerge
 Script to quickly pull and push [github](https://github.com/) pull requests to keep commit history cleaner, merging directly to master and closing the pull request
 
