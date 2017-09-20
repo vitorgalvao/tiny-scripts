@@ -13,6 +13,9 @@ Script to convert .annot files to .md
 ### cask-repair
 Script to quickly repair outdated/broken Casks from homebrew-cask
 
+### climergebutton
+Script to merge [github](https://github.com/) pull requests via the merge button API
+
 ### crafts
 Script to allow copy/cut/paste between different terminal windows (it’s meant to be sourced from the shell, not called directly)
 

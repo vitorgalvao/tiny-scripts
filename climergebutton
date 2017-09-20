@@ -1,0 +1,85 @@
+#!/bin/bash
+
+readonly program="$(basename "${0}")"
+readonly default_merge_strategy='squash'
+
+function syntax_error {
+  echo "${program}: ${1}" >&2
+  echo "Try \`${program} --help\` for more information." >&2
+  exit 1
+}
+
+function usage {
+  echo "
+    usage: ${program} --token <github_token> [options] <github_pull_request_url>
+
+    Multiple <github_pull_request_url> can be given, and will be processed in sequence.
+
+    options:
+      -t, --token          Github token to use when merging.
+      -m, --merge-method   'merge', 'squash', or 'rebase'. Defaults to '${default_merge_strategy}'.
+      -h, --help           Show this help.
+  " | sed -E 's/^ {4}//'
+}
+
+# available flags
+while [[ "${1}" ]]; do
+  case "${1}" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -t | --token)
+      github_token="${2}"
+      shift
+      ;;
+    -m | --merge-method)
+      merge_strategy="${2}"
+      shift
+      ;;
+    -*)
+      syntax_error "unrecognized option: ${1}"
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
+
+function merge_pr {
+  local url owner repo pr_number response
+
+  url="$(perl -pe 's|(.*/pull/\d+).*|\1|' <<< "${1}")"
+  owner="$(awk -F '/' '{print $4}' <<< "${url}")"
+  repo="$(awk -F '/' '{print $5}' <<< "${url}")"
+  pr_number="$(awk -F '/' '{print $7}' <<< "${url}")"
+
+  echo -n "Merging ${owner}/${repo}/${pr_number}… "
+
+  response="$(curl --silent --request PUT --data "{ \"merge_method\": \"${merge_strategy:-${default_merge_strategy}}\" }" --header "Authorization: token ${github_token}" "https://api.github.com/repos/${owner}/${repo}/pulls/${pr_number}/merge")"
+
+  if grep --quiet '"merged": true' <<< "${response}"; then
+    echo 'Merged.'
+  else
+    response_message="$(grep 'message' <<< "${response}" | sed -E 's/.*"message": "(.*)".*/\1/')"
+    echo "Failed (${response_message})."
+    exit 1
+  fi
+}
+
+# Abort if no argument was given or no token was present
+if [[ "${#}" -eq 0 ]] || [[ -z "${github_token}" ]]; then
+  usage
+  exit 1
+fi
+
+while [[ "${1}" ]]; do # Allow for multiple github PR urls to be passed at once
+  if [[ "${1}" =~ https://github.com/* ]]; then
+    merge_pr "${1}"
+    shift
+  else
+    usage
+    exit 1
+  fi
+done
