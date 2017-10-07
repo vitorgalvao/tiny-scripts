@@ -34,6 +34,9 @@ Script to calculate the total running time of multiple media files, presenting t
 ### labelcolor
 Script to change label color of files in macOS
 
+### linux-usb
+Script to facilitate installing Linux on a USB stick, from macOS
+
 ### lovecolor
 Script to get color palette from colourlovers and format it to use in processing
 
@@ -72,9 +75,6 @@ Script to get a strong password by leveraging multiple sources
 
 ### suntimes
 Script to email local sunrise and sunset times (via [Wolfram Alpha](http://www.wolframalpha.com/)) for a given location
-
-### ubuntu-usb
-Script to facilitate installing ubuntu on a USB stick, from macOS
 
 ---
 
