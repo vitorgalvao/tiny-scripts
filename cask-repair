@@ -8,7 +8,14 @@ readonly caskroom_taps=(homebrew-cask homebrew-versions homebrew-fonts homebrew-
 readonly caskroom_taps_dir="$(brew --repository)/Library/Taps/caskroom"
 readonly user_agent=(--user-agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10) http://caskroom.io')
 readonly hub_config="${HOME}/.config/hub"
-readonly github_username="$(awk '/user:/{print $(NF)}' "${hub_config}" 2>/dev/null | head -1)"
+
+if [ -n "$GITHUB_USER" ]; then
+  github_username="$GITHUB_USER"
+elif [ -e "$hub_config" ]; then
+  github_username="$(awk '/user:/{print $(NF)}' "${hub_config}" 2>/dev/null | head -1)"
+fi
+readonly github_username
+
 readonly cask_repair_remote_name="${github_username}"
 readonly cask_repair_branch_prefix='cask_repair_update'
 readonly submission_error_log="$(mktemp)"
@@ -59,7 +66,7 @@ function require_hub {
     brew install hub
   fi
 
-  [[ -z "${GITHUB_TOKEN}" && ! $(grep 'oauth_token:' "${hub_config}" 2>/dev/null) ]] && failure_message '`hub` is not configured.\nTo do it, run `cd $(brew --repository) && hub issue`. Your Github password will be required, but is never stored.'
+  ([ -z "$github_username" ] || [[ -z "${GITHUB_TOKEN}" && ! $(grep 'oauth_token:' "${hub_config}" 2>/dev/null) ]]) && failure_message '`hub` is not configured.\nTo do it, run `cd $(brew --repository) && hub issue`. Your Github password will be required, but is never stored.\nAlternatively, set environment variables GITHUB_USER and GITHUB_TOKEN to your GitHub username and access token.'
 }
 
 function usage {
