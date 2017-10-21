@@ -268,11 +268,14 @@ function edit_cask {
 
   echo 'Opening cask in default editor. If it is a GUI editor, you will need to completely quit it (⌘Q) before the script can continue.'
 
-  if [[ -n "${EDITOR}" ]]; then
-    eval "${EDITOR}" "${cask_file}"
-  else
-    [[ -n "${GIT_EDITOR}" ]] && eval "${GIT_EDITOR}" "${cask_file}" || open -W "${cask_file}"
-  fi
+  for text_editor in {"${HOMEBREW_EDITOR}","${EDITOR}","${GIT_EDITOR}"}; do
+    if [[ -n "${text_editor}" ]]; then
+      eval "${text_editor}" "${cask_file}"
+      break
+    else
+      open -W "${cask_file}"
+    fi
+  done
 }
 
 function add_warning {
