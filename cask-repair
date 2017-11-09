@@ -84,7 +84,7 @@ function usage {
 }
 
 function current_tap {
-  git remote --verbose | grep '^origin' | head -1 | awk '{print $2}' | sed 's|.*/||'
+  basename "$(git remote get-url origin)"  | sed 's/.git$//'
 }
 
 function ensure_caskroom_repos {
