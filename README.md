@@ -40,6 +40,9 @@ Script to facilitate installing Linux on a USB stick, from macOS
 ### lovecolor
 Script to get color palette from colourlovers and format it to use in processing
 
+### macspoof
+Script to spoof the MAC address
+
 ### mtgwallpaper
 Script to download Magic: The Gathering wallpapers
 

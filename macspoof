@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Get device and network
+readonly wifi_device="$(networksetup -listnetworkserviceorder | grep 'Hardware Port: Wi-Fi' | sed -E 's/.*Device: (.+)\).*/\1/')"
+readonly wifi_network="$(networksetup -getairportnetwork "${wifi_device}" | sed 's/.*: //')"
+
+# New random MAC address
+sudo /System/Library/PrivateFrameworks/Apple80211.framework/Resources/airport --disassociate
+sudo ifconfig "${wifi_device}" ether "$(openssl rand -hex 6 | sed 's/\(..\)/\1:/g; s/./0/2; s/.$//')"
+sudo networksetup -detectnewhardware
+
+# Reconnect to network
+[[ "${wifi_network}" != *'Wi-Fi power is currently off.' ]] && sudo networksetup -setairportnetwork "${wifi_device}" "${wifi_network}"
