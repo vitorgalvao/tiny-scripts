@@ -83,8 +83,12 @@ function usage {
   " | sed -E 's/^ {4}//'
 }
 
+function current_origin {
+  git remote get-url origin
+}
+
 function current_tap {
-  basename "$(git remote get-url origin)"  | sed 's/.git$//'
+  basename "$(current_origin)" '.git'
 }
 
 function ensure_caskroom_repos {
@@ -115,7 +119,7 @@ function cd_to_cask_tap {
 function require_correct_origin {
   local origin_remote
 
-  origin_remote="$(git remote --verbose | grep '^origin' | head -1 | awk '{print $2}')"
+  origin_remote="$(current_origin)"
 
   grep --silent --ignore-case --extended-regexp "^${caskroom_origin_remote_regex}" <<< "${origin_remote}" || failure_message "\`origin\` is pointing to an incorrect remote (${origin_remote}). Its beginning must match ${caskroom_origin_remote_regex}."
 }
