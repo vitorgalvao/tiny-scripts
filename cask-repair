@@ -268,18 +268,21 @@ function delete_created_branches {
 }
 
 function edit_cask {
-  local cask_file="${1}"
+  local cask_file found_editor
+
+  cask_file="${1}"
 
   echo 'Opening cask in default editor. If it is a GUI editor, you will need to completely quit it (⌘Q) before the script can continue.'
 
   for text_editor in {"${HOMEBREW_EDITOR}","${EDITOR}","${GIT_EDITOR}"}; do
     if [[ -n "${text_editor}" ]]; then
       eval "${text_editor}" "${cask_file}"
+      found_editor='true'
       break
-    else
-      open -W "${cask_file}"
     fi
   done
+
+  [[ -n "${found_editor}" ]] || open -W "${cask_file}"
 }
 
 function add_warning {
