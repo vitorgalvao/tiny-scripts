@@ -162,7 +162,7 @@ function has_block_url? {
 function has_language_stanza? {
   local cask_file="${1}"
 
-  [[ -n "$(brew cask _stanza language "${cask_file}")" ]]
+  brew cask _stanza language "${cask_file}" 2>/dev/null
 }
 
 function modify_stanza {
