@@ -16,6 +16,7 @@ readonly submission_error_log="$(mktemp)"
 show_home='false' # By default, do not open the cask's homepage
 show_appcast='false' # By default, do not open the cask's appcast
 warning_messages=()
+has_errors=''
 
 function color_message {
   local color="${1}"
@@ -77,6 +78,7 @@ function usage {
       -c <number>, --closes-issue <number>   Adds 'Closes #<number>.' to the commit message.
       -b, --blind-submit                     Submit cask without asking for confirmation, if there are no errors.
       -f, --fail-on-error                    If there are any errors with the submission, abort.
+      -w, --allow-warnings                   If set to fail on error and there are only warnings, do not abort.
       -i, --install-cask                     Installs your updated cask after submission.
       -d, --delete-branches                  Deletes all local and remote branches named like ${cask_repair_branch_prefix}-<word>.
       -h, --help                             Show this help.
@@ -291,7 +293,12 @@ function add_warning {
   severity="${1}"
   message="$(sed '/./,$!d' <<< "${2}")" # Remove leading blank lines, so audit errors related to ruby still show
 
-  [[ "${severity}" == 'warning' ]] && color="$(tput setaf 3)•$(tput sgr0)" || color="$(tput setaf 1)•$(tput sgr0)"
+  if [[ "${severity}" == 'warning' ]]; then
+    color="$(tput setaf 3)•$(tput sgr0)"
+  else
+    color="$(tput setaf 1)•$(tput sgr0)"
+    has_errors='true'
+  fi
 
   warning_messages+=("${color} ${message}")
 }
@@ -305,6 +312,7 @@ function show_warnings {
 
 function clear_warnings {
   warning_messages=()
+  unset has_errors
 }
 
 function clean {
@@ -374,6 +382,9 @@ while [[ "${1}" ]]; do
       ;;
     -f | --fail-on-error)
       abort_on_error='true'
+      ;;
+    -w | --allow-warnings)
+      warnings_allowed='true'
       ;;
     -i | --install-cask)
       install_now='true'
@@ -503,7 +514,8 @@ for cask in "${@}"; do
     git --no-pager diff
     divide
     show_warnings
-    [[ -n "${abort_on_error}" && "${#warning_messages[@]}" -gt 0 ]] && abort 'The submission has warnings and you elected to abort on errors.'
+    [[ -n "${abort_on_error}" && "${has_errors}" == 'true' ]] && abort 'The submission has errors and you elected to abort on those cases.'
+    [[ -n "${abort_on_error}" && -z "${warnings_allowed}" && "${#warning_messages[@]}" -gt 0 ]] && abort 'The submission has warnings and you elected to abort on those cases.'
 
     if [[ -n "${updated_blindly}" && "${#warning_messages[@]}" -eq 0 ]]; then
       cask_updated='y'
