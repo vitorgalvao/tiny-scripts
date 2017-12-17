@@ -208,7 +208,7 @@ function appcast_url {
 function has_appcast? {
   local cask_file="${1}"
 
-  [[ -n "$(appcast_url "${cask_file}")" ]]
+  [[ -n "$(appcast_url "${cask_file}" 2>/dev/null)" ]]
 }
 
 function sha_change {
