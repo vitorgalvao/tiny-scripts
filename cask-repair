@@ -60,7 +60,7 @@ function require_hub {
     brew install hub
   fi
 
-  if [[ -z "${github_username}" ]] || [[ -z "${GITHUB_TOKEN}" && ! $(grep 'oauth_token:' "${hub_config}" 2>/dev/null) ]]; then
+  if [[ -z "${github_username}" ]] && [[ -z "${GITHUB_TOKEN}" ]] && [[ ! $(grep 'oauth_token:' "${hub_config}" 2>/dev/null) ]]; then
     failure_message '`hub` is not configured.\nTo do it, run `cd $(brew --repository) && hub issue`. Your Github password will be required, but is never stored.'
   fi
 }
