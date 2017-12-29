@@ -1,0 +1,44 @@
+#!/bin/bash
+
+readonly workflows_dir_path_form='Alfred.alfredpreferences/workflows'
+
+function skip {
+  echo -e "$(tput setaf 3)${1} Skipping…$(tput sgr0)"
+}
+
+function failure {
+  echo -e "$(tput setaf 1)${1}$(tput sgr0)"
+  exit 1
+}
+
+[[ "${#}" -eq 1 ]] || failure 'This script takes exactly one argument: the path to your Workflows directory.'
+readonly workflows_dir="${1}"
+[[ -d "${workflows_dir}" ]] || failure "${workflows_dir} is not a directory."
+[[ "${workflows_dir}" == *"${workflows_dir_path_form}"* ]] || failure "Does not appear to be a Workflows directory, as it does not conform to ${workflows_dir_path_form}."
+
+for dir in "${workflows_dir}"/*; do
+  [[ -f "${dir}" ]] && continue
+
+  info_plist="${dir}/info.plist"
+
+  if [[ ! -f "${info_plist}" ]]; then
+    skip "${dir} has no info.plist."
+    continue
+  fi
+
+  name="$(/usr/libexec/PlistBuddy -c 'print name' "${info_plist}")"
+  bundle_id="$(/usr/libexec/PlistBuddy -c 'print bundleid' "${info_plist}")"
+
+  [[ -n "${bundle_id}" ]] && id=".${bundle_id}" || id=''
+  new_dir="${workflows_dir}/${name}${id}"
+
+  if [[ -d "${new_dir}" ]]; then
+    skip "Directory $(basename "${new_dir}") already exists at ${workflows_dir}."
+    continue
+  fi
+
+  echo "$(basename "${dir}") → $(basename "${new_dir}")"
+  mv "${dir}" "${new_dir}"
+
+  unset info_plist name bundle_id id new_dir
+done
