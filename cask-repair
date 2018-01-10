@@ -561,12 +561,23 @@ for cask in "${@}"; do
 
   git commit "${cask_file}" --message "${commit_message}" --quiet
   git push --force "${cask_repair_remote_name}" "${cask_branch}" --quiet 2> "${submission_error_log}"
+  gitpush_result="${?}"
 
   # Fix common push errors
-  if [[ "${?}" -ne 0 ]] && grep --quiet 'shallow update not allowed' "${submission_error_log}"; then
+  if [[ "${gitpush_result}" -ne 0 ]] && grep --quiet 'shallow update not allowed' "${submission_error_log}"; then
     echo 'Push failed due to shallow repo. Unshallowing…'
     HOMEBREW_NO_AUTO_UPDATE=1 brew tap --full "caskroom/$(current_tap)"
-    git push --force "${cask_repair_remote_name}" "${cask_branch}" --quiet
+    git push --force "${cask_repair_remote_name}" "${cask_branch}" --quiet 2> "${submission_error_log}"
+    gitpush_result = "${?}"
+  fi
+
+  if [[ "${gitpush_result}" -ne 0 ]] && grep --quiet 'error:' "${submission_error_log}"; then
+    warning_message 'There was an error submitting the pull request.'
+    warning_message 'Please check the error message from the git command:'
+    divide
+    warning_message "$(cat "${submission_error_log}")"
+    divide
+    abort 'Please fix at first possible git problems. \nOtherwise open a bug report on the repo for this script (https://github.com/vitorgalvao/tiny-scripts).'
   fi
 
   [[ -z "${issue_to_close}" ]] && pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "${hub_message}") || pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "$(echo -e "${hub_message}\n\n---\n\nCloses #${issue_to_close}.")")
