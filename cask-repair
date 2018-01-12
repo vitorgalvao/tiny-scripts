@@ -573,9 +573,8 @@ for cask in "${@}"; do
       echo 'Push failed due to shallow repo. Unshallowing…'
       HOMEBREW_NO_AUTO_UPDATE=1 brew tap --full "caskroom/$(current_tap)"
       git push --force "${cask_repair_remote_name}" "${cask_branch}" --quiet 2> "${submission_error_log}"
-      if [[ "${?}" -ne 0 ]]; then
-        push_failure_message "$(< "${submission_error_log}")"
-      fi
+
+      [[ "${?}" -ne 0 ]] && push_failure_message "$(< "${submission_error_log}")"
     else
       push_failure_message "$(< "${submission_error_log}")"
     fi
