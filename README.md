@@ -24,7 +24,7 @@ Script to allow copy/cut/paste between different terminal windows (it’s meant 
 Script to quickly pull and push [github](https://github.com/) pull requests to keep commit history cleaner, merging directly to master and closing the pull request
 
 ### gifmaker
-Script to make animated gifs from sequences of images, with more control over FPS
+Script to make animated gifs from sequences of images, with control over FPS
 
 ### human-media-time
 Script to calculate the total running time of multiple media files, presenting the output in a human-readable way
