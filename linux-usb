@@ -2,26 +2,30 @@
 
 IFS=$'\n'
 
+function error {
+  echo "${1}" >&2
+  exit 1
+}
+
 # Get Linux disk image
-read -rp 'Set the full path to your Linux iso (you can drop the file on top of this terminal window)
+read -rp 'Set the full path to your Linux iso.
 > ' linux_iso
+
+[[ -f "${linux_iso}" ]] || error 'There is no file at that path.'
 
 # Get disk to save to
 readonly external_disks=($(diskutil list | grep '(external, physical)' | awk '{ print $1 }'))
 
-if [[ "${#external_disks[@]}" -lt 1 ]]; then
-  echo 'Found no external disks. Connect one and run the script again.' >&2
-  exit 1
-else
-  disks_with_info=()
-  disk_order='0'
+[[ "${#external_disks[@]}" -lt 1 ]] && error 'Found no external disks. Connect one and run the script again.'
 
-  for disk in "${external_disks[@]}"; do
-    disk_order="$(bc <<< "${disk_order} + 1")"
-    disk_size="$(diskutil info "${disk}" | grep 'Disk Size' | awk '{ print $3" "$4 }')"
-    disks_with_info+=("[${disk_order}] ${disk} ${disk_size}")
-  done
-fi
+disks_with_info=()
+disk_order='0'
+
+for disk in "${external_disks[@]}"; do
+  disk_order="$(bc <<< "${disk_order} + 1")"
+  disk_size="$(diskutil info "${disk}" | grep 'Disk Size' | awk '{ print $3" "$4 }')"
+  disks_with_info+=("[${disk_order}] ${disk} ${disk_size}")
+done
 
 while [[ -z "${disk_to_write_number}" ]] || [[ "${disk_to_write_number}" -lt 1 ]] || [[ "${disk_to_write_number}" -gt "${#disks_with_info[@]}" ]]; do
   echo 'Pick a disk do write to:'
