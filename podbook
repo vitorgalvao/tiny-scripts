@@ -17,7 +17,7 @@ function usage {
     options:
       -t <string>, --title <string>    Book title. Defaults to trying to extract it from the first audio file or the directory’s name (in that order). In the latter case, '_' will be interpreted as ':'.
       -a <string>, --author <string>   Book author. Defaults to trying to extract it from the first audio file.
-      -c <url>, --cover <url>          URL to image of book cover. Defaults to trying to extract it from the first audio file.
+      -c <url>, --cover <url>          URL or path to image of book cover. Defaults to trying to extract it from the first audio file.
       -n, --no-tag-overwrite           Do not overwrite audio file tags. By default they are overwritten with extracted/given details.
       -h, --help                       Show this help.
   " | sed -E 's/^ {4}//'
@@ -148,9 +148,13 @@ function request_cover {
   local book_cover
 
   echo 'The book cover could not be automatically extracted.' >&2
-  read -rp 'Insert URL to cover image: ' book_cover
+  read -rp 'Insert URL or local path to cover image: ' book_cover
 
-  echo -n "${book_cover}"
+  if [[ -f "${book_cover}" ]]; then
+    echo -n "${book_cover}"
+  else
+    upload_file "${book_cover}"
+  fi
 }
 
 function extract_duration {
