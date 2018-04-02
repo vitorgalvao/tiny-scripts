@@ -232,6 +232,7 @@ function start_feed {
     <description>by ${book_author}</description>
     <image><url>${book_cover}</url></image>
     <pubDate>$(date -R)</pubDate>
+    <itunes:author>${book_author}</itunes:author>
     <itunes:type>serial</itunes:type>
   " > "${book_feed}"
 }
