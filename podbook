@@ -134,7 +134,7 @@ function extract_cover {
   readonly book_dir="${2}"
 
   eyeD3 --write-images="${book_dir}" "${file_name}" &> /dev/null
-  readonly book_cover="$(find "${book_dir}" -name 'FRONT_COVER.*')"
+  readonly book_cover="$(find "${book_dir}" -name 'FRONT_COVER.*' -print -quit -or -iname '*.jpg' -print -quit -or -iname '*.png' -print -quit)" # -print -quit makes it print the first result and immediatelly exit
 
   if [[ -n "${book_cover}" ]]; then
     upload_file "${book_cover}"
