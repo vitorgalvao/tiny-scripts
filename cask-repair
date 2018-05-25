@@ -3,9 +3,9 @@
 readonly program="$(basename "${0}")"
 export readonly MACOS_VERSION='10.13' # Latest macOS version, so commands like `fetch` are not dependent on the contributor’s OS
 readonly submit_pr_to='caskroom:master'
-readonly caskroom_origin_remote_regex='(https://|git@)github.com[/:]caskroom/'
+readonly caskroom_origin_remote_regex='(https://|git@)github.com[/:]Homebrew/'
 readonly caskroom_taps=(cask versions fonts eid drivers)
-readonly caskroom_taps_dir="$(brew --repository)/Library/Taps/caskroom"
+readonly caskroom_taps_dir="$(brew --repository)/Library/Taps/homebrew"
 readonly user_agent=(--user-agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10) http://caskroom.io')
 readonly hub_config="${HOME}/.config/hub"
 readonly github_username="${GITHUB_USER:-$(awk '/user:/{print $(NF)}' "${hub_config}" 2>/dev/null | head -1)}"
