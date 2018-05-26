@@ -118,7 +118,7 @@ function cd_to_cask_tap {
 
   cask_file="${1}"
 
-  cask_file_location="$(find "${caskroom_taps_dir}" -name "${cask_file}")"
+  cask_file_location="$(find "${caskroom_taps_dir}" -path "*/Casks/${cask_file}")"
   [[ -z "${cask_file_location}" ]] && failure_message "No such cask was found in any official repo (${cask_name})."
   cd "$(dirname "${cask_file_location}")" || failure_message "Failed to change to directory of ${cask_file}."
 }
