@@ -13,13 +13,15 @@ function usage {
   echo "
     usage: ${program} [options]
 
+    'token' options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
+
     options:
       -j, --json              Export as JSON (default is XML).
       -o, --output <file>     File to export to (defaults to saving in your home).
       -t, --token <token>     Your Pinboard API token.
       -a, --ask-for-token     Ask for your Pinboard API token on start.
-      -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only, compatible with pinboardlinkcheck, pinboardwaybackmachine).
-      -u, --use-saved-token   Use Pinboard API token in Keychain (macOS-only, compatible with pinboardlinkcheck, pinboardwaybackmachinek).
+      -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only).
+      -u, --use-saved-token   Use Pinboard API token in Keychain (macOS-only).
       -h, --help              Show this message.
   " | sed -E 's/^ {4}//'
 }

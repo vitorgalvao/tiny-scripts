@@ -14,6 +14,8 @@ function usage {
   echo "
     usage: ${program} [options]
 
+    'token' options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
+
     options:
       -r, --redirect-log      If set, links with 301 (Moved permanently) will be on their own log.
       -l, --log-dir <dir>     Directory to save logs to. Defaults to the home directory.
@@ -21,8 +23,8 @@ function usage {
       -g, --ignore <list>     Comma-separated list of lines to ignore (delete) from log.
       -t, --token <token>     Your Pinboard API token.
       -a, --ask-for-token     Ask for your Pinboard API token on start.
-      -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only, compatible with pinboardbackup, pinboardwaybackmachine).
-      -u, --use-saved-token   Use Pinboard API token in Keychain (macOS-only, compatible with pinboardbackup, pinboardwaybackmachine).
+      -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only).
+      -u, --use-saved-token   Use Pinboard API token in Keychain (macOS-only).
       -h, --help              Show this message.
   " | sed -E 's/^ {4}//'
 }
