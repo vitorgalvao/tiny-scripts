@@ -50,6 +50,9 @@ Script to backup all bookmarks in your [pinboard](https://pinboard.in/) account
 ### pinboardlinkcheck
 Script to check the status code of links saved in your [pinboard](https://pinboard.in/) account
 
+### pinboardurlupdate
+Script to substitute URLs of [pinboard](https://pinboard.in/) bookmarks
+
 ### pinboardwaybackmachine
 Script to add to the [wayback machine](https://archive.org/web/) links saved in your [pinboard](https://pinboard.in/) account
 
