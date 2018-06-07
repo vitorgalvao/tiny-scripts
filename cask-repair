@@ -256,7 +256,7 @@ function appcast_checkpoint_change {
 function delete_created_branches {
   local local_branches remote_branches
 
-  for dir in "${caskroom_taps_dir}"/*; do
+  for dir in "${caskroom_taps_dir}/homebrew-cask"*; do
     cd "${dir}" || failure_message "Failed to delete branches. ${dir} does not exist."
 
     if git remote | grep --silent "${cask_repair_remote_name}"; then # Proceed only if the correct remote exists
