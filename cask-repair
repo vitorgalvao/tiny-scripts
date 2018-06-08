@@ -237,22 +237,6 @@ function sha_change {
   modify_stanza 'sha256' "'${package_sha}'" "${cask_file}"
 }
 
-function appcast_checkpoint_change {
-  local cask_appcast_url cask_appcast_status cask_appcast_checkpoint cask_file
-
-  cask_file="${1}"
-
-  has_appcast? "${cask_file}" || return # Abort function if cask does not have an appcast
-
-  cask_appcast_url="$(appcast_url "${cask_file}")"
-  cask_appcast_status="$(http_status_code "${cask_appcast_url}" 'no_follow_redirects')"
-  [[ "${cask_appcast_status}" != '200' ]] && add_warning warning "appcast is probably incorrect, as a non-200 (OK) HTTP response code was returned (${cask_appcast_status})."
-
-  cask_appcast_checkpoint="$(brew cask _appcast_checkpoint --calculate "${cask_file}")"
-
-  modify_stanza 'checkpoint:' "'${cask_appcast_checkpoint}'" "${cask_file}"
-}
-
 function delete_created_branches {
   local local_branches remote_branches
 
@@ -501,7 +485,6 @@ for cask in "${@}"; do
     modify_stanza 'sha256' ':no_check' "${cask_file}"
   else
     sha_change "${cask_file}"
-    appcast_checkpoint_change "${cask_file}"
   fi
 
   # Check if everything is alright, else abort
@@ -539,7 +522,6 @@ for cask in "${@}"; do
       edit_cask "${cask_file}"
       if ! is_version_latest? "${cask_file}"; then # Recheck sha256 values if version isn't :latest
         sha_change "${cask_file}"
-        appcast_checkpoint_change "${cask_file}"
       fi
       cask_updated='false'
       clear_warnings
