@@ -10,48 +10,70 @@ options = {}
 OptionParser.new do |opt|
   opt.banner = "Output total running time of files in a human-readable way.\n\nusage: #{$PROGRAM_NAME} [options] <path...>\n\noptions:"
 
-  opt.on('-p [d|h|m]', '--precision [d|h|m]', 'Rounds and truncates time to the chosen unit.') { |unit| options[:precision] = unit }
+  opt.on('-u [s|d|h|m]', '--unit [s|d|h|m]', 'Output a whole number of the total time rounded to the unit.') { |unit| options[:unit] = unit }
+  opt.on('-p [s|d|h|m]', '--precision [s|d|h|m]', 'Output human-readable result rounded and truncated to the chosen unit. Values of zero are ommited.') { |unit| options[:precision] = unit }
 end.parse!
 
-ms_values = ''
-split_time = {}
-human_time = ''
+# Parse time values
+total_time = {} # Each unit has the total value of everything
+split_time = {} # Each unit has its corresponding value with the others discounted
 
-ARGV.each { |file| ms_values += Open3.capture2('mediainfo', '--Output=General;%Duration%,', file).first }
-ms_total = ms_values.split(',').map(&:to_i).inject(0, :+)
+ms_total = ARGV.map { |file| Open3.capture2('mediainfo', '--Output=General;%Duration%,', file).first.split(',').map(&:to_i) }.flatten.reduce(0, :+)
 
-split_time['s'] = (ms_total / 1000) % 60
-split_time['m'] = (ms_total / (1000 * 60)) % 60
-split_time['h'] = (ms_total / (1000 * 60 * 60)) % 24
-split_time['d'] = (ms_total / (1000 * 60 * 60 * 24)) % 365
+# Building the hashes in this order simplifies the 'reduce' later on
+total_time['d'] = (ms_total.to_f / (1000 * 60 * 60 * 24))
+total_time['h'] = (ms_total.to_f / (1000 * 60 * 60))
+total_time['m'] = (ms_total.to_f / (1000 * 60))
+total_time['s'] = (ms_total.to_f / 1000)
 
-if defined? options[:precision]
-  if options[:precision] =~ /^[mhd]$/
-    split_time['m'] += 1 if split_time['s'] >= 30
-    split_time['s'] = 0
+split_time['d'] = total_time['d'] % 365
+split_time['h'] = total_time['h'] % 24
+split_time['m'] = total_time['m'] % 60
+split_time['s'] = total_time['s'] % 60
 
-    if split_time['m'] == 60
-      split_time['m'] = 0
-      split_time['h'] += 1
-    end
-  end
-
-  if options[:precision] =~ /^[hd]$/
-    split_time['h'] += 1 if split_time['m'] >= 30
-    split_time['m'] = 0
-
-    if split_time['h'] == 60
-      split_time['h'] = 0
-      split_time['d'] += 1
-    end
-  end
-
-  if options[:precision] == 'd'
-    split_time['d'] += 1 if split_time['h'] >= 24
-    split_time['h'] = 0
-  end
+def unit_time(precision_unit, input_hash)
+  input_hash[precision_unit].round
 end
 
-split_time.each { |key, value| human_time = value.to_s + key + ' ' + human_time if value > 0 }
-human_time = "0#{options[:precision]}" if human_time.empty? # If the desired precision leads to zero the previous line strips it, making the variable empty
-puts human_time.strip
+def human_time(precision_unit, input_hash)
+  # The split_times hash includes floats, so here is where we round the values we want and discard the ones we do not
+
+  time_hash = {}
+
+  input_hash.keys.each do |unit|
+    if unit == precision_unit
+      time_hash[unit] = input_hash[unit].round
+      break # Since we already reached our desired precision, all further keys can be ignored
+    end
+
+    time_hash[unit] = input_hash[unit].to_i
+  end
+
+  # Normalise rare cases where rounding precision would give an underisable result
+  # Without this, a starting point of '1d 23h 50m 53s' rounded to hours would result in '1d 24h' instead of '2d'
+  if time_hash['s'] == 60
+    time_hash['m'] += 1
+    time_hash.delete('s')
+  end
+
+  if time_hash['m'] == 60
+    time_hash['h'] += 1
+    time_hash.delete('m')
+  end
+
+  if time_hash['h'] == 24
+    time_hash['d'] += 1
+    time_hash.delete('h')
+  end
+
+  time_hash.reject! { |_, value| value.zero? } # Eliminate zeros.
+  time_hash.reduce('') { |string, (key, value)| string + "#{value}#{key} " }.strip
+end
+
+if options[:unit]
+  puts unit_time(options[:unit], total_time)
+  exit 0
+end
+
+options[:precision] = 's' if options[:precision].nil? # If no precision is given, assume seconds
+puts human_time(options[:precision], split_time)
