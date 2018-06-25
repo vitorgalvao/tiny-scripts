@@ -23,6 +23,9 @@ Script to allow copy/cut/paste between different terminal windows (it’s meant 
 ### fastmerge
 Script to quickly pull and push [github](https://github.com/) pull requests to keep commit history cleaner, merging directly to master and closing the pull request
 
+### gfv (gif from video)
+Script to make animated gifs from a video file
+
 ### gifmaker
 Script to make animated gifs from sequences of images, with control over FPS
 
