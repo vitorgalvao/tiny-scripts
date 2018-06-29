@@ -181,12 +181,12 @@ function modify_stanza {
 
   stanza_match_regex="^\s*${stanza_to_modify} "
   last_stanza_match="$(grep "${stanza_match_regex}" "${cask_file}" | tail -1)"
-  stanza_start="$(perl -pe "s/(${stanza_match_regex}).*/\1/" <<< "${last_stanza_match}")"
+  stanza_start="$(/usr/bin/perl -pe "s/(${stanza_match_regex}).*/\1/" <<< "${last_stanza_match}")"
   if grep --quiet ',$' <<< "${last_stanza_match}"; then
     ending_comma=','
   fi
 
-  perl -0777 -i -e'
+  /usr/bin/perl -0777 -i -e'
     $last_stanza_match = shift(@ARGV);
     $stanza_start = shift(@ARGV);
     $new_stanza_value = shift(@ARGV);
@@ -245,12 +245,12 @@ function delete_created_branches {
 
     if git remote | grep --silent "${cask_repair_remote_name}"; then # Proceed only if the correct remote exists
       # Delete local branches
-      local_branches=$(git branch --all | grep --extended-regexp "^ *${cask_repair_branch_prefix}-.+$" | perl -pe 's|^ *||;s|\n| |')
+      local_branches=$(git branch --all | grep --extended-regexp "^ *${cask_repair_branch_prefix}-.+$" | /usr/bin/perl -pe 's|^ *||;s|\n| |')
       [[ -n "${local_branches}" ]] && git branch -D ${local_branches}
 
       # Delete remote branches
       git fetch --prune "${cask_repair_remote_name}"
-      remote_branches=$(git branch --all | grep --extended-regexp "remotes/${cask_repair_remote_name}/${cask_repair_branch_prefix}-.+$" | perl -pe 's|.*/||;s|\n| |')
+      remote_branches=$(git branch --all | grep --extended-regexp "remotes/${cask_repair_remote_name}/${cask_repair_branch_prefix}-.+$" | /usr/bin/perl -pe 's|.*/||;s|\n| |')
       [[ -n "${remote_branches}" ]] && git push "${cask_repair_remote_name}" --delete ${remote_branches}
     fi
 
