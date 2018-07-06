@@ -81,6 +81,7 @@ function usage {
       -u, --cask-url                         Give a URL directly, instead of being prompted for it.
       -e, --edit-cask                        Opens cask for editing before trying first download.
       -c <number>, --closes-issue <number>   Adds 'Closes #<number>.' to the commit message.
+      -m <message>, --message <message>      Adds '<number>.' to the commit message.
       -b, --blind-submit                     Submit cask without asking for confirmation, if there are no errors.
       -f, --fail-on-error                    If there are any errors with the submission, abort.
       -w, --allow-warnings                   If set to fail on error and there are only warnings, do not abort.
@@ -366,6 +367,10 @@ while [[ "${1}" ]]; do
       issue_to_close="${2}"
       shift
       ;;
+    -m | --message)
+      pr_message="${2}"
+      shift
+      ;;
     -b | --blind-submit)
       updated_blindly='true'
       ;;
@@ -562,7 +567,16 @@ for cask in "${@}"; do
     fi
   fi
 
-  [[ -z "${issue_to_close}" ]] && pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "${hub_message}") || pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "$(echo -e "${hub_message}\n\n---\n\nCloses #${issue_to_close}.")")
+  if [[ -n "${issue_to_close}" ]]; then
+    #-c flag being used
+    pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "$(echo -e "${hub_message}\n\n---\n\nCloses #${issue_to_close}.")")
+  elif [[ -n "${pr_message}" ]]; then
+    #-m flag being used
+    pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "$(echo -e "${hub_message}\n\n---\n\n ${pr_message}")")
+  else
+    #default pr message
+    pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "${hub_message}")
+  fi
 
   if [[ -n "${pr_link}" ]]; then
     if [[ -n "${install_now}" ]]; then
