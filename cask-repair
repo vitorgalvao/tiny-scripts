@@ -549,6 +549,8 @@ for cask in "${@}"; do
   # Commit, push, submit pull request, clean
   commit_message="Update ${cask_name} to ${cask_version}"
   pr_message="${commit_message}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version."
+  [[ -n "${issue_to_close}" ]] && pr_message+="\n\nCloses #${issue_to_close}."
+  [[ -n "${extra_message}" ]] && pr_message+="\n\n${extra_message}"
   submit_pr_from="${github_username}:${cask_branch}"
 
   git commit "${cask_file}" --message "${commit_message}" --quiet
@@ -567,8 +569,6 @@ for cask in "${@}"; do
     fi
   fi
 
-  [[ -n "${issue_to_close}" ]] && pr_message+="\n\nCloses #${issue_to_close}."
-  [[ -n "${extra_message}" ]] && pr_message+="\n\n${extra_message}"
   pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "$(echo -e "${pr_message}")")
 
   if [[ -n "${pr_link}" ]]; then
