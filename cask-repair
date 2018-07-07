@@ -368,7 +368,7 @@ while [[ "${1}" ]]; do
       shift
       ;;
     -m | --message)
-      commit_message="${2}"
+      extra_message="${2}"
       shift
       ;;
     -b | --blind-submit)
@@ -547,11 +547,11 @@ for cask in "${@}"; do
   cask_version="$(brew cask _stanza version "${cask_file}")"
 
   # Commit, push, submit pull request, clean
-  commit_title="Update ${cask_name} to ${cask_version}"
-  commit_message="${commit_title}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version."
+  commit_message="Update ${cask_name} to ${cask_version}"
+  pr_message="${commit_message}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version."
   submit_pr_from="${github_username}:${cask_branch}"
 
-  git commit "${cask_file}" --message "${commit_title}" --quiet
+  git commit "${cask_file}" --message "${commit_message}" --quiet
   git push --force "${cask_repair_remote_name}" "${cask_branch}" --quiet 2> "${submission_error_log}"
 
   if [[ "${?}" -ne 0 ]]; then
@@ -567,9 +567,9 @@ for cask in "${@}"; do
     fi
   fi
 
-  [[ -n "${issue_to_close}" ]] && commit_message+="\n\nCloses #${issue_to_close}."
-  [[ -n "${commit_message}" ]] && commit_message+="\n\n${commit_message}"
-  pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "$(echo -e "${commit_message}")")
+  [[ -n "${issue_to_close}" ]] && pr_message+="\n\nCloses #${issue_to_close}."
+  [[ -n "${extra_message}" ]] && pr_message+="\n\n${extra_message}"
+  pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "$(echo -e "${pr_message}")")
 
   if [[ -n "${pr_link}" ]]; then
     if [[ -n "${install_now}" ]]; then
