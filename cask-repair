@@ -548,7 +548,7 @@ for cask in "${@}"; do
 
   # Commit, push, submit pull request, clean
   commit_message="Update ${cask_name} to ${cask_version}"
-  hub_message="$(echo -e "${commit_message}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version.")"
+  hub_message="${commit_message}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version."
   submit_pr_from="${github_username}:${cask_branch}"
 
   git commit "${cask_file}" --message "${commit_message}" --quiet
@@ -567,16 +567,9 @@ for cask in "${@}"; do
     fi
   fi
 
-  if [[ -n "${issue_to_close}" ]]; then
-    #-c flag being used
-    pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "$(echo -e "${hub_message}\n\n---\n\nCloses #${issue_to_close}.")")
-  elif [[ -n "${pr_message}" ]]; then
-    #-m flag being used
-    pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "$(echo -e "${hub_message}\n\n---\n\n ${pr_message}")")
-  else
-    #default pr message
-    pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "${hub_message}")
-  fi
+  [[ -n "${issue_to_close}" ]] && hub_message+="\n\nCloses #${issue_to_close}."
+  [[ -n "${pr_message}" ]] && hub_message+="\n\n${pr_message}"
+  pr_link=$(hub pull-request -b "${submit_pr_to}" -h "${submit_pr_from}" -m "$(echo -e "${hub_message}")")
 
   if [[ -n "${pr_link}" ]]; then
     if [[ -n "${install_now}" ]]; then
