@@ -81,7 +81,7 @@ function usage {
       -u, --cask-url                         Give a URL directly, instead of being prompted for it.
       -e, --edit-cask                        Opens cask for editing before trying first download.
       -c <number>, --closes-issue <number>   Adds 'Closes #<number>.' to the commit message.
-      -m <message>, --message <message>      Adds '<message>' to the commit message.
+      -m <message>, --message <message>      Adds '<message>' to the pull request.
       -b, --blind-submit                     Submit cask without asking for confirmation, if there are no errors.
       -f, --fail-on-error                    If there are any errors with the submission, abort.
       -w, --allow-warnings                   If set to fail on error and there are only warnings, do not abort.
