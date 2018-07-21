@@ -152,9 +152,9 @@ function request_cover {
   read -rp 'Insert URL or local path to cover image: ' book_cover
 
   if [[ -f "${book_cover}" ]]; then
-    echo -n "${book_cover}"
-  else
     upload_file "${book_cover}"
+  else
+    echo -n "${book_cover}"
   fi
 }
 
