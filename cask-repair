@@ -84,7 +84,7 @@ function usage {
       -m <message>, --message <message>      Adds '<message>' to the pull request.
       -b, --blind-submit                     Submit cask without asking for confirmation, if there are no errors.
       -f, --fail-on-error                    If there are any errors with the submission, abort.
-      -w, --allow-warnings                   If set to fail on error and there are only warnings, do not abort.
+      -w, --fail-on-warning                  If there are any warnings or errors with the submission, abort.
       -i, --install-cask                     Installs your updated cask after submission.
       -d, --delete-branches                  Deletes all local and remote branches named like ${cask_repair_branch_prefix}-<word>.
       -h, --help                             Show this help.
@@ -377,8 +377,9 @@ while [[ "${1}" ]]; do
     -f | --fail-on-error)
       abort_on_error='true'
       ;;
-    -w | --allow-warnings)
-      warnings_allowed='true'
+    -w | --fail-on-warning)
+      abort_on_error='true'
+      abort_on_warning='true'
       ;;
     -i | --install-cask)
       install_now='true'
@@ -508,7 +509,7 @@ for cask in "${@}"; do
     divide
     show_warnings
     [[ -n "${abort_on_error}" && "${has_errors}" == 'true' ]] && abort 'The submission has errors and you elected to abort on those cases.'
-    [[ -n "${abort_on_error}" && -z "${warnings_allowed}" && "${#warning_messages[@]}" -gt 0 ]] && abort 'The submission has warnings and you elected to abort on those cases.'
+    [[ -n "${abort_on_warning}" && "${#warning_messages[@]}" -gt 0 ]] && abort 'The submission has warnings and you elected to abort on those cases.'
 
     if [[ -n "${updated_blindly}" && "${#warning_messages[@]}" -eq 0 ]]; then
       cask_updated='y'
