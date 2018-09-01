@@ -26,9 +26,6 @@ Script to quickly pull and push [github](https://github.com/) pull requests to k
 ### gfv (gif from video)
 Script to make animated gifs from a video file
 
-### gifmaker
-Script to make animated gifs from sequences of images, with control over FPS
-
 ### human-media-time
 Script to calculate the total running time of multiple media files, presenting the output in a human-readable way
 
