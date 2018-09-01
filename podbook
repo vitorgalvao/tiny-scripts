@@ -18,7 +18,7 @@ function usage {
       -t <string>, --title <string>    Book title. Defaults to trying to extract it from the first audio file or the directory’s name (in that order). In the latter case, '_' will be interpreted as ':'.
       -a <string>, --author <string>   Book author. Defaults to trying to extract it from the first audio file.
       -c <url>, --cover <url>          URL or path to image of book cover. Defaults to trying to extract it from the first audio file.
-      -n, --no-tag-overwrite           Do not overwrite audio file tags. By default they are overwritten with extracted/given details.
+      -o, --tag-overwrite              Overwrite audio file tags with extracted/given details.
       -h, --help                       Show this help.
   " | sed -E 's/^ {4}//'
 }
@@ -294,7 +294,7 @@ function main {
     file_size="$(extract_size "${file}")"
     item_title="$(basename "${file%.*}")"
 
-    [[ "${overwrite_tags:-true}" == 'true' ]] && fix_tags "${book_title}" "${book_author}" "${book_cover}" "${item_title}" "${file}"
+    [[ "${overwrite_tags:-false}" == 'true' ]] && fix_tags "${book_title}" "${book_author}" "${book_cover}" "${item_title}" "${file}"
 
     file_url="$(upload_file "${file}")"
 
@@ -328,8 +328,8 @@ while [[ "${1}" ]]; do
       readonly given_cover="${2}"
       shift
       ;;
-    -n | --no-tag-overwrite)
-      readonly overwrite_tags='false'
+    -o | --tag-overwrite)
+      readonly overwrite_tags='true'
       ;;
     -*)
       syntax_error "unrecognized option: ${1}"
