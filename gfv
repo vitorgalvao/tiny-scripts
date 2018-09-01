@@ -2,13 +2,14 @@
 
 readonly program="$(basename "${0}")"
 
-# Check if ffmpeg is installed
-if ! command -v 'ffmpeg' &>/dev/null; then
-  echo -e "$(tput setaf 1)
-    This script requires 'ffmpeg'. Please install it first.
-  $(tput sgr0)" | sed -E 's/ {4}//' >&2
-  exit 1
-fi
+function depends_on {
+  local dep="${1}"
+
+  if ! command -v "${dep}" &>/dev/null; then
+    echo -e >&2 "\n$(tput setaf 1)This script requires ${dep}. Please install it first.$(tput sgr0)\n"
+    exit 1
+  fi
+}
 
 function syntax_error {
   echo "${program}: ${1}" >&2
@@ -51,6 +52,8 @@ if [[ "${#}" -eq 0 ]]; then
   usage
   exit 1
 fi
+
+depends_on 'ffmpeg'
 
 # Make gif next to original video, if no output file given
 input_file="${1}"
