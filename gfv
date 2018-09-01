@@ -1,6 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
+readonly cap_fps='30'
 
 function depends_on {
   local dep="${1}"
@@ -22,6 +23,7 @@ function usage {
     usage: ${program} [options] <input_file> [<output_file>]
 
     options:
+      -f <integer>, --fps <integer>          Frames per second. Default is auto-detected from video, capped at ${cap_fps}.
       -w <interger>, --width <integer>       Resize the gif proportionally.
       -h, --help                             Show this help.
   " | sed -E 's/^ {4}//'
@@ -33,6 +35,10 @@ while [[ "${1}" ]]; do
     -h | --help)
       usage
       exit 0
+      ;;
+    -f | --fps)
+      chosen_fps="${2}"
+      shift
       ;;
     -w | --width)
       width="${2}"
@@ -66,10 +72,19 @@ if [[ -z "${output_file}" ]]; then
   output_file="${input_file_dir}/${input_file_no_extension}.gif"
 fi
 
-# Make width same as original video, if none given
-[[ -z "${width}" ]] && width='-1'
+# Set FPS
+if [[ -z "${chosen_fps}" ]]; then
+  depends_on 'ffprobe'
+
+  video_fps="$(ffprobe -loglevel error -select_streams v:0 -of default=noprint_wrappers=1:nokey=1 -show_entries stream=r_frame_rate "${input_file}" | bc)"
+  fps="$([[ "${video_fps}" -gt "${cap_fps}" ]] && echo "${cap_fps}" || echo "${video_fps}")"
+else
+  fps="${chosen_fps}"
+fi
 
 # Make the animated gif
-palette="$(mktemp).png"
-ffmpeg -i "${input_file}" -filter_complex "fps=10,scale=${width}:-1:flags=lanczos,palettegen" "${palette}"
-ffmpeg -i "${input_file}" -i "${palette}" -filter_complex "fps=10,scale=${width}:-1:flags=lanczos[x];[x][1:v]paletteuse" "${output_file}"
+  [[ -z "${width}" ]] && width='-1' # Make width same as original video, if none given
+
+  palette="$(mktemp).png"
+  ffmpeg -i "${input_file}" -filter_complex "fps=${fps},scale=${width}:-1:flags=lanczos,palettegen" "${palette}"
+  ffmpeg -i "${input_file}" -i "${palette}" -filter_complex "fps=${fps},scale=${width}:-1:flags=lanczos[x];[x][1:v]paletteuse" "${output_file}"
