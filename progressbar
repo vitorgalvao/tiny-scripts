@@ -55,7 +55,7 @@ function usage {
       -s, --bar-height <integer>        Bar’s height as a percent of the total height. Default: 1.
       -p, --bar-position [top|bottom]   Default: bottom.
       -d, --delay <number>              Delay between each frame, in seconds. Default: 1.5.
-      -o, --output-file <file>          File to output to. Default: output.gif in current directory.
+      -o, --output-file <file>          File to output to. Default: output.gif in current directory. Saves to video when given the .mov extension.
       -g, --gifski                      Use gifski for the conversion.
       -h, --help                        Show this help.
   " | sed -E 's/^ {4}//'
