@@ -56,6 +56,7 @@ function usage {
       -p, --bar-position [top|bottom]   Default: bottom.
       -d, --delay <number>              Delay between each frame, in seconds. Default: 1.5.
       -o, --output-file <file>          File to output to. Default: output.gif in current directory.
+      -g, --gifski                      Use gifski for the conversion.
       -h, --help                        Show this help.
   " | sed -E 's/^ {4}//'
 }
@@ -87,6 +88,9 @@ while [[ "${1}" ]]; do
       output_file="${2}"
       shift
       ;;
+    -g | --gifski)
+      use_gifski='true'
+      ;;
     -*)
       syntax_error "unrecognized option: ${1}"
       ;;
@@ -99,7 +103,7 @@ done
 
 trap 'exit 1' SIGINT
 
-depends_on convert identify ffmpeg ffprobe
+depends_on convert identify ffmpeg ffprobe gfv
 
 # Determine if working from images or video
 [[ "${#}" -eq 0 ]] && wrong_arguments
@@ -167,10 +171,10 @@ fi
 if [[ "${output_file}" == *'.mov' ]]; then
   mv "${tmp_video}" "${output_file}"
 else
-  # Same technique as [gfv](https://github.com/vitorgalvao/tiny-scripts/blob/master/gfv)
-  readonly palette="$(mktemp).png"
-  ffmpeg -loglevel error -i "${tmp_video}" -filter_complex 'fps=10,scale=-1:-1:flags=lanczos,palettegen' "${palette}"
-  ffmpeg -loglevel error -i "${tmp_video}" -i "${palette}" -filter_complex 'fps=10,scale=-1:-1:flags=lanczos[x];[x][1:v]paletteuse' "${output_file}"
+  options=()
+  [[ -n "${use_gifski}" ]] && options+=('--gifski')
+
+  gfv "${options[@]}" "${tmp_video}" --output-file "${output_file}"
 fi
 
 message "Saved to ${output_file}"

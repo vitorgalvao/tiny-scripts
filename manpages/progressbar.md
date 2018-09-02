@@ -27,6 +27,9 @@ Delay between each frame, in seconds. Ignored when input is a video. Default: `1
 * `-o, --output-file` <file>:
 File to output to. Give it a .mov extension to save as a video, or any other to save as gif. Default: `output.gif` in the current directory.
 
+* `-g`, `--gifski`:
+Use `gifski` for the conversion.
+
 * `-h, --help`:
 Show help.
 
