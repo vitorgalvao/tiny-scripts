@@ -2,6 +2,7 @@
 
 readonly program="$(basename "${0}")"
 readonly cap_fps='30'
+output_file='output.gif'
 
 function depends_on {
   local dep="${1}"
@@ -20,11 +21,12 @@ function syntax_error {
 
 function usage {
   echo "
-    usage: ${program} [options] <input_file> [<output_file>]
+    usage: ${program} [options] <file>
 
     options:
       -f <integer>, --fps <integer>          Frames per second. Default is auto-detected from video, capped at ${cap_fps}.
       -w <interger>, --width <integer>       Resize the gif proportionally.
+      -o, --output-file <file>               File to output to. Default: output.gif in current directory.
       -g, --gifski                           Use gifski for the conversion.
       -h, --help                             Show this help.
   " | sed -E 's/^ {4}//'
@@ -43,6 +45,10 @@ while [[ "${1}" ]]; do
       ;;
     -w | --width)
       width="${2}"
+      shift
+      ;;
+    -o | --output-file)
+      output_file="${2}"
       shift
       ;;
     -g | --gifski)
@@ -64,18 +70,9 @@ if [[ "${#}" -eq 0 ]]; then
   exit 1
 fi
 
-depends_on 'ffmpeg'
-
-# Make gif next to original video, if no output file given
 input_file="${1}"
-output_file="${2}"
 
-if [[ -z "${output_file}" ]]; then
-  input_file_name="$(basename "${input_file}")"
-  input_file_no_extension="${input_file_name%.*}"
-  input_file_dir="$(dirname "${input_file}")"
-  output_file="${input_file_dir}/${input_file_no_extension}.gif"
-fi
+depends_on 'ffmpeg'
 
 # Set FPS
 if [[ -z "${chosen_fps}" ]]; then
