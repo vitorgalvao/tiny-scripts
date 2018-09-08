@@ -12,7 +12,7 @@ function syntax_error {
 
 function usage {
   echo "
-    usage: ${program} [options]
+    usage: ${program} [options] <directory...>
 
     options:
       -t <string>, --title <string>    Book title. Defaults to trying to extract it from the first audio file or the directory’s name (in that order). In the latter case, '_' will be interpreted as ':'.
