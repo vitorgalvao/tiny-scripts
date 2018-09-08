@@ -340,6 +340,7 @@ function divide {
 }
 
 # Available flags
+positional=()
 while [[ "${1}" ]]; do
   case "${1}" in
     -h | --help)
@@ -392,11 +393,12 @@ while [[ "${1}" ]]; do
       syntax_error "unrecognized option: ${1}"
       ;;
     *)
-      break
+      positional+=("${1}")
       ;;
   esac
   shift
 done
+set -- "${positional[@]}"
 
 # Exit if no argument or more than one argument was given
 if [[ -z "${1}" && "${can_run_without_arguments}" != 'true' ]]; then
