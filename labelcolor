@@ -2,9 +2,9 @@
 
 readonly program="$(basename "${0}")"
 
-usage() {
+function usage {
   echo "
-    usage: ${program} <color> <files>
+    usage: ${program} <color> <file...>
 
     Available color options:
       none (removes label), orange, red, yellow, blue, purple, green, gray
