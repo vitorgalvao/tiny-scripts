@@ -62,6 +62,7 @@ function usage {
 }
 
 # Available flags
+positional=()
 while [[ "${1}" ]]; do
   case "${1}" in
     -h | --help)
@@ -95,11 +96,12 @@ while [[ "${1}" ]]; do
       syntax_error "unrecognized option: ${1}"
       ;;
     *)
-      break
+      positional+=("${1}")
       ;;
   esac
   shift
 done
+set -- "${positional[@]}"
 
 trap 'exit 1' SIGINT
 
