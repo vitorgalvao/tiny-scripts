@@ -32,6 +32,7 @@ if [[ "${#}" -eq 0 ]]; then
 fi
 
 # Available flags to use with the script
+positional=()
 while [[ "${1}" ]]; do
   case "${1}" in
     -h | --help)
@@ -61,11 +62,12 @@ while [[ "${1}" ]]; do
       syntax_error "unrecognized option: ${1}"
       ;;
     *)
-      break
+      positional+=("${1}")
       ;;
   esac
   shift
 done
+set -- "${positional[@]}"
 
 # Determines the starting number, depending on if one was picked
 num="$([[ -n "${starting_num}" ]] && bc <<< "${starting_num} - 1" || echo '0')"
