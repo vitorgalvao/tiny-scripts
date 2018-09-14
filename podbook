@@ -310,7 +310,7 @@ function main {
 
 depends_on 'eyeD3' 'human-media-time'
 
-positional=()
+args=()
 while [[ "${1}" ]]; do
   case "${1}" in
     -h | --help)
@@ -336,12 +336,12 @@ while [[ "${1}" ]]; do
       syntax_error "unrecognized option: ${1}"
       ;;
     *)
-      positional+=("${1}")
+      args+=("${1}")
       ;;
   esac
   shift
 done
-set -- "${positional[@]}"
+set -- "${args[@]}"
 
 fail_if_no_arguments "${@}"
 
