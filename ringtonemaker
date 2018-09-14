@@ -30,7 +30,7 @@ function usage {
 }
 
 # available flags
-positional=()
+args=()
 while [[ "${1}" ]]; do
   case "${1}" in
     -h | --help)
@@ -53,12 +53,12 @@ while [[ "${1}" ]]; do
       syntax_error "unrecognized option: ${1}"
       ;;
     *)
-      positional+=("${1}")
+      args+=("${1}")
       ;;
   esac
   shift
 done
-set -- "${positional[@]}"
+set -- "${args[@]}"
 
 depends_on 'ffmpeg'
 
