@@ -17,6 +17,18 @@ function syntax_error {
   exit 1
 }
 
+function get_output_path {
+  local input_path output_path
+  input_path="${1}"
+  output_path="${2}"
+
+  if [[ -n "${output_path}" ]]; then
+    [[ "${output_path##*.}" == 'm4r' ]] && echo "${output_path}" || echo "${output_path}.m4r"
+  else
+    echo "${input_path%.*}.m4r"
+  fi
+}
+
 function usage {
   echo "
     usage: ${program} [-d <duration>] [-s <time>] [-o <output_file>] <input_file>
@@ -42,7 +54,7 @@ while [[ "${1}" ]]; do
       shift
       ;;
     -o | --output)
-      output_file="${2}"
+      given_output_path="${2}"
       shift
       ;;
     -s | --start)
@@ -63,6 +75,7 @@ set -- "${args[@]}"
 depends_on 'ffmpeg'
 
 input_file="${1}"
+output_file="$(get_output_path "${input_file}" "${given_output_path}")"
 
 if [[ ! -f "${input_file}" ]]; then
   echo 'A valid path to an input file is required.'
@@ -70,8 +83,7 @@ if [[ ! -f "${input_file}" ]]; then
   exit 1
 fi
 
-[[ -z "${output_file}" ]] && output_file="${input_file%.*}"
 [[ -z "${duration}" || "${duration}" -gt 40 ]] && duration='40'
 [[ -z "${start}" ]] && start='00:00:00'
 
-ffmpeg -i "${input_file}" -vn -acodec aac -f mp4 -ss "${start}" -t "${duration}" "${output_file}.m4r"
+ffmpeg -i "${input_file}" -vn -acodec aac -f mp4 -ss "${start}" -t "${duration}" "${output_file}"
