@@ -384,7 +384,7 @@ while [[ "${1}" ]]; do
       ;;
     -i | --install-cask)
       install_now='true'
-    ;;
+      ;;
     -d | --delete-branches)
       can_run_without_arguments='true'
       delete_created_branches='true'
