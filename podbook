@@ -332,6 +332,11 @@ while [[ "${1}" ]]; do
     -o | --tag-overwrite)
       readonly overwrite_tags='true'
       ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
     -*)
       syntax_error "unrecognized option: ${1}"
       ;;
