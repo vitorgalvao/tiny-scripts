@@ -57,6 +57,11 @@ while [[ "${1}" ]]; do
     -n | --no-squash)
       squash_changes='false'
       ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
     -*)
       syntax_error "unrecognized option: ${1}"
       ;;
