@@ -58,6 +58,11 @@ while [[ "${1}" ]]; do
     -v | --verbose)
       be_verbose="v"
       ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
     -*)
       syntax_error "unrecognized option: ${1}"
       ;;
