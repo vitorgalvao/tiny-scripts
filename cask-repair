@@ -389,6 +389,11 @@ while [[ "${1}" ]]; do
       can_run_without_arguments='true'
       delete_created_branches='true'
       ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
     -*)
       syntax_error "unrecognized option: ${1}"
       ;;
