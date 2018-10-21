@@ -61,6 +61,11 @@ while [[ "${1}" ]]; do
       start="${2}"
       shift
       ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
     -*)
       syntax_error "unrecognized option: ${1}"
       ;;
