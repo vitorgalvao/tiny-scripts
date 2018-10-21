@@ -92,6 +92,11 @@ while [[ "${1}" ]]; do
     -g | --gifski)
       use_gifski='true'
       ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
     -*)
       syntax_error "unrecognized option: ${1}"
       ;;
