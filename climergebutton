@@ -38,6 +38,11 @@ while [[ "${1}" ]]; do
       merge_strategy="${2}"
       shift
       ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
     -*)
       syntax_error "unrecognized option: ${1}"
       ;;
