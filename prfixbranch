@@ -43,6 +43,11 @@ while [[ "${1}" ]]; do
     -c | --continue)
       push_changes="yes"
       ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
     -*)
       syntax_error "unrecognized option: ${1}"
       ;;
