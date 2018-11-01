@@ -25,7 +25,7 @@ OptionParser.new do |opt|
 
     "token" options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
 
-    usage: #{$PROGRAM_NAME} [options] <path>
+    usage: #{$PROGRAM_NAME} [options] <file>
 
     options:
   EOS
@@ -33,7 +33,6 @@ OptionParser.new do |opt|
   opt.on('-t <token>', '--token <token>', 'Your Pinboard API token.') { |t| options[:token] = t }
   opt.on('-a', '--ask-for-token', 'Ask for your Pinboard API token on start.') { options[:ask_for_token] = true }
   opt.on('-s', '--save-token', 'Save Pinboard API token to Keychain and exit (macOS-only). Use with "--token" or "--ask-for-token".') { options[:save_token] = true }
-  opt.on('-u', '--use-saved-token', 'Use Pinboard API token in Keychain (macOS-only).') { options[:use_saved_token] = true }
 end.parse!
 
 # Deal with token options
@@ -48,14 +47,12 @@ pinboard_token =
     print '> '
 
     gets.chomp
-  elsif options[:use_saved_token]
-    Open3.capture2('security', 'find-generic-password', '-a', ENV['USER'], '-s', 'pinboard_api_token', '-w').first.strip
   else
-    ''
+    Open3.capture2('security', 'find-generic-password', '-a', ENV['USER'], '-s', 'pinboard_api_token', '-w').first.strip
   end
 
 abort 'Cannot continue without a Pinboard token.' if pinboard_token.empty?
-abort 'Seem either the API token is incorrect or Pinboard’s servers are down.' if URI("https://api.pinboard.in/v1/user/api_token/?auth_token=#{pinboard_token}").open.nil?
+abort 'The Pinboard API token appears to be incorrect. Alternatively, Pinboard’s servers might be down.' if URI("https://api.pinboard.in/v1/user/api_token/?auth_token=#{pinboard_token}").open.nil?
 
 system('security', 'add-generic-password', '-a', ENV['USER'], '-s', 'pinboard_token', '-w', pinboard_token) if options[:save_token]
 
