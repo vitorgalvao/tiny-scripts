@@ -305,6 +305,20 @@ function clear_warnings {
   unset has_errors
 }
 
+function lock {
+  local lock_file action
+  readonly lock_file='/tmp/cask-repair.lock'
+  readonly action="${1}"
+
+  if [[ "${action}" == 'create' ]]; then
+    touch "${lock_file}"
+  elif [[ "${action}" == 'exists?' ]]; then
+    [[ -f "${lock_file}" ]] && return 0 || return 1
+  elif [[ "${action}" == 'remove' ]]; then
+    rm "${lock_file}"
+  fi
+}
+
 function clean {
   local current_branch
 
@@ -317,6 +331,8 @@ function clean {
   git branch -D "${current_branch}" --quiet
   rm "${submission_error_log}"
   unset given_cask_version given_cask_url cask_updated
+
+  lock 'remove'
 }
 
 function skip {
@@ -414,6 +430,13 @@ fi
 if [[ "${delete_created_branches}" == 'true' ]]; then
   delete_created_branches
   exit 0
+fi
+
+# Only allow one instance at a time
+if lock 'exists?'; then
+  abort "Only one ${program} instance can be run at once."
+else
+  lock 'create'
 fi
 
 require_hub
@@ -593,3 +616,5 @@ for cask in "${@}"; do
     abort 'There was an error submitting the pull request. Please open a bug report on the repo for this script (https://github.com/vitorgalvao/tiny-scripts).'
   fi
 done
+
+lock 'remove'
