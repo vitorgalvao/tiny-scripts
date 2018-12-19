@@ -525,7 +525,7 @@ for cask in "${@}"; do
       echo # Add an empty line
     fi
 
-    if [[ "${cask_updated}" == 'y' ]]; then
+    if [[ "\${cask_updated}" == 'y' ]]; then
       if [[ "${style_result}" -ne 0 || "${audit_result}" -ne 0 ]]; then
         cask_updated='false'
       else
