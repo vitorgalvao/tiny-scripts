@@ -32,12 +32,14 @@ function color_message {
 
   if [[ -z "${color_index}" ]]; then
     echo "${FUNCNAME[0]}: '${color}' is not a valid color."
+    lock 'remove'
     exit 1
   fi
 }
 
 function failure_message {
   color_message 'red' "${1}" >&2
+  lock 'remove'
   exit 1
 }
 
