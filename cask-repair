@@ -38,7 +38,6 @@ function color_message {
 
 function failure_message {
   color_message 'red' "${1}" >&2
-  exit 1
 }
 
 function success_message {
@@ -50,7 +49,7 @@ function warning_message {
 }
 
 function syntax_error {
-  failure_message "${program}: ${1}\nTry \`${program} --help\` for more information."
+  abort "${program}: ${1}\nTry \`${program} --help\` for more information."
 }
 
 function push_failure_message {
@@ -66,7 +65,7 @@ function require_hub {
   fi
 
   if [[ -z "${github_username}" ]] || [[ -z "${GITHUB_TOKEN}" && ! $(grep 'oauth_token:' "${hub_config}" 2>/dev/null) ]]; then
-    failure_message '`hub` is not configured.\nTo do it, run `(cd $(brew --repository) && hub issue)`. Your Github password will be required, but is never stored.'
+    abort '`hub` is not configured.\nTo do it, run `(cd $(brew --repository) && hub issue)`. Your Github password will be required, but is never stored.'
   fi
 }
 
@@ -120,8 +119,8 @@ function cd_to_cask_tap {
   cask_file="${1}"
 
   cask_file_location="$(find "${caskroom_taps_dir}" -path "*/Casks/${cask_file}")"
-  [[ -z "${cask_file_location}" ]] && failure_message "No such cask was found in any official repo (${cask_name})."
-  cd "$(dirname "${cask_file_location}")" || failure_message "Failed to change to directory of ${cask_file}."
+  [[ -z "${cask_file_location}" ]] && abort "No such cask was found in any official repo (${cask_name})."
+  cd "$(dirname "${cask_file_location}")" || abort "Failed to change to directory of ${cask_file}."
 }
 
 function require_correct_origin {
@@ -129,7 +128,7 @@ function require_correct_origin {
 
   origin_remote="$(current_origin)"
 
-  grep --silent --ignore-case --extended-regexp "^${caskroom_origin_remote_regex}" <<< "${origin_remote}" || failure_message "\`origin\` is pointing to an incorrect remote (${origin_remote}). Its beginning must match ${caskroom_origin_remote_regex}."
+  grep --silent --ignore-case --extended-regexp "^${caskroom_origin_remote_regex}" <<< "${origin_remote}" || abort "\`origin\` is pointing to an incorrect remote (${origin_remote}). Its beginning must match ${caskroom_origin_remote_regex}."
 }
 
 function ensure_cask_repair_remote {
@@ -230,7 +229,7 @@ function sha_change {
 
   if ! brew cask fetch --force "${cask_file}"; then
     clean
-    failure_message "There was an error fetching ${cask_file}. Please check your connection and try again."
+    abort "There was an error fetching ${cask_file}. Please check your connection and try again."
   fi
   downloaded_file=$(brew cask fetch "${cask_file}" 2>/dev/null | tail -1 | sed 's/==> Success! Downloaded to -> //')
   package_sha=$(shasum --algorithm 256 "${downloaded_file}" | awk '{ print $1 }')
@@ -242,7 +241,7 @@ function delete_created_branches {
   local local_branches remote_branches
 
   for dir in "${caskroom_taps_dir}/homebrew-cask"*; do
-    cd "${dir}" || failure_message "Failed to delete branches. ${dir} does not exist."
+    cd "${dir}" || abort "Failed to delete branches. ${dir} does not exist."
 
     if git remote | grep --silent "${cask_repair_remote_name}"; then # Proceed only if the correct remote exists
       # Delete local branches
@@ -315,7 +314,7 @@ function lock {
   elif [[ "${action}" == 'exists?' ]]; then
     [[ -f "${lock_file}" ]] && return 0 || return 1
   elif [[ "${action}" == 'remove' ]]; then
-    rm "${lock_file}"
+    [[ -f "${lock_file}" ]] && rm "${lock_file}"
   fi
 }
 
@@ -336,20 +335,17 @@ function clean {
 }
 
 function skip {
-  local message="${1}"
-
   clean
-  echo -e "${message}"
+  echo -e "${1}"
 }
 
 function abort {
-   local message="${1}"
-
-   failure_message "\n${message}\n"
+   clean
+   failure_message "\n${1}\n"
+   exit 1
  }
 
 trap 'abort "You aborted."' SIGINT
-trap 'clean' EXIT
 
 function divide {
   command -v 'hr' &>/dev/null && hr - || echo '--------------------'
@@ -434,7 +430,9 @@ fi
 
 # Only allow one instance at a time
 if lock 'exists?'; then
-  abort "Only one ${program} instance can be run at once."
+  # We want this to be different from abort, so as to not remove the lock file
+  failure_message "Only one ${program} instance can be run at once."
+  exit 1
 else
   lock 'create'
 fi
@@ -615,3 +613,5 @@ for cask in "${@}"; do
     abort 'There was an error submitting the pull request. Please open a bug report on the repo for this script (https://github.com/vitorgalvao/tiny-scripts).'
   fi
 done
+
+clean
