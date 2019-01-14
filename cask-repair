@@ -525,7 +525,8 @@ for cask in "${@}"; do
   [[ -z "${cask_updated}" ]] && cask_updated='false'
   until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
     # fix style errors and check for style and audit errors
-    style_message=$(brew cask style --fix "${cask_file}" 2>/dev/null)
+    # style_message=$(brew cask style --fix "${cask_file}" 2>/dev/null)
+    style_message="$(echo)"
     style_result="${?}"
     [[ "${style_result}" -ne 0 ]] && add_warning error "${style_message}"
 
@@ -608,10 +609,9 @@ for cask in "${@}"; do
       echo -e "\nYou can upgrade the cask right now from your personal branch:\n  brew cask reinstall https://raw.githubusercontent.com/${github_username}/$(current_tap)/${cask_branch}/Casks/${cask_name}.rb"
     fi
 
+    clean
     success_message "\nSubmitted (${pr_link})\n"
   else
     abort 'There was an error submitting the pull request. Please open a bug report on the repo for this script (https://github.com/vitorgalvao/tiny-scripts).'
   fi
 done
-
-clean
