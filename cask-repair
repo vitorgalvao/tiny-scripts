@@ -330,7 +330,7 @@ function clean {
   git reset HEAD --hard --quiet
   git checkout master --quiet
   git branch -D "${current_branch}" --quiet
-  rm "${submission_error_log}"
+  [[ -f "${submission_error_log}" ]] && rm "${submission_error_log}"
   unset given_cask_version given_cask_url cask_updated
 }
 
