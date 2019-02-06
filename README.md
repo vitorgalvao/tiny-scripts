@@ -77,9 +77,6 @@ Script to rename files in a numerical sequence
 ### strongpassword
 Script to get a strong password by leveraging multiple sources
 
-### suntimes
-Script to email local sunrise and sunset times (via [Wolfram Alpha](http://www.wolframalpha.com/)) for a given location
-
 ### workflows-renamer
 Script to rename unpackaged [Alfred](https://www.alfredapp.com/) Workflows in the preferences directory after their name and bundle ID
 
