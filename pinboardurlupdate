@@ -48,13 +48,13 @@ pinboard_token =
 
     gets.chomp
   else
-    Open3.capture2('security', 'find-generic-password', '-a', ENV['USER'], '-s', 'pinboard_api_token', '-w').first.strip
+    Open3.capture2('security', 'find-generic-password', '-s', 'Pinboard API Token', '-w').first.strip
   end
 
 abort 'Cannot continue without a Pinboard token.' if pinboard_token.empty?
 abort 'The Pinboard API token appears to be incorrect. Alternatively, Pinboard’s servers might be down.' if URI("https://api.pinboard.in/v1/user/api_token/?auth_token=#{pinboard_token}").open.nil?
 
-system('security', 'add-generic-password', '-a', ENV['USER'], '-s', 'pinboard_token', '-w', pinboard_token) if options[:save_token]
+system('security', 'add-generic-password', '-a', pinboard_token.split(':').first, '-s', 'Pinboard API Token', '-w', pinboard_token) if options[:save_token]
 
 # Load file
 links_file = ARGV[0]

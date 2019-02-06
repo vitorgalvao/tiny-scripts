@@ -85,7 +85,7 @@ if [[ -n "${ask_for_token}" ]]; then
 fi
 
 # If no token given, look for it in the Keychain
-[[ -z "${token}" ]] && token="$(security find-generic-password -a "${USER}" -s pinboard_api_token -w)"
+[[ -z "${token}" ]] && token="$(security find-generic-password -s 'Pinboard API Token' -w)"
 
 # Exit if no token was set
 if [[ -z "${token}" ]]; then
@@ -102,7 +102,7 @@ fi
 
 # Save token to Keychain
 if [[ -n "${set_keychain_token}" ]]; then
-  security add-generic-password -a "${USER}" -s pinboard_api_token -w "${token}"
+  security add-generic-password -a "${token%:*}" -s 'Pinboard API Token' -w "${token}"
   exit 0
 fi
 
