@@ -525,8 +525,7 @@ for cask in "${@}"; do
   [[ -z "${cask_updated}" ]] && cask_updated='false'
   until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
     # fix style errors and check for style and audit errors
-    # style_message=$(brew cask style --fix "${cask_file}" 2>/dev/null)
-    style_message="$(echo)"
+    style_message=$(brew cask style --fix "${cask_file}" 2>/dev/null)
     style_result="${?}"
     [[ "${style_result}" -ne 0 ]] && add_warning error "${style_message}"
 
