@@ -107,7 +107,7 @@ function extract_title {
   readonly file_name="${1}"
   readonly book_dir="${2}"
 
-  readonly book_title="$(eyeD3 "${file_name}" 2> /dev/null | sed 's/.\[[0-9]\{1,\}m//g' | grep '^album: ' | cut -d' ' -f2-)"
+  readonly book_title="$(exiftool -ignoreMinorErrors -binary -title "${file_name}")"
   [[ -n "${book_title}" ]] && echo -n "${book_title}" || sed 's/_/:/g' < <(basename "${book_dir}")
 }
 
@@ -115,7 +115,7 @@ function extract_author {
   local file_name book_author
   readonly file_name="${1}"
 
-  readonly book_author="$(eyeD3 "${file_name}" 2> /dev/null | sed 's/.\[[0-9]\{1,\}m//g' | grep '^artist: ' | cut -d' ' -f2-)"
+  readonly book_author="$(exiftool -ignoreMinorErrors -binary -artist "${file_name}")"
   [[ -n "${book_author}" ]] && echo -n "${book_author}" || request_author
 }
 
@@ -129,15 +129,17 @@ function request_author {
 }
 
 function extract_cover {
-  local file_name book_dir book_cover extract_dir
+  local file_name book_dir book_cover tmp_cover image_ext
   readonly file_name="${1}"
   readonly book_dir="${2}"
-  readonly extract_dir="$(mktemp -d)"
+  readonly tmp_cover="${extraction_dir}/Cover"
 
-  eyeD3 --write-images="${extract_dir}" "${file_name}" &> /dev/null
-  readonly book_cover="$(find "${book_dir}" "${extract_dir}" -name 'FRONT_COVER.*' -print -quit -or -iname '*.jpg' -print -quit -or -iname '*.png' -print -quit)" # -print -quit makes it print the first result and immediatelly exit
+  exiftool -ignoreMinorErrors -binary -picture "${file_name}" > "${tmp_cover}"
+  readonly image_ext="$(file --brief --extension "${tmp_cover}" | cut -d'/' -f1)"
+  readonly book_cover="${tmp_cover}.${image_ext}"
+  mv "${tmp_cover}" "${book_cover}"
 
-  if [[ -n "${book_cover}" ]]; then
+  if [[ -s "${book_cover}" ]]; then # If 'exiftool' did't extract a cover, the file will be empty
     upload_file "${book_cover}"
   else
     request_cover
@@ -161,7 +163,7 @@ function extract_duration {
   local file_name file_duration
   readonly file_name="${1}"
 
-  readonly file_duration="$(eyeD3 "${file_name}" 2> /dev/null | sed 's/.\[[0-9]\{1,\}m//g' | awk '/^Time:/{print $2}')"
+  readonly file_duration="$(exiftool -ignoreMinorErrors -duration "${file_name}" | awk '{print $3}')" # Using '-binary' here would give the result in microseconds
   echo -n "${file_duration}"
 }
 
@@ -283,7 +285,7 @@ function main {
   upload_file "${book_feed}"
 }
 
-depends_on 'eyeD3' 'human-media-time'
+depends_on 'exiftool' 'human-media-time'
 
 args=()
 while [[ "${1}" ]]; do
