@@ -12,7 +12,8 @@ function syntax_error {
 # Instructions
 function usage {
   echo "
-    Usage: ${program} [options]
+    Usage:
+      ${program} [options]
 
     'token' options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
 
