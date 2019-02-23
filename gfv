@@ -38,9 +38,9 @@ function get_output_path {
 
 function usage {
   echo "
-    usage: ${program} [options] <file>
+    Usage: ${program} [options] <file>
 
-    options:
+    Options:
       -f <integer>, --fps <integer>          Frames per second. Default is auto-detected from video, capped at ${cap_fps}.
       -w <interger>, --width <integer>       Resize the gif proportionally.
       -o, --output-file <file>               File to output to. Default is saving next to the input file with same name.
