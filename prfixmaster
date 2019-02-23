@@ -16,8 +16,7 @@ if [[ ! $(which 'ghi') ]] || ! security find-internet-password -s github.com -l 
 fi
 
 syntax_error() {
-  echo "${program}: ${1}" >&2
-  echo "Try \`${program} --help\` for more information." >&2
+  echo -e "${program}: ${1}\nTry \`${program} --help\` for more information." >&2
   exit 1
 }
 
