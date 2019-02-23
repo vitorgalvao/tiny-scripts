@@ -11,11 +11,11 @@ function syntax_error {
 
 function usage {
   echo "
-    usage: ${program} --token <github_token> [options] <github_pull_request_url>
+    Usage: ${program} --token <github_token> [options] <github_pull_request_url>
 
     Multiple <github_pull_request_url> can be given, and will be processed in sequence.
 
-    options:
+    Options:
       -t, --token          Github token to use when merging.
       -m, --merge-method   'merge', 'squash', or 'rebase'. Defaults to '${default_merge_strategy}'.
       -h, --help           Show this help.
