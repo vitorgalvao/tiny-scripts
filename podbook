@@ -13,9 +13,9 @@ function syntax_error {
 
 function usage {
   echo "
-    usage: ${program} [options] <directory...>
+    Usage: ${program} [options] <directory...>
 
-    options:
+    Options:
       -t <string>, --title <string>    Book title. Defaults to trying to extract it from the first audio file or the directory’s name (in that order). In the latter case, '_' will be interpreted as ':'.
       -a <string>, --author <string>   Book author. Defaults to trying to extract it from the first audio file.
       -c <url>, --cover <url>          URL or path to image of book cover. Defaults to trying to extract it from the first audio file.
