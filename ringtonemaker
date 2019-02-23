@@ -31,7 +31,8 @@ function get_output_path {
 
 function usage {
   echo "
-    Usage: ${program} [-d <duration>] [-s <time>] [-o <output_file>] <input_file>
+    Usage:
+      ${program} [-d <duration>] [-s <time>] [-o <output_file>] <input_file>
 
     Options:
       -d <number>, --duration <number>   Duration (in seconds) of the output file. Maximum is 40 seconds.
