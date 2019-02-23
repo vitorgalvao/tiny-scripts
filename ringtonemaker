@@ -31,9 +31,9 @@ function get_output_path {
 
 function usage {
   echo "
-    usage: ${program} [-d <duration>] [-s <time>] [-o <output_file>] <input_file>
+    Usage: ${program} [-d <duration>] [-s <time>] [-o <output_file>] <input_file>
 
-    options:
+    Options:
       -d <number>, --duration <number>   Duration (in seconds) of the output file. Maximum is 40 seconds.
       -o <file>, --output <file>         Path to output file. If empty, will be next to the input file.
       -s <time>, --start <time>          Start time from when to start cutting, in the form xx:xx:xx
