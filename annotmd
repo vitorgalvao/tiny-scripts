@@ -4,7 +4,7 @@ require 'nokogiri'
 
 # usage
 if ARGV[0].nil?
-  abort "usage: #{$PROGRAM_NAME} <path_to_annotations_file>
+  abort "Usage: #{$PROGRAM_NAME} <path_to_annotations_file>
 
   The output file will be next to the original.".gsub(%r{^ {2}},'')
 end
