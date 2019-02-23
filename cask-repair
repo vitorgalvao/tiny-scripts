@@ -71,9 +71,9 @@ function require_hub {
 
 function usage {
   echo "
-    usage: ${program} [options] <cask_name>
+    Usage: ${program} [options] <cask_name>
 
-    options:
+    Options:
       -o, --open-home                        Open the homepage for the given cask.
       -a, --open-appcast                     Open the appcast for the given cask.
       -v, --cask-version                     Give a version directly, instead of being prompted for it.
