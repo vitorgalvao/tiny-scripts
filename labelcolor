@@ -4,9 +4,9 @@ readonly program="$(basename "${0}")"
 
 function usage {
   echo "
-    usage: ${program} <color> <file...>
+    Usage: ${program} <color> <file...>
 
-    Available color options:
+    Available color Options:
       none (removes label), orange, red, yellow, blue, purple, green, gray
   " | sed -E 's/^ {4}//'
 }
