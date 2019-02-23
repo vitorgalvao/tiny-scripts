@@ -14,7 +14,8 @@ IFS=$'\n'
 # Shown with '-h', or when no arguments are given
 function usage {
   echo "
-    Usage: ${program} [options] <files>
+    Usage:
+      ${program} [options] <files>
 
     Options:
       -s <num>, --starting-number <num>   Sets starting number for the sequence (defaults to 1).
