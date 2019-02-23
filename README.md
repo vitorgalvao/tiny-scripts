@@ -68,6 +68,9 @@ Overlay a progress bar on videos or gifs
 ### ringtonemaker
 Script to convert a video or audio file to an iPhone ringtone
 
+### rtp-download
+Script to download videos from [RTP Play](https://www.rtp.pt/play/)
+
 ### seren
 Script to rename files in a numerical sequence
 
