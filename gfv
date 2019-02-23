@@ -38,7 +38,8 @@ function get_output_path {
 
 function usage {
   echo "
-    Usage: ${program} [options] <file>
+    Usage:
+      ${program} [options] <file>
 
     Options:
       -f <integer>, --fps <integer>          Frames per second. Default is auto-detected from video, capped at ${cap_fps}.
