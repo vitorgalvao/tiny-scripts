@@ -7,7 +7,7 @@ CRAFTSCUTFILE="/tmp/crafts-cutfile"
 # usage
 usage() {
 echo "
-  usage: ccrafts <input>    Files and directories to copy (takes multiple arguments).
+  Usage: ccrafts <input>    Files and directories to copy (takes multiple arguments).
          xcrafts <input>    Files and directories to move (takes multiple arguments).
          vcrafts <output>   Directory to move and copy files and directories to (if no argument is given, it uses the current directory).
          ecrafts            Edits copy and move lists.
