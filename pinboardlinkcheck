@@ -12,11 +12,11 @@ function syntax_error {
 # Instructions
 function usage {
   echo "
-    usage: ${program} [options]
+    Usage: ${program} [options]
 
     'token' options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
 
-    options:
+    Options:
       -r, --redirect-log      If set, links with 301 (Moved permanently) will be on their own log.
       -l, --log-dir <dir>     Directory to save logs to. Defaults to the home directory.
       -i, --include-unread    Also check unread bookmarks.
