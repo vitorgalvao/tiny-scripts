@@ -11,11 +11,11 @@ function syntax_error {
 # Instructions
 function usage {
   echo "
-    usage: ${program} [options]
+    Usage: ${program} [options]
 
     'token' options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
 
-    options:
+    Options:
       -i, --include-unread    Also save unread bookmarks.
       -t, --token <token>     Your Pinboard API token.
       -a, --ask-for-token     Ask for your Pinboard API token on start.
