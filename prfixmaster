@@ -23,9 +23,9 @@ syntax_error() {
 
 usage() {
   echo "
-    usage: ${program} [options] <github_pull_request_url>
+    Usage: ${program} [options] <github_pull_request_url>
 
-    options:
+    Options:
       -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
       -c, --continue                   Use after making your fixes, to push your changes and close the issue with a message. If you use it with uncommitted changes, they'll all be squashed (fixup) into the original patch; else your commits will be preserved.
       -n, --no-squash                  Do not squash commits before pushing.
