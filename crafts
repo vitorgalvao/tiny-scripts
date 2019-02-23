@@ -6,12 +6,13 @@ CRAFTSCUTFILE="/tmp/crafts-cutfile"
 
 # usage
 usage() {
-echo "
-  Usage: ccrafts <input>    Files and directories to copy (takes multiple arguments).
-         xcrafts <input>    Files and directories to move (takes multiple arguments).
-         vcrafts <output>   Directory to move and copy files and directories to (if no argument is given, it uses the current directory).
-         ecrafts            Edits copy and move lists.
-  " | sed -E 's/^ {4}//'
+  echo "
+    Usage:
+      ccrafts <input>    Files and directories to copy (takes multiple arguments).
+      xcrafts <input>    Files and directories to move (takes multiple arguments).
+      vcrafts <output>   Directory to move and copy files and directories to (if no argument is given, it uses the current directory).
+      ecrafts            Edits copy and move lists.
+    " | sed -E 's/^ {4}//'
 }
 
 ccrafts() {
