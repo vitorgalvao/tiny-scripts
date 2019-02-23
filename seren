@@ -14,9 +14,9 @@ IFS=$'\n'
 # Shown with '-h', or when no arguments are given
 function usage {
   echo "
-    usage: \$1 [options] <files>
+    Usage: ${program} [options] <files>
 
-    options:
+    Options:
       -s <num>, --starting-number <num>   Sets starting number for the sequence (defaults to 1).
       -l <num>, --leading-zeros <num>     Sets the amount of leading zeros (defaults to what'll accomodate the number of files).
       -p <string>, --prepend <string>     Sets name to prepend to the sequence number (defaults to nothing).
