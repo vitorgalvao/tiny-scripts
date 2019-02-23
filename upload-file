@@ -51,6 +51,11 @@ while [[ "${1}" ]]; do
       UPLOAD_FILE_TO="${2}"
       shift
       ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
     -*)
       syntax_error "unrecognized option: ${1}"
       ;;
