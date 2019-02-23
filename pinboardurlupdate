@@ -25,7 +25,8 @@ OptionParser.new do |opt|
 
     "token" options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
 
-    Usage: #{$PROGRAM_NAME} [options] <file>
+    Usage:
+      #{File.basename($PROGRAM_NAME)} [options] <file>
 
     Options:
   EOS
