@@ -25,9 +25,9 @@ OptionParser.new do |opt|
 
     "token" options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
 
-    usage: #{$PROGRAM_NAME} [options] <file>
+    Usage: #{$PROGRAM_NAME} [options] <file>
 
-    options:
+    Options:
   EOS
 
   opt.on('-t <token>', '--token <token>', 'Your Pinboard API token.') { |t| options[:token] = t }
