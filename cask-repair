@@ -71,7 +71,8 @@ function require_hub {
 
 function usage {
   echo "
-    Usage: ${program} [options] <cask_name>
+    Usage:
+      ${program} [options] <cask_name>
 
     Options:
       -o, --open-home                        Open the homepage for the given cask.
