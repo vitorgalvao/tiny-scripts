@@ -48,9 +48,9 @@ function syntax_error {
 
 function usage {
   echo "
-    usage: ${program} [options] <file...>
+    Usage: ${program} [options] <file...>
 
-    options:
+    Options:
       -c, --bar-color <color>           Default: #f12b24.
       -s, --bar-height <integer>        Bar’s height as a percent of the total height. Default: 1.
       -p, --bar-position [top|bottom]   Default: bottom.
