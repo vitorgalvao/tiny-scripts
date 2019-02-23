@@ -25,7 +25,8 @@ function syntax_error {
 
 function usage {
   echo "
-    Usage: ${program} [options] <path>
+    Usage:
+      ${program} [options] <path...>
 
     Upload files and directories to a file hosting service.
     If multiple files or a directory are given, they will be zipped beforehand.
