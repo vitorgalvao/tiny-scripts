@@ -107,7 +107,7 @@ function extract_title {
   readonly file_name="${1}"
   readonly book_dir="${2}"
 
-  readonly book_title="$(exiftool -ignoreMinorErrors -binary -title "${file_name}")"
+  readonly book_title="$(exiftool -ignoreMinorErrors -binary -album "${file_name}")"
   [[ -n "${book_title}" ]] && echo -n "${book_title}" || sed 's/_/:/g' < <(basename "${book_dir}")
 }
 
