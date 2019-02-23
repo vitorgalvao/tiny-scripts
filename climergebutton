@@ -11,7 +11,8 @@ function syntax_error {
 
 function usage {
   echo "
-    Usage: ${program} --token <github_token> [options] <github_pull_request_url>
+    Usage:
+      ${program} --token <github_token> [options] <github_pull_request_url>
 
     Multiple <github_pull_request_url> can be given, and will be processed in sequence.
 
