@@ -22,11 +22,11 @@ syntax_error() {
 
 usage() {
   echo "
-    usage: ${program} [options] <github_pull_request_url>
+    Usage: ${program} [options] <github_pull_request_url>
 
     Multiple <github_pull_request_url> can be given, and will be processed in sequence.
 
-    options:
+    Options:
       -m, --maintainer                 Use when merging a contribution from a maintainer.
       -r <remote>, --remote <remote>   Use to specify a remote to pull from and push to (defaults to 'upstream').
       -n, --no-squash                  Do not squash commits before pushing.
