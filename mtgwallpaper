@@ -33,7 +33,9 @@ function create_default_config {
 
 function usage {
   echo "
-    Usage: ${program} [options]
+    Usage:
+      ${program} [options]
+
     Options:
       -i, --init       Create a settings file with sensible defaults (overwrites any existing one) and exit.
       -e, --edit       Open the configuration file in a text editor and exit.
