@@ -8,7 +8,14 @@ ARGV.push('--help') if ARGV.empty?
 
 options = {}
 OptionParser.new do |opt|
-  opt.banner = "Output total running time of files in a human-readable way.\n\nUsage: #{$PROGRAM_NAME} [options] <path...>\n\nOptions:"
+  opt.banner = <<~EOS
+    Output total running time of files in a human-readable way.
+
+    Usage:
+      #{File.basename($PROGRAM_NAME)} [options] <path...>
+
+    Options:
+  EOS
 
   opt.on('-u [s|d|h|m]', '--unit [s|d|h|m]', 'Output a whole number of the total time rounded to the unit.') { |unit| options[:unit] = unit }
   opt.on('-p [s|d|h|m]', '--precision [s|d|h|m]', 'Output human-readable result rounded and truncated to the chosen unit. Values of zero are ommited.') { |unit| options[:precision] = unit }
