@@ -13,7 +13,8 @@ syntax_error() {
 
 usage() {
   echo "
-    Usage: ${program} [options] <github_pull_request_url>
+    Usage:
+      ${program} [options] <github_pull_request_url>
 
     Options:
       -r <remote>, --remote <remote>   Use to specify a remote to push to (defaults to 'upstream').
