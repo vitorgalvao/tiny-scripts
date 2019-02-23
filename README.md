@@ -77,6 +77,9 @@ Script to rename files in a numerical sequence
 ### strongpassword
 Script to get a strong password by leveraging multiple sources
 
+### upload-file
+Script to upload paths, with support for several file hosts
+
 ### workflows-renamer
 Script to rename unpackaged [Alfred](https://www.alfredapp.com/) Workflows in the preferences directory after their name and bundle ID
 
