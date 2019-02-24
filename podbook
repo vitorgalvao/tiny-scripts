@@ -255,7 +255,7 @@ function main {
   local book_dir book_feed first_audio_file book_title book_author book_cover file_counter file_time file_duration file_mime file_size item_title file_url
   readonly book_dir="$(absolutepath "${1}")"
   fail_unless_dir "${book_dir}"
-  readonly book_feed="${extraction_dir}/feed.rss"
+  book_feed="${extraction_dir}/feed.rss"
 
   readonly first_audio_file="$(find -E "${book_dir}" -iregex "${audio_files_regex}" | head -1)"
   [[ -n "${given_title}" ]] && readonly book_title="${given_title}" || readonly book_title="$(extract_title "${first_audio_file}" "${book_dir}")"
