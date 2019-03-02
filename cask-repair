@@ -27,6 +27,7 @@ function color_message {
     if [[ "${all_colors[${i}]}" == "${color}" ]]; then
       local color_index="${i}"
       echo -e "$(tput setaf "${i}")${message}$(tput sgr0)"
+      break
     fi
   done
 
