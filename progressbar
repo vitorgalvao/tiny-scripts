@@ -110,7 +110,7 @@ set -- "${args[@]}"
 
 trap 'exit 1' SIGINT
 
-depends_on convert identify ffmpeg ffprobe gfv
+depends_on 'convert' 'identify' 'ffmpeg' 'ffprobe' 'gfv'
 
 # Determine if working from images or video
 [[ "${#}" -eq 0 ]] && wrong_arguments
