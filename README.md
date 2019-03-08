@@ -32,6 +32,9 @@ Script to change label color of files in macOS
 ### linux-usb
 Script to facilitate installing Linux on a USB stick, from macOS
 
+### lossless-compress
+Script to losslessly compress files
+
 ### lovecolor
 Script to get color palette from colourlovers and format it to use in processing
 

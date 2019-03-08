@@ -1,0 +1,64 @@
+#!/bin/bash
+
+readonly program="$(basename "${0}")"
+readonly formats=('JPEG' 'PNG' 'GIF' 'SVG')
+
+function depends_on {
+  readonly local all_deps=("${@}")
+  local missing_deps=()
+
+  for dep in "${all_deps[@]}"; do
+    command -v "${dep}" &>/dev/null || missing_deps+=("${dep}")
+  done
+
+  if [[ "${#missing_deps[@]}" -gt 0 ]]; then
+    tput setaf 1
+    echo -e '\nThis script has unmet dependencies. You need to install these first:'
+    printf '  %s\n' "${missing_deps[@]}"
+    tput sgr0
+    exit 1
+  fi
+}
+
+function usage {
+  echo "
+    Losslessly compress files. Supported formats:
+      ${formats[*]}
+
+    Usage:
+      ${program} <file...>
+
+    Options:
+      -h, --help   Show this help.
+  " | sed -E 's/^ {4}//'
+}
+
+if [[ "${#}" -lt 1 ]]; then
+  usage
+  exit 1
+fi
+
+if [[ "${1}" == '-h' ]] || [[ "${1}" == '--help' ]]; then
+  usage
+  exit 0
+fi
+
+depends_on 'jpegtran' 'optipng' 'gifsicle' 'svgcleaner'
+
+for image_file in "${@}"; do
+  echo "Compressing ${image_file}…"
+
+  file_type="$(file --brief "${image_file}" | cut -d' ' -f1)"
+
+  if [[ "${file_type}" == 'JPEG' ]]; then
+    jpegtran -copy none -optimize -progressive -outfile "${image_file}" "${image_file}"
+  elif [[ "${file_type}" == 'PNG' ]]; then
+    optipng -quiet -o7 "${image_file}"
+  elif [[ "${file_type}" == 'GIF' ]]; then
+    gifsicle --optimize=3 --batch "${image_file}"
+  elif [[ "${file_type}" == 'SVG' ]]; then
+    svgcleaner --quiet "${image_file}" "${image_file}"
+  else
+    echo "'${file_type}' is not a supported image type."
+  fi
+done
