@@ -8,6 +8,9 @@ To support my continued open-source work, pick a method:
 
 The easiest way to get these is via [this repository](https://github.com/vitorgalvao/homebrew-tiny-scripts), as the install will take care of any eventual dependencies that are not already available on your system.
 
+### cask-analytics
+Script to show analytics information for casks in the main taps
+
 ### cask-repair
 Script to quickly repair outdated/broken Casks from homebrew-cask
 

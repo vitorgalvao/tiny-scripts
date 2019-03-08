@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+require 'date'
+require 'json'
+require 'open-uri'
+require 'open3'
+require 'optionparser'
+
+# Options
+ARGV.push('--help') if ARGV.empty?
+
+options = {}
+OptionParser.new do |opt|
+  opt.banner = <<~EOS
+    Show analytics information for casks in the main taps.
+
+    Usage:
+      #{File.basename($PROGRAM_NAME)} <cask_name>
+  EOS
+end.parse!
+
+ARGV.each do |cask_name|
+  cask_path = Dir.glob(Open3.capture2('brew', '--prefix').first.strip + '/Homebrew/Library/Taps/homebrew/homebrew-cask*/Casks/' + cask_name + '.rb').first
+
+  abort 'Did not find any cask locally named ' + cask_name if cask_path.nil?
+
+  cask_tap_dir = File.dirname(File.dirname(cask_path))
+  cask_added_date = Open3.capture2('git', '-C', cask_tap_dir, 'log', '--diff-filter=A', '--max-count=1', '--format=%aI', cask_path).first.strip
+
+  puts cask_name + ' (added ' + (Date.today - Date.parse(cask_added_date)).to_i.to_s + ' days ago)'
+
+  analytics_dir = '/tmp/cask-analytics'
+  Dir.mkdir(analytics_dir) unless Dir.exist?(analytics_dir)
+
+  %w[30 90 365].each do |days|
+    json_file = File.join(analytics_dir, days + 'd.json')
+    File.write(json_file, URI.parse('https://formulae.brew.sh/api/analytics/cask-install/' + days + 'd.json').read) unless File.exist?(json_file)
+
+    analytics = JSON.parse(File.read(json_file))['items']
+    cask_info = analytics.select { |hash| hash['cask'] == cask_name }.first
+
+    print days + ' days: '
+    puts cask_info.nil? ? 'n/a' : cask_info['count'] + ' (#' + cask_info['number'].to_s + ')'
+  end
+
+  puts # Empty line to separate multiple casks
+end
