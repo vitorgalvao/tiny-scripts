@@ -11,48 +11,57 @@ function syntax_error {
 function usage {
   echo "
     Usage:
-      ${program} --token <github_token> [options] <github_pull_request_url>
+      ${program} [options] <github_pull_request_url>
 
     Multiple <github_pull_request_url> can be given, and will be processed in sequence.
 
     Options:
-      -t, --token          Github token to use when merging.
       -m, --merge-method   'merge', 'squash', or 'rebase'. Defaults to '${default_merge_strategy}'.
+      -t, --ensure-token   'Ask to save GitHub token if there is none, and exit.'
       -h, --help           Show this help.
   " | sed -E 's/^ {4}//'
 }
 
-# available flags
-args=()
-while [[ "${1}" ]]; do
-  case "${1}" in
-    -h | --help)
-      usage
-      exit 0
-      ;;
-    -t | --token)
-      github_token="${2}"
-      shift
-      ;;
-    -m | --merge-method)
-      merge_strategy="${2}"
-      shift
-      ;;
-    --)
-      shift
-      args+=("${@}")
-      break
-      ;;
-    -*)
-      syntax_error "unrecognized option: ${1}"
-      ;;
-    *)
-      args+=("${1}")
-      ;;
-  esac
-  shift
-done
-set -- "${args[@]}"
+function get_github_token {
+  # Common details for setting and retrieving
+  github_keychain_token_details=(-s "${program} github token")
+
+  # Check if we already have a token set
+  github_token="$(security find-generic-password -w "${github_keychain_token_details[@]}" 2>/dev/null)"
+
+  if [[ -n "${github_token}" ]]; then
+    echo "${github_token}"
+    return 0
+  fi
+
+  # If we get here, there was no token set and we need to request one
+  echo 'We need to create a new GitHub token to continue the script.' >&2
+
+  read -rp "Github username: " github_username
+  read -rsp "Github password (never stored): " github_password
+  echo >&2
+
+  request=(curl --silent 'https://api.github.com/authorizations' --user "${github_username}:${github_password}" --data "{\"scopes\":[\"repo\"],\"note\":\"${program} for ${USER} on $(scutil --get LocalHostName)\"}")
+
+  response="$("${request[@]}")"
+
+  while grep --quiet 'Must specify two-factor authentication OTP code.' <<< "${response}"; do
+    read -rp '2FA code: ' otp
+    response="$("${request[@]}" --header "X-GitHub-OTP: ${otp}")"
+  done
+
+  if ! grep --quiet '"token"' <<< "${response}"; then
+    echo -e "\n${response}" >&2
+    exit 1
+  fi
+
+  github_token="$(grep 'token' <<< "${response}" | head -1 | cut -d'"' -f4)"
+
+  security add-generic-password -a "${github_username}" -w "${github_token}" "${github_keychain_token_details[@]}"
+  echo 'Saved GitHub token to Keychain.' >&2
+
+  echo "${github_token}"
+}
 
 function merge_pr {
   local url owner repo pr_number response
@@ -75,8 +84,43 @@ function merge_pr {
   fi
 }
 
-# Abort if no argument was given or no token was present
-if [[ "${#}" -eq 0 ]] || [[ -z "${github_token}" ]]; then
+# available flags
+args=()
+while [[ "${1}" ]]; do
+  case "${1}" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -m | --merge-method)
+      merge_strategy="${2}"
+      shift
+      ;;
+    -t | --ensure-token)
+      ask_for_token='true'
+      ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
+    -*)
+      syntax_error "unrecognized option: ${1}"
+      ;;
+    *)
+      args+=("${1}")
+      ;;
+  esac
+  shift
+done
+set -- "${args[@]}"
+
+readonly github_token="$(get_github_token)"
+
+[[ -n "${ask_for_token}" ]] && exit 0
+
+# Abort if no argument was given
+if [[ "${#}" -eq 0 ]]; then
   usage
   exit 1
 fi
