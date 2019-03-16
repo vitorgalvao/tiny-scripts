@@ -67,9 +67,9 @@ function merge_pr {
   local url owner repo pr_number response
 
   url="$(perl -pe 's|(.*/pull/\d+).*|\1|' <<< "${1}")"
-  owner="$(awk -F '/' '{print $4}' <<< "${url}")"
-  repo="$(awk -F '/' '{print $5}' <<< "${url}")"
-  pr_number="$(awk -F '/' '{print $7}' <<< "${url}")"
+  owner="$(cut -d'/' -f4 <<< "${url}")"
+  repo="$(cut -d'/' -f5 <<< "${url}")"
+  pr_number="$(cut -d'/' -f7 <<< "${url}")"
 
   echo -n "Merging ${owner}/${repo}/${pr_number}… "
 
