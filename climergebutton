@@ -23,11 +23,18 @@ function usage {
 }
 
 function get_github_token {
-  # Common details for setting and retrieving
-  github_keychain_token_details=(-s "${program} github token")
+  readonly local operating_system="$(uname -s)"
 
   # Check if we already have a token set
-  github_token="$(security find-generic-password -w "${github_keychain_token_details[@]}" 2>/dev/null)"
+  local github_token
+
+  if [[ "${operating_system}" == 'Darwin' ]]; then
+    github_token="$(security find-generic-password -s "${program} github token" -w 2>/dev/null)"
+  else
+    local token_file
+    [[ -n "${XDG_CONFIG_HOME}" ]] && token_file="${XDG_CONFIG_HOME}/climergebutton/token" || token_file="${HOME}/.config/climergebutton/token"
+    [[ -f "${token_file}" ]] && github_token="$(< "${token_file}")" || github_token=''
+  fi
 
   if [[ -n "${github_token}" ]]; then
     echo "${github_token}"
@@ -37,13 +44,16 @@ function get_github_token {
   # If we get here, there was no token set and we need to request one
   echo 'We need to create a new GitHub token to continue the script.' >&2
 
+  readonly local machine_name="$(hostname -s)"
+
+  local github_username github_password
   read -rp "Github username: " github_username
   read -rsp "Github password (never stored): " github_password
   echo >&2
 
-  request=(curl --silent 'https://api.github.com/authorizations' --user "${github_username}:${github_password}" --data "{\"scopes\":[\"repo\"],\"note\":\"${program} for ${USER} on $(scutil --get LocalHostName)\"}")
+  readonly local request=(curl --silent 'https://api.github.com/authorizations' --user "${github_username}:${github_password}" --data "{\"scopes\":[\"repo\"],\"note\":\"${program} for ${USER} on ${machine_name}\"}")
 
-  response="$("${request[@]}")"
+  local response="$("${request[@]}")"
 
   while grep --quiet 'Must specify two-factor authentication OTP code.' <<< "${response}"; do
     read -rp '2FA code: ' otp
@@ -57,8 +67,12 @@ function get_github_token {
 
   github_token="$(grep 'token' <<< "${response}" | head -1 | cut -d'"' -f4)"
 
-  security add-generic-password -a "${github_username}" -w "${github_token}" "${github_keychain_token_details[@]}"
-  echo 'Saved GitHub token to Keychain.' >&2
+  if [[ "${operating_system}" == 'Darwin' ]]; then
+    security add-generic-password -s "${program} github token" -a "${github_username}" -w "${github_token}"
+  else
+    mkdir -p "$(basename "${token_file}")"
+    echo "${github_password}" > "${token_file}"
+  fi
 
   echo "${github_token}"
 }
