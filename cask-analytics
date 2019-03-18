@@ -15,8 +15,12 @@ OptionParser.new do |opt|
     Show analytics information for casks in the main taps.
 
     Usage:
-      #{File.basename($PROGRAM_NAME)} <cask_name>
+      #{File.basename($PROGRAM_NAME)} [options] <cask_name>
+
+    Options:
   EOS
+
+  opt.on('-a', '--no-age', 'Do not show when cask was added (faster output).') { options[:suppress_age] = true }
 end.parse!
 
 ARGV.each do |cask_name|
@@ -25,9 +29,16 @@ ARGV.each do |cask_name|
   abort 'Did not find any cask locally named ' + cask_name if cask_path.nil?
 
   cask_tap_dir = File.dirname(File.dirname(cask_path))
-  cask_added_date = Open3.capture2('git', '-C', cask_tap_dir, 'log', '--diff-filter=A', '--max-count=1', '--format=%aI', cask_path).first.strip
 
-  puts cask_name + ' (added ' + (Date.today - Date.parse(cask_added_date)).to_i.to_s + ' days ago)'
+  added_message =
+    if options[:suppress_age]
+      ''
+    else
+      cask_added_date = Open3.capture2('git', '-C', cask_tap_dir, 'log', '--diff-filter=A', '--max-count=1', '--format=%aI', cask_path).first.strip
+      ' (added ' + (Date.today - Date.parse(cask_added_date)).to_i.to_s + ' days ago)'
+    end
+
+  puts cask_name + added_message
 
   analytics_dir = '/tmp/cask-analytics'
   Dir.mkdir(analytics_dir) unless Dir.exist?(analytics_dir)
