@@ -34,7 +34,7 @@ ARGV.each do |cask_name|
     if options[:suppress_age]
       ''
     else
-      system('git', '-C', cask_tap_dir, 'fetch', '--unshallow') if Open3.capture2('git', 'rev-parse', '--is-shallow-repository').first.strip == 'true'
+      system('git', '-C', cask_tap_dir, 'fetch', '--unshallow') if Open3.capture2('git', '-C', cask_tap_dir, 'rev-parse', '--is-shallow-repository').first.strip == 'true'
       cask_added_date = Open3.capture2('git', '-C', cask_tap_dir, 'log', '--diff-filter=A', '--max-count=1', '--format=%aI', cask_path).first.strip
       ' (added ' + (Date.today - Date.parse(cask_added_date)).to_i.to_s + ' days ago)'
     end
