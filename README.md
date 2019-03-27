@@ -8,9 +8,6 @@ To support my continued open-source work, pick a method:
 
 The easiest way to get these is via [this repository](https://github.com/vitorgalvao/homebrew-tiny-scripts), as the install will take care of any eventual dependencies that are not already available on your system.
 
-### alfred-workflows-renamer
-Script to rename unpackaged [Alfred](https://www.alfredapp.com/) Workflows in the preferences directory after their name and bundle ID
-
 ### cask-analytics
 Script to show analytics information for casks in the main taps
 
