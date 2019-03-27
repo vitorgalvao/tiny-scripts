@@ -1,6 +1,18 @@
 #!/bin/bash
 
-readonly workflows_dir_path_form='Alfred.alfredpreferences/workflows'
+readonly program="$(basename "${0}")"
+
+function usage {
+  echo "
+    Usage:
+      ${program} run
+
+    The single argument 'run' is necessary to prevent running the script by mistake.
+
+    Options:
+      -h, --help   Show this help.
+  " | sed -E 's/^ {4}//'
+}
 
 function skip {
   echo -e "$(tput setaf 3)${1} Skipping…$(tput sgr0)"
@@ -11,10 +23,22 @@ function failure {
   exit 1
 }
 
-[[ "${#}" -eq 1 ]] || failure 'This script takes exactly one argument: the path to your Workflows directory.'
-readonly workflows_dir="${1}"
-[[ -d "${workflows_dir}" ]] || failure "${workflows_dir} is not a directory."
-[[ "${workflows_dir}" == *"${workflows_dir_path_form}"* ]] || failure "Does not appear to be a Workflows directory, as it does not conform to ${workflows_dir_path_form}."
+if [[ "${1}" =~ ^(-h|--help)$ ]]; then
+  usage
+  exit 0
+fi
+
+if [[ "${1}" != 'run' ]]; then
+  usage
+  exit 1
+fi
+
+# Get Workflows directory
+readonly sync_dir_pref="$(defaults read com.runningwithcrayons.Alfred-Preferences-3 'syncfolder' 2>/dev/null | sed "s|^~|${HOME}|")"
+[[ -n "${sync_dir_pref}" ]] && readonly sync_dir="${sync_dir_pref}" || readonly sync_dir="${HOME}/Library/Application Support/Alfred 3"
+readonly workflows_dir="${sync_dir}/Alfred.alfredpreferences/workflows"
+
+echo "Running in ${workflows_dir}…"
 
 for dir in "${workflows_dir}"/*; do
   [[ -f "${dir}" ]] && continue
