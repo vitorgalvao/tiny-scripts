@@ -454,7 +454,7 @@ for cask in "${@}"; do
   require_correct_origin
   ensure_cask_repair_remote
 
-  has_language_stanza? "${cask_file}" && abort "${cask_name} has a language stanza. It cannot be updated via this script."
+  has_language_stanza? "${cask_file}" && abort "${cask_name} has a language stanza. It cannot be updated via this script. Try update_multilangual_casks: https://github.com/Homebrew/homebrew-cask/blob/master/developer/bin/update_multilangual_casks"
 
   git rev-parse --verify "${cask_branch}" &>/dev/null && git checkout "${cask_branch}" --quiet || git checkout -b "${cask_branch}" --quiet # Create branch or checkout if it already exists
 
