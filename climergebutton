@@ -17,7 +17,7 @@ function usage {
 
     Options:
       -m, --merge-method   'merge', 'squash', or 'rebase'. Defaults to '${default_merge_strategy}'.
-      -t, --ensure-token   'Ask to save GitHub token if there is none, and exit.'
+      -t, --ensure-token   Ask to save GitHub token if there is none, and exit.
       -h, --help           Show this help.
   " | sed -E 's/^ {4}//'
 }
