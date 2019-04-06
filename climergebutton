@@ -32,7 +32,7 @@ function get_github_token {
     github_token="$(security find-generic-password -s "${program} github token" -w 2>/dev/null)"
   else
     local token_file
-    [[ -n "${XDG_CONFIG_HOME}" ]] && token_file="${XDG_CONFIG_HOME}/climergebutton/token" || token_file="${HOME}/.config/climergebutton/token"
+    [[ -n "${XDG_CONFIG_HOME}" ]] && token_file="${XDG_CONFIG_HOME}/${program}/token" || token_file="${HOME}/.config/${program}/token"
     [[ -f "${token_file}" ]] && github_token="$(< "${token_file}")" || github_token=''
   fi
 
