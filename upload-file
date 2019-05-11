@@ -24,15 +24,15 @@ function syntax_error {
 
 function usage {
   echo "
-    Usage:
-      ${program} [options] <path...>
-
     Upload files and directories to a file hosting service.
     If multiple files or a directory are given, they will be zipped beforehand.
     To set a host as the default, export UPLOAD_FILE_TO in your shell.
 
     Valid hosts:
       $(printf '\n      %s' "${hosts[@]}")
+
+    Usage:
+      ${program} [options] <path...>
 
     Options:
       -u, --upload-host <host>   File host to upload to. Defaults to ${default_host}.
