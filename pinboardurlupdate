@@ -21,12 +21,12 @@ ARGV.push('--help') if ARGV.empty?
 options = {}
 OptionParser.new do |opt|
   opt.banner = <<~EOS
-    Substitute URLs of Pinboard bookmarks. Interacts with the files produced by "pinboardlinkcheck": text file, each line following the pattern "old_url → new_url".
-
-    "token" options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
+    Substitute URLs of Pinboard bookmarks. Interacts with the files produced by "pinboardlinkcheck": text file, each line following the pattern 'old_url → new_url'.
 
     Usage:
       #{File.basename($PROGRAM_NAME)} [options] <file>
+
+    'token' options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
 
     Options:
   EOS
