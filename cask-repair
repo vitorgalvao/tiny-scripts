@@ -441,8 +441,13 @@ fi
 
 require_hub
 ensure_caskroom_repos
-echo -n 'Updating taps… '
-brew update
+
+if [[ -z "${HOMEBREW_NO_AUTO_UPDATE}" ]]; then
+  brew update
+  echo -n 'Updating taps… '
+else
+  warning_message "You have set 'HOMEBREW_NO_AUTO_UPDATE'. If ${program} fails, unset it and retry your command before submitting a bug report."
+fi
 
 for cask in "${@}"; do
   # Clean the cask's name, and check if it is valid
