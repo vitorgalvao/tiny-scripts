@@ -18,9 +18,9 @@ function syntax_error {
 }
 
 function get_output_path {
-  input_path="${1}"
-  output_path="${2}"
   readonly local file_format='gif'
+  readonly local input_path="${1}"
+  local output_path="${2}"
 
   if [[ -n "${output_path}" ]]; then
     [[ "${output_path##*.}" == "${file_format}" ]] && echo "${output_path}" || echo "${output_path}.${file_format}"
@@ -58,20 +58,20 @@ while [[ "${1}" ]]; do
       exit 0
       ;;
     -f | --fps)
-      chosen_fps="${2}"
+      readonly chosen_fps="${2}"
       shift
       ;;
     -w | --width)
-      width="${2}"
+      readonly width="${2}"
       shift
       ;;
     -o | --output-file)
-      given_output_path="${2}"
+      readonly given_output_path="${2}"
       shift
       ;;
     -g | --gifski)
       depends_on 'gifski'
-      use_gifski='true'
+      readonly use_gifski='true'
       ;;
     --)
       shift
@@ -94,8 +94,8 @@ if [[ "${#}" -eq 0 ]]; then
   exit 1
 fi
 
-input_file="${1}"
-output_file="$(get_output_path "${input_file}" "${given_output_path}")"
+readonly input_file="${1}"
+readonly output_file="$(get_output_path "${input_file}" "${given_output_path}")"
 
 depends_on 'ffmpeg'
 
@@ -103,17 +103,17 @@ depends_on 'ffmpeg'
 if [[ -z "${chosen_fps}" ]]; then
   depends_on 'ffprobe'
 
-  video_fps="$(ffprobe -loglevel error -select_streams v:0 -of default=noprint_wrappers=1:nokey=1 -show_entries stream=r_frame_rate "${input_file}" | bc)"
-  fps="$([[ "${video_fps}" -gt "${cap_fps}" ]] && echo "${cap_fps}" || echo "${video_fps}")"
+  readonly video_fps="$(ffprobe -loglevel error -select_streams v:0 -of default=noprint_wrappers=1:nokey=1 -show_entries stream=r_frame_rate "${input_file}" | bc)"
+  readonly fps="$([[ "${video_fps}" -gt "${cap_fps}" ]] && echo "${cap_fps}" || echo "${video_fps}")"
 else
-  fps="${chosen_fps}"
+  readonly fps="${chosen_fps}"
 fi
 
 # Make the animated gif
 if [[ -z "${use_gifski}" ]]; then
   [[ -z "${width}" ]] && width='-1' # Make width same as original video, if none given
 
-  palette="$(mktemp).png"
+  readonly palette="$(mktemp).png"
   ffmpeg -i "${input_file}" -filter_complex "fps=${fps},scale=${width}:-1:flags=lanczos,palettegen" "${palette}"
   ffmpeg -i "${input_file}" -i "${palette}" -filter_complex "fps=${fps},scale=${width}:-1:flags=lanczos[x];[x][1:v]paletteuse" "${output_file}"
 else
