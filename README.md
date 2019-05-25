@@ -44,6 +44,9 @@ Script to get color palette from colourlovers and format it to use in processing
 ### macspoof
 Script to spoof the MAC address
 
+### makeicns
+Script to make an icns file from a png
+
 ### mtgwallpaper
 Script to download Magic: The Gathering wallpapers
 

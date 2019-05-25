@@ -1,0 +1,90 @@
+#!/bin/bash
+
+readonly program="$(basename "${0}")"
+
+function get_output_path {
+  readonly local file_format='icns'
+  readonly local input_path="${1}"
+  local output_path="${2}"
+
+  if [[ -n "${output_path}" ]]; then
+    [[ "${output_path##*.}" == "${file_format}" ]] && echo "${output_path}" || echo "${output_path}.${file_format}"
+  else
+    output_path="${input_path%.*}.${file_format}"
+
+    while [[ -e "${output_path}" ]]; do
+      output_path="${output_path%.*}_${RANDOM}.${file_format}"
+    done
+
+    echo "${output_path}"
+  fi
+}
+
+function usage {
+  echo "
+    Make an icns file from a png.
+
+    Usage:
+      ${program} [options] <file>
+
+    Options:
+      -o, --output-file <file>   File to output to. Default is saving next to the inpu
+t file with same name.
+      -h, --help                 Show this message.
+  " | sed -E 's/ {4}//'
+}
+
+# available flags
+args=()
+while [[ "${1}" ]]; do
+  case "${1}" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -o | --output-file)
+      readonly given_output_path="${2}"
+      shift
+      ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
+    -*)
+      syntax_error "unrecognized option: ${1}"
+      ;;
+    *)
+      args+=("${1}")
+      ;;
+  esac
+  shift
+done
+set -- "${args[@]}"
+
+if [[ "${1}" =~ ^(-h|--help)$ ]]; then
+  usage
+  exit 0
+fi
+
+if [[ "${#}" -eq 0 ]]; then
+  usage
+  exit 1
+fi
+
+readonly input_file="${1}"
+readonly output_file="$(get_output_path "${input_file}" "${given_output_path}")"
+readonly iconset="$(mktemp -d)"
+
+if [[ "$(mdls -raw -name 'kMDItemContentType' "${input_file}")" != 'public.png' ]]; then
+  echo 'Image needs to be a png.' >&2
+  exit 1
+fi
+
+for size in {16,32,64,128,256,512}; do
+  sips --resampleHeightWidth "${size}" "${size}" "${input_file}" --out "${iconset}/icon_${size}x${size}.png" &> /dev/null
+  sips --resampleHeightWidth "$((size * 2))" "$((size * 2))" "${input_file}" --out "${iconset}/icon_${size}x${size}@2x.png" &> /dev/null
+done
+
+mv "${iconset}" "${iconset}.iconset"
+iconutil --convert icns "${iconset}.iconset" --output "${output_file}"
