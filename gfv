@@ -18,17 +18,17 @@ function syntax_error {
 }
 
 function get_output_path {
-  local input_path output_path
   input_path="${1}"
   output_path="${2}"
+  readonly local file_format='gif'
 
   if [[ -n "${output_path}" ]]; then
-    [[ "${output_path##*.}" == 'gif' ]] && echo "${output_path}" || echo "${output_path}.gif"
+    [[ "${output_path##*.}" == "${file_format}" ]] && echo "${output_path}" || echo "${output_path}.${file_format}"
   else
-    output_path="${input_path%.*}.gif"
+    output_path="${input_path%.*}.${file_format}"
 
     while [[ -e "${output_path}" ]]; do
-      output_path="${output_path%.*}_${RANDOM}.gif"
+      output_path="${output_path%.*}_${RANDOM}.${file_format}"
     done
 
     echo "${output_path}"
