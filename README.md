@@ -8,85 +8,85 @@ To support my continued open-source work, pick a method:
 The easiest way to get these is via [this repository](https://github.com/vitorgalvao/homebrew-tiny-scripts), as the install will take care of any eventual dependencies that are not already available on your system.
 
 ### cask-analytics
-Script to show analytics information for casks in the main taps
+Show analytics information for casks in the main taps
 
 ### cask-repair
-Script to quickly repair outdated/broken Casks from homebrew-cask
+Quickly repair outdated/broken Casks from homebrew-cask
 
 ### climergebutton
-Script to merge [github](https://github.com/) pull requests via the merge button API
+Merge [github](https://github.com/) pull requests via the merge button API
 
 ### crafts
-Script to allow copy/cut/paste between different terminal windows (it’s meant to be sourced from the shell, not called directly)
+Allow copy/cut/paste between different terminal windows (it’s meant to be sourced from the shell, not called directly)
 
 ### fastmerge
-Script to quickly pull and push [github](https://github.com/) pull requests to keep commit history cleaner, merging directly to master and closing the pull request
+Quickly pull and push [github](https://github.com/) pull requests to keep commit history cleaner, merging directly to master and closing the pull request
 
 ### gfv (gif from video)
-Script to make animated gifs from a video file
+Make animated gifs from a video file
 
 ### human-media-time
-Script to calculate the total running time of multiple media files, presenting the output in a human-readable way
+Calculate the total running time of multiple media files, presenting the output in a human-readable way
 
 ### labelcolor
-Script to change label color of files in macOS
+Change label color of files in macOS
 
 ### linux-usb
-Script to facilitate installing Linux on a USB stick, from macOS
+Facilitate installing Linux on a USB stick, from macOS
 
 ### lossless-compress
-Script to losslessly compress files
+Losslessly compress files
 
 ### lovecolor
-Script to get color palette from colourlovers and format it to use in processing
+Get color palette from colourlovers and format it to use in processing
 
 ### macspoof
-Script to spoof the MAC address
+Spoof the MAC address
 
 ### makeicns
-Script to make an icns file from a png
+Make an icns file from a png
 
 ### mtgwallpaper
-Script to download Magic: The Gathering wallpapers
+Download Magic: The Gathering wallpapers
 
 ### pinboardbackup
-Script to backup all bookmarks in your [pinboard](https://pinboard.in/) account
+Backup all bookmarks in your [pinboard](https://pinboard.in/) account
 
 ### pinboardlinkcheck
-Script to check the status code of links saved in your [pinboard](https://pinboard.in/) account
+Check the status code of links saved in your [pinboard](https://pinboard.in/) account
 
 ### pinboardurlupdate
-Script to substitute URLs of [pinboard](https://pinboard.in/) bookmarks
+Substitute URLs of [pinboard](https://pinboard.in/) bookmarks
 
 ### pinboardwaybackmachine
-Script to add to the [wayback machine](https://archive.org/web/) links saved in your [pinboard](https://pinboard.in/) account
+Add to the [wayback machine](https://archive.org/web/) links saved in your [pinboard](https://pinboard.in/) account
 
 ### podbook
-Script to generate a podcast RSS feed for audiobooks
+Generate a podcast RSS feed for audiobooks
 
 ### prfixbranch
-Script to quickly pull, fix, and push [github](https://github.com/) pull requests, creating a new pull request with the fix
+Quickly pull, fix, and push [github](https://github.com/) pull requests, creating a new pull request with the fix
 
 ### prfixmaster
-Script to quickly pull, fix, and push [github](https://github.com/) pull requests, merging directly to master and closing the previous pull request
+Quickly pull, fix, and push [github](https://github.com/) pull requests, merging directly to master and closing the previous pull request
 
 ### progressbar
 Overlay a progress bar on videos or gifs
 
 ### ringtonemaker
-Script to convert a video or audio file to an iPhone ringtone
+Convert a video or audio file to an iPhone ringtone
 
 ### rtp-download
-Script to download videos from [RTP Play](https://www.rtp.pt/play/)
+Download videos from [RTP Play](https://www.rtp.pt/play/)
 
 ### seren
-Script to rename files in a numerical sequence
+Rename files in a numerical sequence
 
 ### strongpassword
-Script to get a strong password by leveraging multiple sources
+Get a strong password by leveraging multiple sources
 
 ### upload-file
-Script to upload paths, with support for several file hosts
+Upload paths, with support for several file hosts
 
 ---
 
