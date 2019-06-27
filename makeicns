@@ -28,8 +28,7 @@ function usage {
       ${program} [options] <file>
 
     Options:
-      -o, --output-file <file>   File to output to. Default is saving next to the inpu
-t file with same name.
+      -o, --output-file <file>   File to output to. Default is saving next to the input file with same name.
       -h, --help                 Show this message.
   " | sed -E 's/ {4}//'
 }
