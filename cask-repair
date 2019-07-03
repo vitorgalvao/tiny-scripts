@@ -539,7 +539,7 @@ for cask in "${@}"; do
     style_result="${?}"
     [[ "${style_result}" -ne 0 ]] && add_warning error "${style_message}"
 
-    audit_message=$(brew cask audit "${cask_file}" 2>/dev/null)
+    audit_message=$(brew cask audit --download --appcast --token-conflicts "${cask_file}" 2>/dev/null)
     audit_result="${?}"
     [[ "${audit_result}" -ne 0 ]] && add_warning error "${audit_message}"
 
