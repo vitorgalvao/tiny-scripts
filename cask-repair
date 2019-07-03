@@ -539,7 +539,7 @@ for cask in "${@}"; do
     style_result="${?}"
     [[ "${style_result}" -ne 0 ]] && add_warning error "${style_message}"
 
-    audit_message=$(brew cask audit "${cask_file}" 2>/dev/null)
+    audit_message=$(brew cask audit --appcast --token-conflicts "${cask_file}" 2>/dev/null)
     audit_result="${?}"
     [[ "${audit_result}" -ne 0 ]] && add_warning error "${audit_message}"
 
@@ -587,7 +587,7 @@ for cask in "${@}"; do
 
   # Commit, push, submit pull request, clean
   [[ "${old_cask_version}" == "${cask_version}" ]] && commit_message="Update ${cask_name}" || commit_message="Update ${cask_name} from ${old_cask_version} to ${cask_version}"
-  pr_message="${commit_message}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version."
+  pr_message="${commit_message}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download --appcast --token-conflicts {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version."
   [[ -n "${issue_to_close}" ]] && pr_message+="\n\nCloses #${issue_to_close}."
   [[ -n "${extra_message}" ]] && pr_message+="\n\n${extra_message}"
   submit_pr_from="${github_username}:${cask_branch}"
