@@ -3,7 +3,7 @@
 readonly program="$(basename "${0}")"
 export readonly MACOS_VERSION='10.14' # Latest macOS version, so commands like `fetch` are not dependent on the contributor’s OS
 readonly submit_pr_to='homebrew:master'
-readonly caskroom_origin_remote_regex='(https://|git@)github.com[/:]Homebrew/homebrew-cask'
+readonly caskroom_origin_remote_regex='(https://|(ssh://)?git@)github.com[/:]Homebrew/homebrew-cask'
 readonly caskroom_taps=(cask cask-versions cask-fonts cask-drivers)
 readonly caskroom_taps_dir="$(brew --repository)/Library/Taps/homebrew"
 readonly user_agent=(--user-agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10) https://brew.sh')
