@@ -1,7 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
-readonly hosts=('transfer.sh' 'bayfiles.com' 'anonfile.com' 'megaupload.nz' 'forumfiles.com')
+readonly hosts=('transfer.sh' 'alpha.transfer.sh' 'bayfiles.com' 'anonfile.com' 'megaupload.nz' 'forumfiles.com')
 readonly default_host="${hosts[0]}"
 
 function ascii_basename {
@@ -110,8 +110,8 @@ else
   upload_host="${default_host}"
 fi
 
-if [[ "${upload_host}" == 'transfer.sh' ]]; then
-  url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://transfer.sh/${file_name}")"
+if [[ "${upload_host}" =~ ^(alpha\.)?transfer\.sh$ ]]; then
+  url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}/${file_name}")"
 else
   url="$(curl --globoff --progress-bar --form "file=@${file_path}" "https://${upload_host}/api/upload" | ruby -e 'require "json"; data = JSON.parse(gets); abort "There was an error uploading" if data["status"] == false; puts data["data"]["file"]["url"]["full"]')"
 fi
