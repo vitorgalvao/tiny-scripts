@@ -118,37 +118,36 @@ depends_on 'convert' 'identify' 'ffmpeg' 'ffprobe' 'gfv'
 if [[ "${#}" -eq 1 ]]; then
   [[ "$(file --mime-type --brief "${1}")" != 'video'* ]] && wrong_arguments
 
-  readonly converting_from='video'
-  readonly tmp_ffmpeg_img_dir="$(mktemp -d)"
-
-  message 'Extracting images from video…'
-  ffmpeg -loglevel error -i "${1}" "${tmp_ffmpeg_img_dir}/image%9d.png"
-
-  readonly images=("${tmp_ffmpeg_img_dir}"/*)
+  readonly background_video="${1}"
 else
-  readonly converting_from='images'
+  readonly background_video="$(mktemp).mov"
   readonly images=("${@}")
 
   for file in "${images[@]}"; do
     [[ "$(file --mime-type --brief "${file}")" != 'image'* ]] && wrong_arguments
   done
+
+  readonly frame_delay="$(bc <<< "${seconds_delay} * 100")"
+
+  message 'Generating intermediary video file…'
+  convert -delay "${frame_delay}" "${images[@]}" "${background_video}"
 fi
 
 message 'Generating progress bar…'
-readonly total_steps="$(bc <<< "${#images[@]} - 1")" # Remove one from the total number of elements in the images array since we will start counting steps from 0. This is for the logic of having no bar on the first step and to map to the array correctly
+readonly total_frames="$(ffprobe -loglevel error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=nokey=1:noprint_wrappers=1 "${background_video}")"
+readonly total_steps="$(bc <<< "${total_frames} - 1")" # Remove one from the total since we will start counting steps from 0. This is for the logic of having no bar on the first step and to map to the array correctly.
 
-# Rely on first image for the size.
-readonly canvas_width="$(identify -format '%[fx:w]' "${images[0]}")"
-readonly canvas_height="$(identify -format '%[fx:h]' "${images[0]}")"
+readonly canvas_width="$(ffprobe -loglevel error -count_frames -show_entries stream=width -of default=nokey=1:noprint_wrappers=1 "${background_video}")"
+readonly canvas_height="$(ffprobe -loglevel error -count_frames -show_entries stream=height -of default=nokey=1:noprint_wrappers=1 "${background_video}")"
 readonly bar_height_px="$(bc <<< "${canvas_height} * ${bar_height_percent} / 100")"
 
 [[ "${bar_pos}" == 'top' ]] && readonly bar_ystart='0' || readonly bar_ystart="$(bc <<< "${canvas_height} - ${bar_height_px}")"
 readonly bar_yend="$(bc <<< "${bar_ystart} + ${bar_height_px}")"
 
-readonly tmp_bar_graphic="$(mktemp).png"
-readonly tmp_fused_img_dir="$(mktemp -d)"
+readonly tmp_bar_graphics_dir="$(mktemp -d)"
+readonly tmp_bar_video="$(mktemp).mov"
 
-# Make bar graphics and overlay them on the original images.
+# Make bar graphics.
 for step_name in $(seq -w 0 "${total_steps}"); do
   [[ "${step_name}" =~ ^0+$ ]] && step_number='0' || step_number="$(sed -E 's/^0+//' <<< "${step_name}")" # Remove leading zeros
 
@@ -160,28 +159,25 @@ for step_name in $(seq -w 0 "${total_steps}"); do
     bar_width="$(bc -l <<< "${canvas_width} / ${total_steps} * ${step_number}")"
   fi
 
-  convert -size "${canvas_width}"x"${canvas_height}" canvas:transparent -fill "${bar_color}" -draw "rectangle 0,${bar_ystart} ${bar_width},${bar_yend}" "${tmp_bar_graphic}"
-  convert "${images[step_number]}" "${tmp_bar_graphic}" -composite "${tmp_fused_img_dir}/${step_name}.png"
+  convert -size "${canvas_width}"x"${canvas_height}" canvas:transparent -fill "${bar_color}" -draw "rectangle 0,${bar_ystart} ${bar_width},${bar_yend}" "${tmp_bar_graphics_dir}/${step_name}.png"
 done
+
+# Make bar graphics into a video and superimpose on the original.
+ffmpeg -loglevel error -pattern_type glob -i "${tmp_bar_graphics_dir}/*.png" -vcodec png "${tmp_bar_video}"
+
+readonly tmp_superimposed_video="$(mktemp).mov"
+ffmpeg -i "${background_video}" -i "${tmp_bar_video}" -filter_complex overlay "${tmp_superimposed_video}"
 
 # Make gif
 message 'Creating gif…'
-readonly tmp_video="$(mktemp).mov"
-
-if [[ "${converting_from}" == 'images' ]]; then
-  readonly frame_delay="$(bc <<< "${seconds_delay} * 100")"
-  convert -delay "${frame_delay}" "${tmp_fused_img_dir}/"*.png "${tmp_video}"
-else
-  ffmpeg -loglevel error -pattern_type glob -i "${tmp_fused_img_dir}/*.png" "${tmp_video}"
-fi
 
 if [[ "${output_file}" == *'.mov' ]]; then
-  mv "${tmp_video}" "${output_file}"
+  mv "${tmp_superimposed_video}" "${output_file}"
 else
   options=()
   [[ -n "${use_gifski}" ]] && options+=('--gifski')
 
-  gfv "${options[@]}" "${tmp_video}" --output-file "${output_file}"
+  gfv "${options[@]}" "${tmp_superimposed_video}" --output-file "${output_file}"
 fi
 
 message "Saved to ${output_file}"
