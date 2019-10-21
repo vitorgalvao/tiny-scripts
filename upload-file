@@ -113,7 +113,7 @@ fi
 if [[ "${upload_host}" =~ ^(alpha\.)?transfer\.sh$ ]]; then
   url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}/${file_name}")"
 else
-  url="$(curl --globoff --progress-bar --form "file=@${file_path}" "https://${upload_host}/api/upload" | ruby -e 'require "json"; data = JSON.parse(gets); abort "There was an error uploading" if data["status"] == false; puts data["data"]["file"]["url"]["full"]')"
+  url="$(curl --globoff --progress-bar --form "file=@${file_path}" "https://api.${upload_host}/upload" | ruby -e 'require "json"; data = JSON.parse(gets); abort "There was an error uploading" if data["status"] == false; puts data["data"]["file"]["url"]["full"]')"
 fi
 
 echo -n "${url}" | pbcopy
