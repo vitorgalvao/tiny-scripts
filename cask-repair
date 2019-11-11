@@ -81,8 +81,9 @@ function usage {
       -v, --cask-version                     Give a version directly, instead of being prompted for it.
       -u, --cask-url                         Give a URL directly, instead of being prompted for it.
       -e, --edit-cask                        Opens cask for editing before trying first download.
-      -c <number>, --closes-issue <number>   Adds 'Closes #<number>.' to the commit message.
+      -c <number>, --closes-issue <number>   Adds 'Closes #<number>.' to the pull request.
       -m <message>, --message <message>      Adds '<message>' to the pull request.
+      -r, --reword                           Open commit message editor before committing.
       -b, --blind-submit                     Submit cask without asking for confirmation, if there are no errors.
       -f, --fail-on-error                    If there are any errors with the submission, abort.
       -w, --fail-on-warning                  If there are any warnings or errors with the submission, abort.
@@ -386,6 +387,9 @@ while [[ "${1}" ]]; do
       extra_message="${2}"
       shift
       ;;
+    -r | --reword)
+      reword_commit='true'
+      ;;
     -b | --blind-submit)
       updated_blindly='true'
       ;;
@@ -587,12 +591,19 @@ for cask in "${@}"; do
 
   # Commit, push, submit pull request, clean
   [[ "${old_cask_version}" == "${cask_version}" ]] && commit_message="Update ${cask_name}" || commit_message="Update ${cask_name} from ${old_cask_version} to ${cask_version}"
+
+  if [[ -n "${reword_commit}" ]]; then
+    git commit "${cask_file}" --message "${commit_message}" --edit --quiet
+    commit_message="$(git log --format=%B -n 1 HEAD | head -n 1)"
+  else
+    git commit "${cask_file}" --message "${commit_message}" --quiet
+  fi
+
   pr_message="${commit_message}\n\nAfter making all changes to the cask:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [x] The commit message includes the cask’s name and version."
   [[ -n "${issue_to_close}" ]] && pr_message+="\n\nCloses #${issue_to_close}."
   [[ -n "${extra_message}" ]] && pr_message+="\n\n${extra_message}"
   submit_pr_from="${github_username}:${cask_branch}"
 
-  git commit "${cask_file}" --message "${commit_message}" --quiet
   git push --force "${cask_repair_remote_name}" "${cask_branch}" --quiet 2> "${submission_error_log}"
 
   if [[ "${?}" -ne 0 ]]; then
