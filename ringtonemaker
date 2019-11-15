@@ -3,7 +3,7 @@
 readonly program="$(basename "${0}")"
 
 function depends_on {
-  readonly local dep="${1}"
+  local -r dep="${1}"
 
   if ! command -v "${dep}" &>/dev/null; then
     echo -e >&2 "\n$(tput setaf 1)This script requires ${dep}. Please install it first.$(tput sgr0)\n"

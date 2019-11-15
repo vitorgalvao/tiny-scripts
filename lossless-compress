@@ -4,7 +4,7 @@ readonly program="$(basename "${0}")"
 readonly formats=('jpg' 'png' 'gif' 'svg')
 
 function depends_on {
-  readonly local all_deps=("${@}")
+  local -r all_deps=("${@}")
   local missing_deps=()
 
   for dep in "${all_deps[@]}"; do

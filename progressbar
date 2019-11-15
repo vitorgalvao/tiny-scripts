@@ -22,7 +22,7 @@ function wrong_arguments {
 }
 
 function depends_on {
-  readonly local all_deps=("${@}")
+  local -r all_deps=("${@}")
   local missing_deps=()
 
   for dep in "${all_deps[@]}"; do

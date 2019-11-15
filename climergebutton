@@ -23,7 +23,7 @@ function usage {
 }
 
 function get_github_token {
-  readonly local operating_system="$(uname -s)"
+  local -r operating_system="$(uname -s)"
 
   # Check if we already have a token set
   local github_token
@@ -44,14 +44,14 @@ function get_github_token {
   # If we get here, there was no token set and we need to request one
   echo 'We need to create a new GitHub token to continue the script.' >&2
 
-  readonly local machine_name="$(hostname -s)"
+  local -r machine_name="$(hostname -s)"
 
   local github_username github_password
   read -rp "Github username: " github_username
   read -rsp "Github password (never stored): " github_password
   echo >&2
 
-  readonly local request=(curl --silent 'https://api.github.com/authorizations' --user "${github_username}:${github_password}" --data "{\"scopes\":[\"repo\"],\"note\":\"${program} for ${USER} on ${machine_name}\"}")
+  local -r request=(curl --silent 'https://api.github.com/authorizations' --user "${github_username}:${github_password}" --data "{\"scopes\":[\"repo\"],\"note\":\"${program} for ${USER} on ${machine_name}\"}")
 
   local response="$("${request[@]}")"
 

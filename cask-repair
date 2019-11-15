@@ -21,7 +21,7 @@ has_errors=''
 function color_message {
   local color="${1}"
   local message="${2}"
-  readonly local all_colors=('black' 'red' 'green' 'yellow' 'blue' 'magenta' 'cyan' 'white')
+  local -r all_colors=('black' 'red' 'green' 'yellow' 'blue' 'magenta' 'cyan' 'white')
 
   for i in "${!all_colors[@]}"; do
     if [[ "${all_colors[${i}]}" == "${color}" ]]; then

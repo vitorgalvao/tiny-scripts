@@ -3,8 +3,8 @@
 readonly program="$(basename "${0}")"
 
 function get_output_path {
-  readonly local ext='icns'
-  readonly local input_path="${1}"
+  local -r ext='icns'
+  local -r input_path="${1}"
   local output_path="${2}"
 
   if [[ -n "${output_path}" ]]; then

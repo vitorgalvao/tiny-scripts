@@ -26,7 +26,7 @@ function usage {
 function color_message {
   local color="${1}"
   local message="${2}"
-  readonly local all_colors=('black' 'red' 'green' 'yellow' 'blue' 'magenta' 'cyan' 'white')
+  local -r all_colors=('black' 'red' 'green' 'yellow' 'blue' 'magenta' 'cyan' 'white')
 
   for i in "${!all_colors[@]}"; do
     if [[ "${all_colors[${i}]}" == "${color}" ]]; then
@@ -80,7 +80,7 @@ function fail_unless_dir {
 }
 
 function depends_on {
-  readonly local all_deps=("${@}")
+  local -r all_deps=("${@}")
   local missing_deps=()
 
   for dep in "${all_deps[@]}"; do
@@ -244,7 +244,7 @@ function add_to_feed {
 }
 
 function end_feed {
-  readonly local book_feed="${1}"
+  local -r book_feed="${1}"
 
   echo "
     </channel>
