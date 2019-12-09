@@ -55,11 +55,19 @@ function warning_message {
   color_message 'yellow' "${1}"
 }
 
-function absolutepath {
-  if [[ -e "${1}" ]]; then
-    [[ -d "${1}" ]] && (cd "${1}" && pwd -P) || (cd "$(dirname "${1}")" && echo "$(pwd -P)/$(basename "${1%/}")")
+function absolute_path {
+  local -r relative_path="${1}"
+
+  if [[ -e "${relative_path}" ]]; then
+    if [[ -d "${relative_path}" ]]; then
+      cd "${relative_path}" || return 1
+      pwd -P
+    else
+      cd "$(dirname "${relative_path}")" || return 1
+      echo "$(pwd -P)/$(basename "${1%/}")"
+    fi
   else
-    echo "${FUNCNAME[0]}: no such file or directory: ${1}" >&2
+    echo "${FUNCNAME[0]}: no such file or directory: ${relative_path}" >&2
     return 1
   fi
 }
@@ -254,7 +262,7 @@ function end_feed {
 
 function main {
   local book_dir book_feed first_audio_file book_title book_author book_cover file_counter file_time file_duration file_mime file_size item_title file_url
-  readonly book_dir="$(absolutepath "${1}")"
+  readonly book_dir="$(absolute_path "${1}")"
   fail_unless_dir "${book_dir}"
   book_feed="${extraction_dir}/feed.rss"
 
