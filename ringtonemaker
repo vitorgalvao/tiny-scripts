@@ -85,8 +85,8 @@ set -- "${args[@]}"
 
 depends_on 'ffmpeg'
 
-input_file="${1}"
-output_file="$(get_output_path "${input_file}" "${given_output_path}")"
+readonly input_file="${1}"
+readonly output_file="$(get_output_path "${input_file}" "${given_output_path}")"
 
 if [[ ! -f "${input_file}" ]]; then
   echo 'A valid path to an input file is required.'
