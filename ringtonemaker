@@ -88,8 +88,7 @@ depends_on 'ffmpeg'
 readonly input_file="${1}"
 readonly output_file="$(get_output_path 'm4r' "${input_file}" "${given_output_path}")"
 
-if [[ ! -f "${input_file}" ]]; then
-  echo 'A valid path to an input file is required.'
+if [[ "${#}" -ne 1 || ! -f "${input_file}" ]]; then
   usage
   exit 1
 fi

@@ -89,13 +89,13 @@ while [[ "${1}" ]]; do
 done
 set -- "${args[@]}"
 
-if [[ "${#}" -eq 0 ]]; then
+readonly input_file="${1}"
+readonly output_file="$(get_output_path 'gif' "${input_file}" "${given_output_path}")"
+
+if [[ "${#}" -ne 1 || ! -f "${input_file}" ]]; then
   usage
   exit 1
 fi
-
-readonly input_file="${1}"
-readonly output_file="$(get_output_path 'gif' "${input_file}" "${given_output_path}")"
 
 depends_on 'ffmpeg'
 

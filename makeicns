@@ -66,14 +66,14 @@ if [[ "${1}" =~ ^(-h|--help)$ ]]; then
   exit 0
 fi
 
-if [[ "${#}" -eq 0 ]]; then
-  usage
-  exit 1
-fi
-
 readonly input_file="${1}"
 readonly output_file="$(get_output_path 'icns' "${input_file}" "${given_output_path}")"
 readonly iconset="$(mktemp -d)"
+
+if [[ "${#}" -ne 1 || ! -f "${input_file}" ]]; then
+  usage
+  exit 1
+fi
 
 if [[ "$(mdls -raw -name 'kMDItemContentType' "${input_file}")" != 'public.png' ]]; then
   echo 'Image needs to be a png.' >&2
