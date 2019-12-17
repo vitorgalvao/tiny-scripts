@@ -45,7 +45,7 @@ function usage {
     Options:
       -o, --output-dir <dir>   Directory to extract to. Defaults to the same directory as the input pkg.
       -h, --help               Show this message.
-  " | sed -E 's/ {4}//'
+  " | sed -E 's/^ {4}//'
 }
 
 args=()

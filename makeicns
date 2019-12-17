@@ -30,7 +30,7 @@ function usage {
     Options:
       -o, --output-file <file>   File to output to. Default is saving next to the input file with same name.
       -h, --help                 Show this message.
-  " | sed -E 's/ {4}//'
+  " | sed -E 's/^ {4}//'
 }
 
 # available flags
