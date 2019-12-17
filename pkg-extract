@@ -1,0 +1,104 @@
+#!/bin/bash
+
+readonly program="$(basename "${0}")"
+
+function syntax_error {
+  echo -e "${program}: ${1}\nTry \`${program} --help\` for more information." >&2
+  exit 1
+}
+
+function absolute_path {
+  local -r relative_path="${1}"
+
+  if [[ -e "${relative_path}" ]]; then
+    if [[ -d "${relative_path}" ]]; then
+      cd "${relative_path}" || return 1
+      pwd -P
+    else
+      cd "$(dirname "${relative_path}")" || return 1
+      echo "$(pwd -P)/$(basename "${1%/}")"
+    fi
+  else
+    echo "${FUNCNAME[0]}: no such file or directory: ${relative_path}" >&2
+    return 1
+  fi
+}
+
+function get_output_dir {
+  local -r input_path="${1}"
+  local -r output_dir="${2}"
+
+  if [[ -n "${output_dir}" ]]; then
+    absolute_path "${output_dir}"
+  else
+    absolute_path "$(dirname "${input_path}")"
+  fi
+}
+
+function usage {
+  echo "
+    Extract pkg files in a logical hierarchy.
+
+    Usage:
+      ${program} [options] <path_to_pkg>
+
+    Options:
+      -o, --output-dir <dir>   Directory to extract to. Defaults to the same directory as the input pkg.
+      -h, --help               Show this message.
+  " | sed -E 's/ {4}//'
+}
+
+args=()
+while [[ "${1}" ]]; do
+  case "${1}" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -o | --output-dir)
+      readonly given_output_path="${2}"
+      shift
+      ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
+    -*)
+      syntax_error "Unrecognized option: ${1}"
+      ;;
+    *)
+      args+=("${1}")
+      ;;
+  esac
+  shift
+done
+set -- "${args[@]}"
+
+readonly input_pkg="${1}"
+readonly extract_dir="$(mktemp -d)/$(basename "${input_pkg%.pkg}")"
+readonly output_dir="$(get_output_dir "${input_pkg}" "${given_output_path}")"
+
+if [[ "${#}" -ne 1 || "$(file --brief --mime-type "${input_pkg}")" != 'application/x-xar' ]]; then
+  usage
+  exit 1
+fi
+
+pkgutil --expand "${input_pkg}" "${extract_dir}"
+
+while IFS= read -r -d '' payload; do
+  payload_extract_dir="$(mktemp -d)"
+  cd "${payload_extract_dir}" || exit 1
+
+  /usr/bin/gzip --decompress --suffix '' --stdout "${payload}" | /usr/bin/cpio -i 2> /dev/null
+
+  cd "$(dirname "${payload}")" || exit 1
+  rm "${payload}"
+  mv "${payload_extract_dir}" "${payload}"
+done < <(find "${extract_dir}" -type f -name 'Payload' -print0)
+
+while IFS= read -r -d '' pkg; do
+  mv "${pkg}" "${pkg}.extracted"
+done < <(find "${extract_dir}" -type d -name '*.pkg' -print0)
+
+mv "${extract_dir}" "${output_dir}"
