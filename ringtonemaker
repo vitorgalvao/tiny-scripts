@@ -17,14 +17,20 @@ function syntax_error {
 }
 
 function get_output_path {
-  local input_path output_path
-  input_path="${1}"
-  output_path="${2}"
+  local -r ext='m4r'
+  local -r input_path="${1}"
+  local output_path="${2}"
 
   if [[ -n "${output_path}" ]]; then
-    [[ "${output_path##*.}" == 'm4r' ]] && echo "${output_path}" || echo "${output_path}.m4r"
+    [[ "${output_path##*.}" == "${ext}" ]] && echo "${output_path}" || echo "${output_path}.${ext}"
   else
-    echo "${input_path%.*}.m4r"
+    output_path="${input_path%.*}.${ext}"
+
+    while [[ -e "${output_path}" ]]; do
+      output_path="${output_path%.*}_$(date -u +'%Y.%m.%d.%H%M%S').${ext}"
+    done
+
+    echo "${output_path}"
   fi
 }
 
