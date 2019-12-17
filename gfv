@@ -18,9 +18,9 @@ function syntax_error {
 }
 
 function get_output_path {
-  local -r ext='gif'
-  local -r input_path="${1}"
-  local output_path="${2}"
+  local -r ext="${1}"
+  local -r input_path="${2}"
+  local output_path="${3}"
 
   if [[ -n "${output_path}" ]]; then
     [[ "${output_path##*.}" == "${ext}" ]] && echo "${output_path}" || echo "${output_path}.${ext}"
@@ -95,7 +95,7 @@ if [[ "${#}" -eq 0 ]]; then
 fi
 
 readonly input_file="${1}"
-readonly output_file="$(get_output_path "${input_file}" "${given_output_path}")"
+readonly output_file="$(get_output_path 'gif' "${input_file}" "${given_output_path}")"
 
 depends_on 'ffmpeg'
 
