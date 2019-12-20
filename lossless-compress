@@ -38,7 +38,7 @@ if [[ "${#}" -lt 1 ]]; then
   exit 1
 fi
 
-if [[ "${1}" == '-h' ]] || [[ "${1}" == '--help' ]]; then
+if [[ "${1}" =~ ^(-h|--help)$ ]]; then
   usage
   exit 0
 fi
