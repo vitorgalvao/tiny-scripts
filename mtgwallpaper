@@ -68,7 +68,7 @@ while [[ "${1}" ]]; do
       start_download='true'
       ;;
     -*)
-      syntax_error "unrecognized option: ${1}"
+      syntax_error "Unrecognised option: ${1}"
       ;;
     *)
       break

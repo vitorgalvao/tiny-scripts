@@ -73,7 +73,7 @@ while [[ "${1}" ]]; do
       break
       ;;
     -*)
-      syntax_error "unrecognized option: ${1}"
+      syntax_error "Unrecognised option: ${1}"
       ;;
     *)
       args+=("${1}")
