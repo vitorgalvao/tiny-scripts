@@ -76,7 +76,7 @@ done
 set -- "${args[@]}"
 
 readonly input_pkg="${1}"
-readonly extract_dir="$(mktemp -d)/$(basename "${input_pkg%.pkg}")"
+readonly extract_dir="$(mktemp -d)/$(basename "${input_pkg}.extracted")"
 readonly output_dir="$(get_output_dir "${input_pkg}" "${given_output_path}")"
 
 if [[ "${#}" -ne 1 || "$(file --brief --mime-type "${input_pkg}")" != 'application/x-xar' ]]; then
