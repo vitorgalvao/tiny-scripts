@@ -19,6 +19,9 @@ Merge [github](https://github.com/) pull requests via the merge button API
 ### crafts
 Allow copy/cut/paste between different terminal windows (it’s meant to be sourced from the shell, not called directly)
 
+### extract-app-icon
+Extract app bundle icon as png
+
 ### fastmerge
 Quickly pull and push [github](https://github.com/) pull requests to keep commit history cleaner, merging directly to master and closing the pull request
 
