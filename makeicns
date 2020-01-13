@@ -61,11 +61,6 @@ while [[ "${1}" ]]; do
 done
 set -- "${args[@]}"
 
-if [[ "${1}" =~ ^(-h|--help)$ ]]; then
-  usage
-  exit 0
-fi
-
 readonly input_file="${1}"
 readonly output_file="$(get_output_path 'icns' "${input_file}" "${given_output_path}")"
 readonly iconset="$(mktemp -d)"
