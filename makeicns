@@ -20,6 +20,11 @@ function get_output_path {
   fi
 }
 
+function syntax_error {
+  echo -e "${program}: ${1}\nTry \`${program} --help\` for more information." >&2
+  exit 1
+}
+
 function usage {
   echo "
     Make an icns file from a png.
