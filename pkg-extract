@@ -29,6 +29,7 @@ function get_output_dir {
   local -r output_dir="${2}"
 
   if [[ -n "${output_dir}" ]]; then
+    mkdir -p "${output_dir}"
     absolute_path "${output_dir}"
   else
     absolute_path "$(dirname "${input_path}")"
