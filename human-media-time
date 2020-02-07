@@ -73,7 +73,7 @@ def human_time(precision_unit, input_hash)
     time_hash.delete('h')
   end
 
-  time_hash.reject! { |_, value| value.zero? } # Eliminate zeros.
+  time_hash.reject! { |_, value| value.zero? } # Eliminate zeros
   time_hash.reduce('') { |string, (key, value)| string + "#{value}#{key} " }.strip
 end
 
