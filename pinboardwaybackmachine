@@ -60,7 +60,7 @@ if [[ -n "${ask_for_token}" ]]; then
 fi
 
 # If no token given, look for it in the Keychain
-[[ -z "${token}" ]] && token="$(security find-generic-password -s 'Pinboard API Token' -w<Paste>)"
+[[ -z "${token}" ]] && token="$(security find-generic-password -s 'Pinboard API Token' -w)"
 
 # Exit if no token was set
 if [[ -z "${token}" ]]; then
