@@ -151,25 +151,25 @@ function http_status_code {
   curl --silent --head "${follow_redirects}" "${user_agent[@]}" --write-out '%{http_code}' "${url}" --output '/dev/null'
 }
 
-function has_interpolation? {
+function has_interpolation {
   local version="${1}"
 
   [[ "${version}" =~ \#{version.*} ]]
 }
 
-function is_version_latest? {
+function is_version_latest {
   local cask_file="${1}"
 
   [[ "$(brew cask _stanza version "${cask_file}")" == 'latest' ]]
 }
 
-function has_block_url? {
+function has_block_url {
   local cask_file="${1}"
 
   grep --silent 'url do' "${cask_file}"
 }
 
-function has_language_stanza? {
+function has_language_stanza {
   local cask_file="${1}"
 
   brew cask _stanza language "${cask_file}" 2>/dev/null
@@ -204,7 +204,12 @@ function modify_url {
   url="${1}"
   cask_file="${2}"
 
-  [[ $(has_interpolation? "${url}") ]] && modify_stanza 'url' "\"${url}\"" "${cask_file}" || modify_stanza 'url' "'${url}'" "${cask_file}" # Use appropriate quotes depending on if a url with interpolation was given
+  # Use appropriate quotes depending on if a url with interpolation was given
+  if has_interpolation "${url}"; then
+    modify_stanza 'url' "\"${url}\"" "${cask_file}"
+  else
+    modify_stanza 'url' "'${url}'" "${cask_file}"
+  fi
 }
 
 function appcast_url {
@@ -213,7 +218,7 @@ function appcast_url {
   brew cask _stanza appcast "${cask_file}"
 }
 
-function has_appcast? {
+function has_appcast {
   local cask_file="${1}"
 
   [[ -n "$(appcast_url "${cask_file}" 2>/dev/null)" ]]
@@ -463,14 +468,14 @@ for cask in "${@}"; do
   require_correct_origin
   ensure_cask_repair_remote
 
-  has_language_stanza? "${cask_file}" && abort "${cask_name} has a language stanza. It cannot be updated via this script. Try update_multilangual_casks: https://github.com/Homebrew/homebrew-cask/blob/master/developer/bin/update_multilangual_casks"
+  has_language_stanza "${cask_file}" && abort "${cask_name} has a language stanza. It cannot be updated via this script. Try update_multilangual_casks: https://github.com/Homebrew/homebrew-cask/blob/master/developer/bin/update_multilangual_casks"
 
   git rev-parse --verify "${cask_branch}" &>/dev/null && git checkout "${cask_branch}" master --quiet || git checkout -b "${cask_branch}" master --quiet # Create branch or checkout if it already exists
 
   # Open home and appcast
   [[ "${show_home}" == 'true' ]] && brew cask home "${cask_file}"
 
-  if has_appcast? "${cask_file}"; then
+  if has_appcast "${cask_file}"; then
     cask_appcast_url="$(appcast_url "${cask_file}")"
 
     if [[ "${show_appcast}" == 'true' ]]; then
@@ -505,11 +510,15 @@ for cask in "${@}"; do
   fi
 
   if [[ -n "${given_cask_url}" ]]; then
-    [[ $(has_block_url? "${cask_file}") ]] && warning_message 'Cask has block url, so it can only be modified manually (choose `[e]dit` when prompted).' || modify_url "${given_cask_url}" "${cask_file}"
+    if has_block_url "${cask_file}"; then
+      warning_message 'Cask has block url, so it can only be modified manually (choose `[e]dit` when prompted).'
+    else
+      modify_url "${given_cask_url}" "${cask_file}"
+    fi
   else
     # If url does not use interpolation and is not block, ask for it
     cask_bare_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*)['\"].*|\1|")
-    if ! has_interpolation? "${cask_bare_url}" && ! has_block_url? "${cask_file}"; then
+    if ! has_interpolation "${cask_bare_url}" && ! has_block_url "${cask_file}"; then
       read -rp $'Paste the new URL (or leave blank to use the current one)\n> ' given_cask_url
 
       [[ -n "${given_cask_url}" ]] && modify_url "${given_cask_url}" "${cask_file}"
@@ -529,7 +538,7 @@ for cask in "${@}"; do
 
   [[ "${edit_on_start}" == 'true' ]] && edit_cask "${cask_file}"
 
-  if is_version_latest? "${cask_file}"; then
+  if is_version_latest "${cask_file}"; then
     modify_stanza 'sha256' ':no_check' "${cask_file}"
   else
     sha_change "${cask_file}"
@@ -568,7 +577,7 @@ for cask in "${@}"; do
       fi
     elif [[ "${cask_updated}" == 'e' ]]; then
       edit_cask "${cask_file}"
-      if ! is_version_latest? "${cask_file}"; then # Recheck sha256 values if version isn't :latest
+      if ! is_version_latest "${cask_file}"; then # Recheck sha256 values if version isn't :latest
         sha_change "${cask_file}"
       fi
       cask_updated='false'
