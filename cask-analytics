@@ -4,7 +4,7 @@ require 'date'
 require 'json'
 require 'open-uri'
 require 'open3'
-require 'optionparser'
+require 'optparse'
 
 # Options
 ARGV.push('--help') if ARGV.empty?
@@ -21,6 +21,7 @@ OptionParser.new do |opt|
   EOS
 
   opt.on('-a', '--no-age', 'Do not show when cask was added (faster output).') { options[:suppress_age] = true }
+  opt.on('-h', '--help', 'Show this help.') { puts opt }
 end.parse!
 
 ARGV.each do |cask_name|

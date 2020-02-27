@@ -19,6 +19,7 @@ OptionParser.new do |opt|
 
   opt.on('-u <s|d|h|m>', '--unit', 'Output a whole number of the total time rounded to the unit.') { |unit| options[:unit] = unit }
   opt.on('-p <s|d|h|m>', '--precision', 'Output human-readable result rounded and truncated to the chosen unit. Values of zero are ommited.') { |unit| options[:precision] = unit }
+  opt.on('-h', '--help', 'Show this help.') { puts opt }
 end.parse!
 
 # Parse time values

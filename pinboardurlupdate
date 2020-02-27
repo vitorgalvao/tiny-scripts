@@ -34,6 +34,7 @@ OptionParser.new do |opt|
   opt.on('-t <token>', '--token <token>', 'Your Pinboard API token.') { |t| options[:token] = t }
   opt.on('-a', '--ask-for-token', 'Ask for your Pinboard API token on start.') { options[:ask_for_token] = true }
   opt.on('-s', '--save-token', 'Save Pinboard API token to Keychain and exit (macOS-only). Use with "--token" or "--ask-for-token".') { options[:save_token] = true }
+  opt.on('-h', '--help', 'Show this help.') { puts opt }
 end.parse!
 
 # Deal with token options
