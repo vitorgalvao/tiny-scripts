@@ -1,7 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
-readonly hosts=('transfer.sh' 'alpha.transfer.sh' 'bayfiles.com' 'anonfile.com' 'megaupload.is' 'forumfiles.com')
+readonly hosts=('0x0.st' 'transfer.sh' 'alpha.transfer.sh' 'bayfiles.com' 'anonfile.com' 'megaupload.is' 'forumfiles.com')
 readonly default_host="${hosts[0]}"
 
 function ascii_basename {
@@ -113,13 +113,15 @@ if [[ -n "${UPLOAD_FILE_TO}" ]]; then
     exit 1
   fi
 else
-  upload_host="${default_host}"
+  readonly upload_host="${default_host}"
 fi
 
-if [[ "${upload_host}" =~ ^(alpha\.)?transfer\.sh$ ]]; then
-  url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}/${file_name}")"
+if [[ "${upload_host}" == *'transfer.sh' ]]; then
+  readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}/${file_name}")"
+elif [[ "${upload_host}" == '0x0.st' ]]; then
+  readonly url="$(curl --globoff --progress-bar --form "file=@${file_path}" "https://${upload_host}")"
 else
-  url="$(curl --globoff --progress-bar --form "file=@${file_path}" "https://api.${upload_host}/upload" | ruby -e 'require "json"; data = JSON.parse(gets); abort "There was an error uploading" if data["status"] == false; puts data["data"]["file"]["url"]["full"]')"
+  readonly url="$(curl --globoff --progress-bar --form "file=@${file_path}" "https://api.${upload_host}/upload" | ruby -e 'require "json"; data = JSON.parse(gets); abort "There was an error uploading" if data["status"] == false; puts data["data"]["file"]["url"]["full"]')"
 fi
 
 echo -n "${url}" | pbcopy
