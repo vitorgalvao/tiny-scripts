@@ -104,8 +104,14 @@ fi
 # Upload
 readonly file_name=$(ascii_basename "${file_path}")
 
-if [[ -n "${UPLOAD_FILE_TO}" ]] && string_in_array "${UPLOAD_FILE_TO}" "${hosts[@]}"; then
-  upload_host="${UPLOAD_FILE_TO}"
+if [[ -n "${UPLOAD_FILE_TO}" ]]; then
+  if string_in_array "${UPLOAD_FILE_TO}" "${hosts[@]}"; then
+    readonly upload_host="${UPLOAD_FILE_TO}"
+  else
+    echo "Invalid upload host: ${UPLOAD_FILE_TO}" >&2
+    usage
+    exit 1
+  fi
 else
   upload_host="${default_host}"
 fi
