@@ -17,27 +17,13 @@ function string_in_array {
   return 1
 }
 
-function undent {
-  awk '
-    {
-      lines[++count] = $0
-      if (NF == 0) next
-      match($0, /[^ ]/)
-      if (length(min) == 0 || RSTART < min) min = RSTART
-    }
-    END {
-      for (i = 1; i <= count; i++) print substr(lines[i], min)
-    }
-  ' <<< "${1}"
-}
-
 function syntax_error {
   echo -e "${program}: ${1}\nTry \`${program} --help\` for more information." >&2
   exit 1
 }
 
 function usage {
-  undent "
+  echo "
     Upload files and directories to a file hosting service.
     If multiple files or a directory are given, they will be zipped beforehand.
     To set a host as the default, export UPLOAD_FILE_TO in your shell.
@@ -51,7 +37,7 @@ function usage {
     Options:
       -u, --upload-host <host>   File host to upload to. Defaults to ${default_host}.
       -h, --help                 Show this help.
-  "
+  " | sed -E 's/^ {4}//'
 }
 
 args=()
