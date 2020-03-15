@@ -29,18 +29,7 @@ ARGV.each do |cask_name|
 
   abort 'Did not find any cask locally named ' + cask_name if cask_path.nil?
 
-  cask_tap_dir = File.dirname(File.dirname(cask_path))
-
-  added_message =
-    if options[:suppress_age]
-      ''
-    else
-      system('git', '-C', cask_tap_dir, 'fetch', '--unshallow') if Open3.capture2('git', '-C', cask_tap_dir, 'rev-parse', '--is-shallow-repository').first.strip == 'true'
-      cask_added_date = Open3.capture2('git', '-C', cask_tap_dir, 'log', '--diff-filter=A', '--max-count=1', '--format=%aI', cask_path).first.strip
-      ' (added ' + (Date.today - Date.parse(cask_added_date)).to_i.to_s + ' days ago)'
-    end
-
-  puts cask_name + added_message
+  puts cask_name
 
   analytics_dir = '/tmp/cask-analytics'
   Dir.mkdir(analytics_dir) unless Dir.exist?(analytics_dir)
@@ -54,6 +43,14 @@ ARGV.each do |cask_name|
 
     print days + ' days: '
     puts cask_info.nil? ? 'n/a' : cask_info['count'] + ' (#' + cask_info['number'].to_s + ')'
+  end
+
+  cask_tap_dir = File.dirname(File.dirname(cask_path))
+
+  unless options[:suppress_age]
+    system('git', '-C', cask_tap_dir, 'fetch', '--unshallow') if Open3.capture2('git', '-C', cask_tap_dir, 'rev-parse', '--is-shallow-repository').first.strip == 'true'
+    cask_added_date = Date.parse(Open3.capture2('git', '-C', cask_tap_dir, 'log', '--diff-filter=A', '--max-count=1', '--format=%aI', cask_path).first.strip)
+    puts 'Age: ' + (Date.today - cask_added_date).to_i.to_s + ' days (added ' + cask_added_date.strftime('%Y, %B %d') + ')'
   end
 
   puts # Empty line to separate multiple casks
