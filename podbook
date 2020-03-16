@@ -108,7 +108,7 @@ function upload_file {
   local file_name="${1}"
 
   echo "Uploading $(basename "${file_name}")…" >&2
-  curl --globoff --progress-bar --upload-file "${file_name}" https://alpha.transfer.sh/ | sed 's|transfer.sh/|transfer.sh/get/|'
+  curl --globoff --progress-bar --form "file=@${file_name}" 'https://0x0.st'
 }
 
 function extract_title {
