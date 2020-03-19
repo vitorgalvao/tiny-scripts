@@ -18,7 +18,7 @@ function syntax_error {
   exit 1
 }
 
-function string_in_array? {
+function is_string_in_array {
   local string="${1}"
 
   for value in "${@:2}"; do
@@ -85,7 +85,7 @@ trap 'exit 1' SIGINT
 [[ -f "${config_file}" ]] && source "${config_file}" || wrong_setting 'There is no settings file.'
 [[ -n "${wallpaper_directory}" ]] || wrong_setting "wallpaper_directory in ${config_file} is missing."
 [[ "${maximum_wallpaper_count}" =~ ^[0-9]+$ ]] || failure "maximum_wallpaper_count if ${config_file} needs to be a whole number."
-string_in_array? "${wallpaper_dimensions}" "${valid_dimensions[@]}" || failure "wallpaper_dimensions in ${config_file} needs to be one of ${valid_dimensions[*]}."
+is_string_in_array "${wallpaper_dimensions}" "${valid_dimensions[@]}" || failure "wallpaper_dimensions in ${config_file} needs to be one of ${valid_dimensions[*]}."
 
 if [[ ! -d "${wallpaper_directory}" ]]; then
   if ! mkdir -p "${wallpaper_directory}"; then

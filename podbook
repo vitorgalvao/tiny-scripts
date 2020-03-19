@@ -72,7 +72,7 @@ function absolute_path {
   fi
 }
 
-function is_number? {
+function is_number {
   [[ "${1}" =~ ^[0-9]+$ ]]
 }
 
