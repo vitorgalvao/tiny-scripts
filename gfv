@@ -18,25 +18,34 @@ function syntax_error {
 }
 
 function get_output_path {
-  local -r ext="${1}"
-  local -r input_path="${2}"
-  local output_path="${3}"
+  local -r force="${1}"
+  local -r ext="${2}"
+  local -r input_path="${3}"
+  local -r init_output_path="${4}"
+
+  local -r output_path="$(
+    if [[ -n "${init_output_path}" ]]; then
+      [[ "${init_output_path##*.}" == "${ext}" ]] && echo "${init_output_path}" || echo "${init_output_path}${ext}"
+    else
+      echo "$(pwd -P)/$(basename "${input_path%.*}${ext}")"
+    fi
+  )"
+
+  echo "${output_path}"
+
+  if [[ "${force}" == 'true' ]]; then
+    mkdir -p "$(dirname "${output_path}")"
+    return 0
+  fi
 
   if [[ ! -d "$(dirname "${output_path}")" ]]; then
     echo "Cannot create '${output_path}'. Parent directory does not exist." >&2
     exit 1
   fi
 
-  if [[ -n "${output_path}" ]]; then
-    [[ "${output_path##*.}" == "${ext}" ]] && echo "${output_path}" || echo "${output_path}${ext}"
-  else
-    output_path="$(pwd -P)/$(basename "${input_path%.*}${ext}")"
-
-    while [[ -e "${output_path}" ]]; do
-      output_path="${output_path%.*}_$(date -u +'%Y.%m.%d.%H%M%S')${ext}"
-    done
-
-    echo "${output_path}"
+  if [[ -e "${output_path}" ]]; then
+    echo "Cannot write to '${output_path}'. Already exists." >&2
+    exit 1
   fi
 }
 
@@ -49,6 +58,7 @@ function usage {
       -f <integer>, --fps <integer>          Frames per second. Default is auto-detected from video, capped at ${cap_fps}.
       -w <interger>, --width <integer>       Resize the gif proportionally.
       -o <file>, --output-file <file>        File to output to. Default is with same name on current directory.
+      -O, --overwrite                        Create intermediary directories and overwrite output.
       -g, --gifski                           Use gifski for the conversion.
       -h, --help                             Show this help.
   " | sed -E 's/^ {4}//'
@@ -74,6 +84,9 @@ while [[ "${1}" ]]; do
       readonly given_output_path="${2}"
       shift
       ;;
+    -O | --overwrite)
+      readonly overwrite='true'
+      ;;
     -g | --gifski)
       depends_on 'gifski'
       readonly use_gifski='true'
@@ -95,7 +108,7 @@ done
 set -- "${args[@]}"
 
 readonly input_file="${1}"
-readonly output_file="$(get_output_path '.gif' "${input_file}" "${given_output_path}")"
+readonly output_file="$(get_output_path "${overwrite:-false}" '.gif' "${input_file}" "${given_output_path}")"
 
 if [[ "${#}" -ne 1 || ! -f "${input_file}" ]]; then
   usage
