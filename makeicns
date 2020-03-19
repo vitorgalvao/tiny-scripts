@@ -3,33 +3,33 @@
 readonly program="$(basename "${0}")"
 
 function get_output_path {
+  local -r ext="${1}"
+  local -r input_path="${2}"
+  local -r init_output_path="${3}"
+
+  if [[ -n "${init_output_path}" ]]; then
+    [[ "${init_output_path##*.}" == "${ext}" ]] && echo "${init_output_path}" || echo "${init_output_path}${ext}"
+  else
+    echo "$(pwd -P)/$(basename "${input_path%.*}${ext}")"
+  fi
+}
+
+function try_overwrite {
   local -r force="${1}"
-  local -r ext="${2}"
-  local -r input_path="${3}"
-  local -r init_output_path="${4}"
-
-  local -r output_path="$(
-    if [[ -n "${init_output_path}" ]]; then
-      [[ "${init_output_path##*.}" == "${ext}" ]] && echo "${init_output_path}" || echo "${init_output_path}${ext}"
-    else
-      echo "$(pwd -P)/$(basename "${input_path%.*}${ext}")"
-    fi
-  )"
-
-  echo "${output_path}"
+  local -r input_path="${2}"
 
   if [[ "${force}" == 'true' ]]; then
-    mkdir -p "$(dirname "${output_path}")"
+    mkdir -p "$(dirname "${input_path}")"
     return 0
   fi
 
-  if [[ ! -d "$(dirname "${output_path}")" ]]; then
-    echo "Cannot create '${output_path}'. Parent directory does not exist." >&2
+  if [[ ! -d "$(dirname "${input_path}")" ]]; then
+    echo "Cannot create '${input_path}'. Parent directory does not exist." >&2
     exit 1
   fi
 
-  if [[ -e "${output_path}" ]]; then
-    echo "Cannot write to '${output_path}'. Already exists." >&2
+  if [[ -e "${input_path}" ]]; then
+    echo "Cannot write to '${input_path}'. Already exists." >&2
     exit 1
   fi
 }
@@ -85,8 +85,9 @@ done
 set -- "${args[@]}"
 
 readonly input_file="${1}"
-readonly output_file="$(get_output_path "${overwrite:-false}" '.icns' "${input_file}" "${given_output_path}")"
 readonly iconset="$(mktemp -d)"
+readonly output_file="$(get_output_path '.icns' "${input_file}" "${given_output_path}")"
+try_overwrite "${overwrite:-false}" "${output_file}"
 
 if [[ "${#}" -ne 1 || ! -f "${input_file}" ]]; then
   usage
