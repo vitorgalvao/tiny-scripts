@@ -24,15 +24,26 @@ function absolute_path {
   fi
 }
 
-function get_output_dir {
-  local -r input_path="${1}"
-  local -r output_dir="${2}"
+function get_output_path {
+  local -r ext="${1}"
+  local -r input_path="${2}"
+  local output_path="${3}"
 
-  if [[ -n "${output_dir}" ]]; then
-    mkdir -p "${output_dir}"
-    absolute_path "${output_dir}"
+  if [[ ! -d "$(dirname "${output_path}")" ]]; then
+    echo "Cannot create '${output_path}'. Parent directory does not exist." >&2
+    exit 1
+  fi
+
+  if [[ -n "${output_path}" ]]; then
+    [[ "${output_path##*.}" == "${ext}" ]] && echo "${output_path}" || echo "${output_path}${ext}"
   else
-    absolute_path "$(dirname "${input_path}")"
+    output_path="$(pwd -P)/$(basename "${input_path%.*}${ext}")"
+
+    while [[ -e "${output_path}" ]]; do
+      output_path="${output_path%.*}_$(date -u +'%Y.%m.%d.%H%M%S')${ext}"
+    done
+
+    echo "${output_path}"
   fi
 }
 
@@ -44,7 +55,7 @@ function usage {
       ${program} [options] <path_to_pkg>
 
     Options:
-      -o, --output-dir <dir>   Directory to extract to. Defaults to the same directory as the input pkg.
+      -o, --output-dir <dir>   Directory to extract to. Default is with same name on current directory. Appends '.extracted' to the name.
       -h, --help               Show this message.
   " | sed -E 's/^ {4}//'
 }
@@ -77,8 +88,8 @@ done
 set -- "${args[@]}"
 
 readonly input_pkg="${1}"
-readonly extract_dir="$(mktemp -d)/$(basename "${input_pkg}.extracted")"
-readonly output_dir="$(get_output_dir "${input_pkg}" "${given_output_path}")"
+readonly extract_dir="$(mktemp -d)/extracted_pkg"
+readonly output_dir="$(get_output_path '.extracted' "${input_pkg}" "${given_output_path}")"
 
 if [[ "${#}" -ne 1 || "$(file --brief --mime-type "${input_pkg}")" != 'application/x-xar' ]]; then
   usage

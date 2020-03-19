@@ -7,13 +7,18 @@ function get_output_path {
   local -r input_path="${2}"
   local output_path="${3}"
 
+  if [[ ! -d "$(dirname "${output_path}")" ]]; then
+    echo "Cannot create '${output_path}'. Parent directory does not exist." >&2
+    exit 1
+  fi
+
   if [[ -n "${output_path}" ]]; then
-    [[ "${output_path##*.}" == "${ext}" ]] && echo "${output_path}" || echo "${output_path}.${ext}"
+    [[ "${output_path##*.}" == "${ext}" ]] && echo "${output_path}" || echo "${output_path}${ext}"
   else
-    output_path="${input_path%.*}.${ext}"
+    output_path="$(pwd -P)/$(basename "${input_path%.*}${ext}")"
 
     while [[ -e "${output_path}" ]]; do
-      output_path="${output_path%.*}_$(date -u +'%Y.%m.%d.%H%M%S').${ext}"
+      output_path="${output_path%.*}_$(date -u +'%Y.%m.%d.%H%M%S')${ext}"
     done
 
     echo "${output_path}"
@@ -33,7 +38,7 @@ function usage {
       ${program} [options] <file>
 
     Options:
-      -o, --output-file <file>   File to output to. Default is saving next to the input file with same name.
+      -o, --output-file <file>   File to output to. Default is with same name on current directory.
       -h, --help                 Show this message.
   " | sed -E 's/^ {4}//'
 }
@@ -67,7 +72,7 @@ done
 set -- "${args[@]}"
 
 readonly input_file="${1}"
-readonly output_file="$(get_output_path 'icns' "${input_file}" "${given_output_path}")"
+readonly output_file="$(get_output_path '.icns' "${input_file}" "${given_output_path}")"
 readonly iconset="$(mktemp -d)"
 
 if [[ "${#}" -ne 1 || ! -f "${input_file}" ]]; then
