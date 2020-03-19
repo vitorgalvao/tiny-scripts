@@ -348,10 +348,10 @@ function skip {
 }
 
 function abort {
-   clean
-   failure_message "\n${1}\n"
-   exit 1
- }
+  clean
+  failure_message "\n${1}\n"
+  exit 1
+}
 
 trap 'abort "You aborted."' SIGINT
 
