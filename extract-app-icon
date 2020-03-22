@@ -63,7 +63,7 @@ function get_app_key {
   fi
 }
 
-# available flags
+# Options
 args=()
 while [[ "${1}" ]]; do
   case "${1}" in
