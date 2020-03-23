@@ -5,11 +5,6 @@ readonly audio_extentions=('aac' 'm4a' 'm4b' 'mp3')
 readonly audio_files_regex="$(sed 's/ /|/g;s/^/^.*\\.(/;s/$/)$/' <<< "${audio_extentions[@]}")"
 readonly extraction_dir="$(mktemp -d)"
 
-function syntax_error {
-  echo -e "${program}: ${1}\nTry \`${program} --help\` for more information." >&2
-  exit 1
-}
-
 function usage {
   echo "
     Usage:
@@ -319,7 +314,8 @@ while [[ "${1}" ]]; do
       break
       ;;
     -*)
-      syntax_error "Unrecognised option: ${1}"
+      echo "Unrecognised option: ${1}"
+      exit 1
       ;;
     *)
       args+=("${1}")

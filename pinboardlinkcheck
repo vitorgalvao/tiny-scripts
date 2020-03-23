@@ -3,11 +3,6 @@
 readonly program="$(basename "${0}")"
 readonly browser_headers=(--header 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36')
 
-function syntax_error {
-  echo -e "${program}: ${1}\nTry \`${program} --help\` for more information." >&2
-  exit 1
-}
-
 # Instructions
 function usage {
   echo "
@@ -65,7 +60,8 @@ while [[ "${1}" ]]; do
       set_keychain_token='true'
       ;;
     -*)
-      syntax_error "Unrecognised option: ${1}"
+      echo "Unrecognised option: ${1}"
+      exit 1
       ;;
   esac
   shift

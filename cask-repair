@@ -49,11 +49,6 @@ function warning_message {
   color_message 'yellow' "${1}"
 }
 
-function syntax_error {
-  abort "${program}: ${1}\nTry \`${program} --help\` for more information."
-}
-
-function push_failure_message {
   warning_message 'There were errors while pushing:'
   echo "${1}"
   abort 'Please fix the errors and try again. If the issue persists, open a bug report on the repo for this script (https://github.com/vitorgalvao/tiny-scripts).'
@@ -418,7 +413,8 @@ while [[ "${1}" ]]; do
       break
       ;;
     -*)
-      syntax_error "Unrecognised option: ${1}"
+      echo "Unrecognised option: ${1}"
+      exit 1
       ;;
     *)
       args+=("${1}")

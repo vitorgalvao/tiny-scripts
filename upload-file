@@ -17,11 +17,6 @@ function is_string_in_array {
   return 1
 }
 
-function syntax_error {
-  echo -e "${program}: ${1}\nTry \`${program} --help\` for more information." >&2
-  exit 1
-}
-
 function usage {
   echo "
     Upload files and directories to a file hosting service.
@@ -57,7 +52,8 @@ while [[ "${1}" ]]; do
       break
       ;;
     -*)
-      syntax_error "Unrecognised option: ${1}"
+      echo "Unrecognised option: ${1}"
+      exit 1
       ;;
     *)
       args+=("${1}")

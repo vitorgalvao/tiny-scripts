@@ -13,11 +13,6 @@ function wrong_setting {
   error_message "${1}\nRun \`${program} --init\` to create/overwrite the settings file with sensible defaults."
 }
 
-function syntax_error {
-  error_message "${program}: ${1}\nTry \`${program} --help\` for more information."
-  exit 1
-}
-
 function is_string_in_array {
   local string="${1}"
 
@@ -68,7 +63,8 @@ while [[ "${1}" ]]; do
       start_download='true'
       ;;
     -*)
-      syntax_error "Unrecognised option: ${1}"
+      echo "Unrecognised option: ${1}"
+      exit 1
       ;;
     *)
       break
