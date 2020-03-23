@@ -26,16 +26,12 @@ function depends_on {
   local missing_deps=()
 
   for dep in "${all_deps[@]}"; do
-    if ! command -v "${dep}" &>/dev/null; then
-      missing_deps+=("${dep}")
-    fi
+    command -v "${dep}" &>/dev/null || missing_deps+=("${dep}")
   done
 
   if [[ "${#missing_deps[@]}" -gt 0 ]]; then
-    tput setaf 1
-    echo -e '\nThis script has unmet dependencies. You need to install these first:'
-    printf '  %s\n' "${missing_deps[@]}"
-    tput sgr0
+    echo 'Missing required tools:' >&2
+    printf '  %s\n' "${missing_deps[@]}" >&2
     exit 1
   fi
 }
