@@ -49,6 +49,7 @@ function warning_message {
   color_message 'yellow' "${1}"
 }
 
+function push_failure_message {
   warning_message 'There were errors while pushing:'
   echo "${1}"
   abort 'Please fix the errors and try again. If the issue persists, open a bug report on the repo for this script (https://github.com/vitorgalvao/tiny-scripts).'
