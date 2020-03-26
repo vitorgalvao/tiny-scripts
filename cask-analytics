@@ -5,52 +5,87 @@ require 'json'
 require 'open-uri'
 require 'open3'
 require 'optparse'
+require 'pathname'
 
 # Options
 ARGV.push('--help') if ARGV.empty?
 
 options = {}
 OptionParser.new do |opt|
-  opt.banner = <<~EOS
+  opt.banner = <<~BANNER
     Show analytics information for casks in the main taps.
 
     Usage:
       #{File.basename($PROGRAM_NAME)} [options] <cask_name>
 
     Options:
-  EOS
+  BANNER
 
   opt.on('-a', '--no-age', 'Do not show when cask was added (faster output).') { options[:suppress_age] = true }
   opt.on('-h', '--help', 'Show this help.') { puts opt }
 end.parse!
 
+# Helpers
+def shallow?(repo)
+  Open3.capture2(
+    'git', '-C', repo.to_path,
+    'rev-parse', '--is-shallow-repository'
+  ).first.strip == 'true'
+end
+
+# Run
 ARGV.each do |cask_name|
-  cask_path = Dir.glob(Open3.capture2('brew', '--prefix').first.strip + '/Homebrew/Library/Taps/homebrew/homebrew-cask*/Casks/' + cask_name + '.rb').first
+  cask_path = Pathname(Open3.capture2('brew', '--prefix').first.strip)
+              .join('Homebrew/Library/Taps/homebrew')
+              .glob("homebrew-cask*/Casks/#{cask_name}.rb").first
 
   abort 'Did not find any cask locally named ' + cask_name if cask_path.nil?
 
   puts cask_name
 
-  analytics_dir = '/tmp/cask-analytics'
-  Dir.mkdir(analytics_dir) unless Dir.exist?(analytics_dir)
+  analytics_dir = Pathname('/tmp').join('cask-analytics')
+  analytics_dir.mkpath
 
   %w[30 90 365].each do |days|
-    json_file = File.join(analytics_dir, days + 'd.json')
-    File.write(json_file, URI.parse('https://formulae.brew.sh/api/analytics/cask-install/' + days + 'd.json').read) unless File.exist?(json_file)
+    json_file = analytics_dir.join("#{days}d.json")
 
-    analytics = JSON.parse(File.read(json_file))['items']
+    unless json_file.exist?
+      json_file.write(URI.parse(
+        "https://formulae.brew.sh/api/analytics/cask-install/#{days}d.json"
+      ).read)
+    end
+
+    analytics = JSON.parse(json_file.read)['items']
     cask_info = analytics.select { |hash| hash['cask'] == cask_name }.first
 
-    print days + ' days: '
-    puts cask_info.nil? ? 'n/a' : cask_info['count'] + ' (#' + cask_info['number'].to_s + ')'
+    print "#{days} days: "
+
+    if cask_info.nil?
+      puts 'n/a'
+    else
+      puts "#{cask_info['count']} (##{cask_info['number']})"
+    end
   end
 
-  cask_tap_dir = File.dirname(File.dirname(cask_path))
+  cask_tap_dir = cask_path.dirname.dirname
 
   unless options[:suppress_age]
-    system('git', '-C', cask_tap_dir, 'fetch', '--unshallow') if Open3.capture2('git', '-C', cask_tap_dir, 'rev-parse', '--is-shallow-repository').first.strip == 'true'
-    cask_added_date = Date.parse(Open3.capture2('git', '-C', cask_tap_dir, 'log', '--diff-filter=A', '--max-count=1', '--format=%aI', cask_path).first.strip)
-    puts 'Age: ' + (Date.today - cask_added_date).to_i.to_s + ' days (added ' + cask_added_date.strftime('%Y, %B %d') + ')'
+    if shallow?(cask_tap_dir)
+      system('git', '-C', cask_tap_dir, 'fetch', '--unshallow')
+    end
+
+    cask_added_date = Date.parse(
+      Open3.capture2(
+        'git', '-C', cask_tap_dir.to_path,
+        'log', '--diff-filter=A',
+        '--max-count=1', '--format=%aI', cask_path.to_path
+      ).first.strip
+    )
+
+    cask_added_formatted = cask_added_date.strftime('%Y, %B %d')
+    cask_age = (Date.today - cask_added_date).to_i.to_s
+
+    puts "Age: #{cask_age} days (added #{cask_added_formatted})"
   end
 
   puts # Empty line to separate multiple casks
