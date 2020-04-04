@@ -97,6 +97,10 @@ else
   readonly file_path="${given_file}"
 fi
 
+# Escape quotes, so we can quote curl's "--form"
+# to allow for filenames with commas and semicolons
+readonly escaped_file_path="${file_path//\"/\\\"}"
+
 # Upload
 readonly file_name=$(ascii_basename "${file_path}")
 
@@ -115,9 +119,9 @@ fi
 if [[ "${upload_host}" == *'transfer.sh' ]]; then
   readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}/${file_name}")"
 elif [[ "${upload_host}" == '0x0.st' ]]; then
-  readonly url="$(curl --globoff --progress-bar --form "file=@${file_path}" "https://${upload_host}")"
+  readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://${upload_host}")"
 else
-  readonly url="$(curl --globoff --progress-bar --form "file=@${file_path}" "https://api.${upload_host}/upload" | ruby -e 'require "json"; data = JSON.parse(gets); abort "There was an error uploading" if data["status"] == false; puts data["data"]["file"]["url"]["full"]')"
+  readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://api.${upload_host}/upload" | ruby -e 'require "json"; data = JSON.parse(gets); abort "There was an error uploading" if data["status"] == false; puts data["data"]["file"]["url"]["full"]')"
 fi
 
 echo -n "${url}" | pbcopy
