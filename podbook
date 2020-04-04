@@ -100,8 +100,12 @@ function depends_on {
 function upload_file {
   local file_name="${1}"
 
+  # Escape quotes, so we can quote curl's "--form"
+  # to allow for filenames with commas and semicolons
+  readonly escaped_file_name="${file_name//\"/\\\"}"
+
   echo "Uploading $(basename "${file_name}")…" >&2
-  curl --globoff --progress-bar --form "file=@${file_name}" 'https://0x0.st'
+  curl --globoff --progress-bar --form "file=@\"${escaped_file_name}\"" 'https://0x0.st'
 }
 
 function extract_title {
