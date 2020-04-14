@@ -8,7 +8,7 @@ function get_output_path {
   local -r init_output_path="${3}"
 
   if [[ -n "${init_output_path}" ]]; then
-    [[ "${init_output_path##*.}" == "${ext}" ]] && echo "${init_output_path}" || echo "${init_output_path}${ext}"
+    [[ "${init_output_path##*.}" == "${ext##*.}" ]] && echo "${init_output_path}" || echo "${init_output_path}${ext}"
   else
     echo "$(pwd -P)/$(basename "${input_path%.*}${ext}")"
   fi
