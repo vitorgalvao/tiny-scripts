@@ -121,7 +121,7 @@ if [[ "${upload_host}" == *'transfer.sh' ]]; then
 elif [[ "${upload_host}" == '0x0.st' ]]; then
   readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://${upload_host}")"
 else
-  readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://api.${upload_host}/upload" | ruby -e 'require "json"; data = JSON.parse(gets); abort "There was an error uploading" if data["status"] == false; puts data["data"]["file"]["url"]["full"]')"
+  readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://api.${upload_host}/upload" | ruby -r 'json' -e 'data = JSON.parse(gets); abort "There was an error uploading" if data["status"] == false; puts data["data"]["file"]["url"]["full"]')"
 fi
 
 echo -n "${url}" | pbcopy
