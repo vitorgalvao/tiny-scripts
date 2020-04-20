@@ -63,7 +63,7 @@ links_file = ARGV[0]
 abort 'You need to provide the path to a file.' if !File.file?(links_file)
 
 # Update bookmarks
-all_bookmarks = JSON.parse(URI("https://api.pinboard.in/v1/posts/all?auth_token=#{pinboard_token}&format=json").read)
+all_bookmarks = JSON.parse(URI.open("https://api.pinboard.in/v1/posts/all?auth_token=#{pinboard_token}&format=json").read)
 
 File.readlines(links_file).each do |line|
   urls = line.split('→').map(&:strip)
@@ -85,13 +85,13 @@ File.readlines(links_file).each do |line|
   bhash['href'] = new_url
   bhash.transform_values! { |v| CGI.escape(v) }
 
-  add_bookmark_result = JSON.parse(URI("https://api.pinboard.in/v1/posts/add?url=#{bhash['href']}&description=#{bhash['description']}&extended=#{bhash['extended']}&tags=#{bhash['tags']}&dt=#{bhash['time']}&shared=#{bhash['shared']}&toread=#{bhash['toread']}&auth_token=#{pinboard_token}&format=json").read)['result_code']
+  add_bookmark_result = JSON.parse(URI.open("https://api.pinboard.in/v1/posts/add?url=#{bhash['href']}&description=#{bhash['description']}&extended=#{bhash['extended']}&tags=#{bhash['tags']}&dt=#{bhash['time']}&shared=#{bhash['shared']}&toread=#{bhash['toread']}&auth_token=#{pinboard_token}&format=json").read)['result_code']
   if add_bookmark_result != 'done'
     fail_message 'add updated', result
     next
   end
 
-  del_bookmark_result = JSON.parse(URI("https://api.pinboard.in/v1/posts/delete?url=#{CGI.escape(old_url)}&auth_token=#{pinboard_token}&format=json").read)['result_code']
+  del_bookmark_result = JSON.parse(URI.open("https://api.pinboard.in/v1/posts/delete?url=#{CGI.escape(old_url)}&auth_token=#{pinboard_token}&format=json").read)['result_code']
 
   if del_bookmark_result != 'done'
     fail_message 'remove old', result
