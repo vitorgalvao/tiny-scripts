@@ -21,7 +21,7 @@ cdn = 'http://cdn-ondemand.rtp.pt'
 link = ARGV[0]
 output_name = ARGV[1]
 
-page = Nokogiri::HTML(URI.parse(link).open)
+page = Nokogiri::HTML(URI.open(link))
 
 video_link = cdn + page.css('script:contains("fileKey")').text.split("\n").select { |l| l.match(/^\s*fileKey/) }.join.sub(/.*"(.*)".*/, '\1')
 video_ext = File.extname(video_link)
