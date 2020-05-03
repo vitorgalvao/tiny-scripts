@@ -7,7 +7,7 @@ function depends_on {
   local missing_deps=()
 
   for dep in "${all_deps[@]}"; do
-    command -v "${dep}" &>/dev/null || missing_deps+=("${dep}")
+    command -v "${dep}" > /dev/null || missing_deps+=("${dep}")
   done
 
   if [[ "${#missing_deps[@]}" -gt 0 ]]; then
