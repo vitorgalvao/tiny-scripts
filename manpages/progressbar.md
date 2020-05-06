@@ -35,4 +35,4 @@ Show help.
 
 ## AUTHORS
 
-Vítor Galvão (vitorgalvao.com)
+Vítor Galvão (https://vitorgalvao.com)

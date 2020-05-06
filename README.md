@@ -44,7 +44,7 @@ Spoof the MAC address
 ### makeicns
 Make an icns file from a png
 
-### mtgwallpaper
+### mtg-wallpapers
 Download Magic: The Gathering wallpapers
 
 ### pinboardbackup
