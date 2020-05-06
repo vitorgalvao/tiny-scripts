@@ -26,7 +26,7 @@ if [[ "${#}" -eq 0 ]]; then
   exit 1
 fi
 
-# Available flags to use with the script
+# Options
 args=()
 while [[ "${1}" ]]; do
   case "${1}" in

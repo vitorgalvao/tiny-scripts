@@ -68,6 +68,7 @@ function usage {
   " | sed -E 's/^ {4}//'
 }
 
+# Options
 args=()
 while [[ "${1}" ]]; do
   case "${1}" in

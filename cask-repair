@@ -355,7 +355,7 @@ function divide {
   command -v 'hr' &>/dev/null && hr - || echo '--------------------'
 }
 
-# Available flags
+# Options
 args=()
 while [[ "${1}" ]]; do
   case "${1}" in

@@ -19,7 +19,8 @@ function usage {
   " | sed -E 's/^ {4}//'
 }
 
-# Set options
+# Options
+args=()
 while [[ "${1}" ]]; do
   case "${1}" in
     -h | --help)
@@ -39,13 +40,22 @@ while [[ "${1}" ]]; do
     -s | --save-token)
       set_keychain_token='true'
       ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
     -*)
       echo "Unrecognised option: ${1}"
       exit 1
       ;;
+    *)
+      args+=("${1}")
+      ;;
   esac
   shift
 done
+set -- "${args[@]}"
 
 # Ask for api token, if option is set
 if [[ -n "${ask_for_token}" ]]; then

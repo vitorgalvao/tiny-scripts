@@ -50,7 +50,7 @@ function usage {
   " | sed -E 's/^ {4}//'
 }
 
-# Available flags
+# Options
 args=()
 while [[ "${1}" ]]; do
   case "${1}" in

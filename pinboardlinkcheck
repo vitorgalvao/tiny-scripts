@@ -28,7 +28,8 @@ function bad { echo "$(tput setab 1)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
 function good { echo "$(tput setab 2)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
 function warning { echo "$(tput setab 3)$(tput setaf 7)${1}$(tput sgr0) ${2}" ;}
 
-# Set options
+# Options
+args=()
 while [[ "${1}" ]]; do
   case "${1}" in
     -h | --help)
@@ -59,13 +60,22 @@ while [[ "${1}" ]]; do
     -s | --save-token)
       set_keychain_token='true'
       ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
     -*)
       echo "Unrecognised option: ${1}"
       exit 1
       ;;
+    *)
+      args+=("${1}")
+      ;;
   esac
   shift
 done
+set -- "${args[@]}"
 
 # Location for log files
 [[ -z "${log_dir}" ]] && log_dir="${HOME}"

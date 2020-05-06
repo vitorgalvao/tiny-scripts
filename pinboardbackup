@@ -20,7 +20,8 @@ function usage {
   " | sed -E 's/^ {4}//'
 }
 
-# Set options
+# Options
+args=()
 while [[ "${1}" ]]; do
   case "${1}" in
     -h | --help)
@@ -44,13 +45,22 @@ while [[ "${1}" ]]; do
     -s | --save-token)
       set_keychain_token='true'
       ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
     -*)
       echo "Unrecognised option: ${1}"
       exit 1
       ;;
+    *)
+      args+=("${1}")
+      ;;
   esac
   shift
 done
+set -- "${args[@]}"
 
 # Defaults for unset variables
 [[ -z "${export_format}" ]] && export_format='xml'

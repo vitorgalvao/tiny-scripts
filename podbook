@@ -293,6 +293,7 @@ function main {
 
 depends_on 'exiftool' 'human-media-time'
 
+# Options
 args=()
 while [[ "${1}" ]]; do
   case "${1}" in
