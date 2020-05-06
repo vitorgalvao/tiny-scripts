@@ -17,9 +17,18 @@ OptionParser.new do |opt|
     Options:
   EOS
 
-  opt.on('-u <s|d|h|m>', '--unit', 'Output a whole number of the total time rounded to the unit.') { |unit| options[:unit] = unit }
-  opt.on('-p <s|d|h|m>', '--precision', 'Output human-readable result rounded and truncated to the chosen unit. Values of zero are ommited.') { |unit| options[:precision] = unit }
-  opt.on('-h', '--help', 'Show this help.') { puts opt }
+  opt.on('-u <s|d|h|m>', '--unit', 'Output a whole number of the total time rounded to the unit.') do |unit|
+    options[:unit] = unit
+  end
+
+  opt.on('-p <s|d|h|m>', '--precision', 'Output human-readable result rounded and truncated to the chosen unit. Values of zero are ommited.') do |unit|
+    options[:precision] = unit
+  end
+
+  opt.on('-h', '--help', 'Show this help.') do
+    put opts
+    exit 0
+  end
 end.parse!
 
 # Parse time values
