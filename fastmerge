@@ -118,7 +118,7 @@ apply_patch() {
   patch_url="${url}.patch" # github pull request url, ending in '.patch'
   check_repo
 
-  current_branch=$(git rev-parse --abbrev-ref HEAD)
+  current_branch=$(git branch --show-current)
   [[ "${current_branch}" != 'master' ]] && git checkout master --quiet
   pull_remote
 

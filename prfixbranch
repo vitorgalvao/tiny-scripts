@@ -94,7 +94,7 @@ apply_patch() {
 push_changes() {
   original_commit="$(cat ${commit_hash_file})"
   original_issue="#$(cat ${issue_number_file})"
-  branch_name="$(git rev-parse --abbrev-ref HEAD)"
+  branch_name="$(git branch --show-current)"
   uncommitted_changes="$(git status --porcelain --untracked-files=no)"
 
   # squash your fixes into the original patch, if there are uncommitted changes
