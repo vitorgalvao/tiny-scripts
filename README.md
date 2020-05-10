@@ -14,12 +14,6 @@ Quickly repair outdated/broken Casks from homebrew-cask
 ### climergebutton
 Merge [github](https://github.com/) pull requests via the merge button API
 
-### crafts
-Allow copy/cut/paste between different terminal windows (it’s meant to be sourced from the shell, not called directly)
-
-### fastmerge
-Quickly pull and push [github](https://github.com/) pull requests to keep commit history cleaner, merging directly to master and closing the pull request
-
 ### gfv (gif from video)
 Make animated gifs from a video file
 
@@ -64,12 +58,6 @@ Extract pkg files in a logical hierarchy
 
 ### podbook
 Generate a podcast RSS feed for audiobooks
-
-### prfixbranch
-Quickly pull, fix, and push [github](https://github.com/) pull requests, creating a new pull request with the fix
-
-### prfixmaster
-Quickly pull, fix, and push [github](https://github.com/) pull requests, merging directly to master and closing the previous pull request
 
 ### progressbar
 Overlay a progress bar on videos or gifs
