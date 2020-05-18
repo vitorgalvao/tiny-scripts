@@ -1,6 +1,6 @@
 # Collection of small scripts
 
-The easiest way to get these is via [this repository](https://github.com/vitorgalvao/homebrew-tiny-scripts), as the install will take care of any eventual dependencies that are not already available on your system.
+The easiest way to get these is via [the Homebrew tap](https://github.com/vitorgalvao/homebrew-tiny-scripts), as the install will take care of any eventual dependencies that are not already available on your system.
 
 ### app-icon-extract
 Extract app bundle icon as png
