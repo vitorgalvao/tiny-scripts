@@ -2,6 +2,8 @@
 
 readonly program="$(basename "${0}")"
 readonly cap_fps='30'
+readonly tmp_dir="$(mktemp -d)"
+trap 'rm -rf "${tmp_dir}"' EXIT
 
 function depends_on {
   local -r all_deps=("${@}")
@@ -134,18 +136,19 @@ fi
 if [[ -z "${use_gifski}" ]]; then
   [[ -z "${width}" ]] && width='-1' # Make width same as original video, if none given
 
-  readonly palette="$(mktemp).png"
+  readonly palette="${tmp_dir}/palette.png"
   ffmpeg -i "${input_file}" -filter_complex "fps=${fps},scale=${width}:-1:flags=lanczos,palettegen" "${palette}"
   ffmpeg -i "${input_file}" -i "${palette}" -filter_complex "fps=${fps},scale=${width}:-1:flags=lanczos[x];[x][1:v]paletteuse" "${output_file}"
 else
-  readonly tmp_dir="$(mktemp -d)"
+  readonly frames_dir="${tmp_dir}/frames"
+  mkdir -p "${frames_dir}"
 
   echo 'Extracting images from video…'
-  ffmpeg -loglevel quiet -i "${input_file}" -filter_complex "fps=${fps}" "${tmp_dir}/output_mage%9d.png"
+  ffmpeg -loglevel quiet -i "${input_file}" -filter_complex "fps=${fps}" "${frames_dir}/output_mage%9d.png"
 
   options=()
   [[ -n "${width}" ]] && options+=('--width' "${width}")
   options+=('--fps' "${fps}")
 
-  gifski "${tmp_dir}/"* "${options[@]}" --output "${output_file}"
+  gifski "${frames_dir}/"* "${options[@]}" --output "${output_file}"
 fi
