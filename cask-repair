@@ -148,9 +148,7 @@ function http_status_code {
 }
 
 function has_interpolation {
-  local version="${1}"
-
-  [[ "${version}" =~ \#{version.*} ]]
+  [[ "${1}" =~ \#{version.*} ]]
 }
 
 function is_version_latest {
@@ -200,12 +198,7 @@ function modify_url {
   url="${1}"
   cask_file="${2}"
 
-  # Use appropriate quotes depending on if a url with interpolation was given
-  if has_interpolation "${url}"; then
-    modify_stanza 'url' "\"${url}\"" "${cask_file}"
-  else
-    modify_stanza 'url' "'${url}'" "${cask_file}"
-  fi
+  modify_stanza 'url' "\"${url}\"" "${cask_file}"
 }
 
 function appcast_url {
