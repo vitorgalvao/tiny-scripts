@@ -231,7 +231,7 @@ function sha_change {
   downloaded_file=$(brew cask fetch "${cask_file}" 2>/dev/null | tail -1 | sed 's/==> Success! Downloaded to -> //')
   package_sha=$(shasum --algorithm 256 "${downloaded_file}" | awk '{ print $1 }')
 
-  modify_stanza 'sha256' "'${package_sha}'" "${cask_file}"
+  modify_stanza 'sha256' "\"${package_sha}\"" "${cask_file}"
 }
 
 function delete_created_branches {
@@ -497,7 +497,7 @@ for cask in "${@}"; do
   if [[ "${given_cask_version}" == ':latest' || "${given_cask_version}" == 'latest' ]]; then # Allow both ':latest' and 'latest' to be given
     modify_stanza 'version' ':latest' "${cask_file}"
   else
-    modify_stanza 'version' "'${given_cask_version}'" "${cask_file}"
+    modify_stanza 'version' "\"${given_cask_version}\"" "${cask_file}"
   fi
 
   if [[ -n "${given_cask_url}" ]]; then
