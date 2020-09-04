@@ -624,7 +624,7 @@ for cask in "${@}"; do
   if [[ -n "${pr_link}" ]]; then
     if [[ -n "${install_now}" ]]; then
       success_message 'Updating cask locally…'
-      brew cask reinstall "${cask_file}"
+      brew reinstall "${cask_file}"
     else
       echo -e "\nYou can upgrade the cask right now from your personal branch:\n  brew cask reinstall https://raw.githubusercontent.com/${github_username}/$(current_tap)/${cask_branch}/Casks/${cask_name}.rb"
     fi
