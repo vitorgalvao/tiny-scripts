@@ -1,0 +1,140 @@
+#!/bin/bash
+
+readonly program="$(basename "${0}")"
+
+function usage {
+  echo "
+    Accept GitHub pull requests via the review button API
+
+    Usage:
+      ${program} [options] <github_pull_request_url>
+
+    Multiple <github_pull_request_url> can be given, and will be processed in sequence.
+
+    Options:
+      -t, --ensure-token   Ask to save GitHub token if there is none, and exit.
+      -h, --help           Show this help.
+  " | sed -E 's/^ {4}//'
+}
+
+function get_github_token {
+  local -r operating_system="$(uname -s)"
+
+  # Check if we already have a token set
+  local github_token
+
+  if [[ "${operating_system}" == 'Darwin' ]]; then
+    github_token="$(security find-generic-password -s "${program} github token" -w 2>/dev/null)"
+  else
+    local token_file
+    [[ -n "${XDG_CONFIG_HOME}" ]] && token_file="${XDG_CONFIG_HOME}/${program}/token" || token_file="${HOME}/.config/${program}/token"
+    [[ -f "${token_file}" ]] && github_token="$(< "${token_file}")" || github_token=''
+  fi
+
+  if [[ -n "${github_token}" ]]; then
+    echo "${github_token}"
+    return 0
+  fi
+
+  # If we get here, there was no token set and we need to request one
+  echo 'We need to create a new GitHub token to continue the script.' >&2
+
+  local -r machine_name="$(hostname -s)"
+
+  local github_username github_password
+  read -rp "Github username: " github_username
+  read -rsp "Github password (never stored): " github_password
+  echo >&2
+
+  local -r request=(curl --silent 'https://api.github.com/authorizations' --user "${github_username}:${github_password}" --data "{\"scopes\":[\"repo\"],\"note\":\"${program} for ${USER} on ${machine_name}\"}")
+
+  local response="$("${request[@]}")"
+
+  while grep --quiet 'Must specify two-factor authentication OTP code.' <<< "${response}"; do
+    read -rp '2FA code: ' otp
+    response="$("${request[@]}" --header "X-GitHub-OTP: ${otp}")"
+  done
+
+  if ! grep --quiet '"token"' <<< "${response}"; then
+    echo -e "\n${response}" >&2
+    exit 1
+  fi
+
+  github_token="$(grep 'token' <<< "${response}" | head -1 | cut -d'"' -f4)"
+
+  if [[ "${operating_system}" == 'Darwin' ]]; then
+    security add-generic-password -s "${program} github token" -a "${github_username}" -w "${github_token}"
+  else
+    mkdir -p "$(basename "${token_file}")"
+    echo "${github_password}" > "${token_file}"
+  fi
+
+  echo "${github_token}"
+}
+
+function approve_pr {
+  local -r url="$(perl -pe 's|(.*/pull/\d+).*|\1|' <<< "${1}")"
+  local -r owner="$(cut -d'/' -f4 <<< "${url}")"
+  local -r repo="$(cut -d'/' -f5 <<< "${url}")"
+  local -r pr_number="$(cut -d'/' -f7 <<< "${url}")"
+
+  echo -n "Approving ${owner}/${repo}/${pr_number}… "
+
+  local -r response="$(curl --silent --request POST --data '{ "event": "APPROVE" }' --header "Authorization: token ${github_token}" "https://api.github.com/repos/${owner}/${repo}/pulls/${pr_number}/reviews")"
+
+  if grep --quiet '"state": "APPROVED"' <<< "${response}"; then
+    echo 'Approved.'
+  else
+    local -r response_message="$(grep 'message' <<< "${response}" | sed -E 's/.*"message": "(.*)".*/\1/')"
+    echo "Failed (${response_message})."
+    exit 1
+  fi
+}
+
+# Options
+args=()
+while [[ "${1}" ]]; do
+  case "${1}" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -t | --ensure-token)
+      ask_for_token='true'
+      ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
+    -*)
+      echo "Unrecognised option: ${1}"
+      exit 1
+      ;;
+    *)
+      args+=("${1}")
+      ;;
+  esac
+  shift
+done
+set -- "${args[@]}"
+
+readonly github_token="$(get_github_token)"
+
+[[ -n "${ask_for_token}" ]] && exit 0
+
+# Abort if no argument was given
+if [[ "${#}" -eq 0 ]]; then
+  usage
+  exit 1
+fi
+
+while [[ "${1}" ]]; do # Allow for multiple github PR urls to be passed at once
+  if [[ "${1}" =~ https://github.com/* ]]; then
+    approve_pr "${1}"
+    shift
+  else
+    usage
+    exit 1
+  fi
+done
