@@ -14,8 +14,8 @@ Quickly repair outdated/broken Casks from homebrew-cask
 ### cli-accept-button
 Accept [GitHub](https://github.com/) pull requests via the review button API
 
-### climergebutton
-Merge [github](https://github.com/) pull requests via the merge button API
+### cli-merge-button
+Merge [GitHub](https://github.com/) pull requests via the merge button API
 
 ### gfv (gif from video)
 Make animated gifs from a video file

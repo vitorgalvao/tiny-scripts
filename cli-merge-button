@@ -5,6 +5,8 @@ readonly default_merge_strategy='squash'
 
 function usage {
   echo "
+    Merge GitHub pull requests via the merge button API
+
     Usage:
       ${program} [options] <github_pull_request_url>
 
@@ -73,21 +75,19 @@ function get_github_token {
 }
 
 function merge_pr {
-  local url owner repo pr_number response
-
-  url="$(perl -pe 's|(.*/pull/\d+).*|\1|' <<< "${1}")"
-  owner="$(cut -d'/' -f4 <<< "${url}")"
-  repo="$(cut -d'/' -f5 <<< "${url}")"
-  pr_number="$(cut -d'/' -f7 <<< "${url}")"
+  local -r url="$(perl -pe 's|(.*/pull/\d+).*|\1|' <<< "${1}")"
+  local -r owner="$(cut -d'/' -f4 <<< "${url}")"
+  local -r repo="$(cut -d'/' -f5 <<< "${url}")"
+  local -r pr_number="$(cut -d'/' -f7 <<< "${url}")"
 
   echo -n "Merging ${owner}/${repo}/${pr_number}… "
 
-  response="$(curl --silent --request PUT --data "{ \"merge_method\": \"${merge_strategy:-${default_merge_strategy}}\" }" --header "Authorization: token ${github_token}" "https://api.github.com/repos/${owner}/${repo}/pulls/${pr_number}/merge")"
+  local -r response="$(curl --silent --request PUT --data "{ \"merge_method\": \"${merge_strategy:-${default_merge_strategy}}\" }" --header "Authorization: token ${github_token}" "https://api.github.com/repos/${owner}/${repo}/pulls/${pr_number}/merge")"
 
   if grep --quiet '"merged": true' <<< "${response}"; then
     echo 'Merged.'
   else
-    response_message="$(grep 'message' <<< "${response}" | sed -E 's/.*"message": "(.*)".*/\1/')"
+    local -r response_message="$(grep 'message' <<< "${response}" | sed -E 's/.*"message": "(.*)".*/\1/')"
     echo "Failed (${response_message})."
     exit 1
   fi
