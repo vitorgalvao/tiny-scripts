@@ -4,7 +4,7 @@ readonly program="$(basename "${0}")"
 
 function usage {
   echo "
-    Accept GitHub pull requests via the review button API
+    Approve GitHub pull requests via the review button API
 
     Usage:
       ${program} [options] <github_pull_request_url>

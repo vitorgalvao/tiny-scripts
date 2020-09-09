@@ -11,7 +11,7 @@ Show analytics information for casks in the main taps
 ### cask-repair
 Quickly repair outdated/broken Casks from homebrew-cask
 
-### cli-accept-button
+### cli-approve-button
 Accept [GitHub](https://github.com/) pull requests via the review button API
 
 ### cli-merge-button
