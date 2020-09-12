@@ -77,7 +77,7 @@ ARGV.each do |cask_name|
 
   unless options[:suppress_age]
     if shallow?(cask_tap_dir)
-      system('git', '-C', cask_tap_dir, 'fetch', '--unshallow')
+      system('git', '-C', cask_tap_dir.to_path, 'fetch', '--unshallow')
     end
 
     cask_added_date = Date.parse(
