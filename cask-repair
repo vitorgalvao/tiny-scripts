@@ -507,9 +507,10 @@ for cask in "${@}"; do
       modify_url "${given_cask_url}" "${cask_file}"
     fi
   else
-    # If url does not use interpolation and is not block, ask for it
+    # If url does not use interpolation, is not block, and not updating blindly, ask for it
     cask_bare_url=$(grep "url ['\"].*['\"]" "${cask_file}" | sed -E "s|.*url ['\"](.*)['\"].*|\1|")
-    if ! has_interpolation "${cask_bare_url}" && ! has_block_url "${cask_file}"; then
+
+    if ! has_interpolation "${cask_bare_url}" && ! has_block_url "${cask_file}" && [[ -z "${updated_blindly}" ]]; then
       read -rp $'Paste the new URL (or leave blank to use the current one)\n> ' given_cask_url
 
       [[ -n "${given_cask_url}" ]] && modify_url "${given_cask_url}" "${cask_file}"
