@@ -44,6 +44,9 @@ Make an icns file from a png
 ### mtg-wallpapers
 Download Magic: The Gathering wallpapers
 
+### pedir-gas
+Ask for gas delivery from drogaria Ponto Azul
+
 ### pinboardbackup
 Backup all bookmarks in your [pinboard](https://pinboard.in/) account
 
