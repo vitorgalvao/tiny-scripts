@@ -9,7 +9,7 @@ ARGV.push('--help') if ARGV.empty?
 options = {}
 OptionParser.new do |opt|
   opt.banner = <<~EOS
-    Output total running time of files in a human-readable way.
+    Calculate and present total running time of media files in a human-readable way
 
     Usage:
       #{File.basename($PROGRAM_NAME)} [options] <path...>

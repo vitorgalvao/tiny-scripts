@@ -21,7 +21,7 @@ Merge [GitHub](https://github.com/) pull requests via the merge button API
 Make animated gifs from a video file
 
 ### human-media-time
-Calculate the total running time of multiple media files, presenting the output in a human-readable way
+Calculate and present total running time of media files in a human-readable way
 
 ### labelcolor
 Change label color of files in macOS
