@@ -75,6 +75,7 @@ function usage {
       -o, --open-home                        Open the homepage for the given cask.
       -a, --open-appcast                     Open the appcast for the given cask.
       -v, --cask-version                     Give a version directly, instead of being prompted for it.
+      -s, --cask-sha                         Give a sha256 directly, skipping the download fetch.
       -u, --cask-url                         Give a URL directly, instead of being prompted for it.
       -e, --edit-cask                        Opens cask for editing before trying first download.
       -c <number>, --closes-issue <number>   Adds 'Closes #<number>.' to the pull request.
@@ -214,12 +215,19 @@ function has_appcast {
 }
 
 function sha_change {
-  local cask_sha_deliberatedly_unchecked downloaded_file package_sha cask_file
+  local cask_sha_deliberatedly_unchecked downloaded_file package_sha cask_file given_sha
 
   cask_file="${1}"
+  given_sha="${2}"
 
   cask_sha_deliberatedly_unchecked="$(grep 'sha256 :no_check # required as upstream package is updated in-place' "${cask_file}")"
   [[ -n "${cask_sha_deliberatedly_unchecked}" ]] && return # Abort function if cask deliberately uses :no_check with a version
+
+  # If a sha256 was given, use that instead of fetching
+  if [[ -n "${given_sha}" ]]; then
+    modify_stanza 'sha256' "\"${given_sha}\"" "${cask_file}"
+    return
+  fi
 
   # Set sha256 as :no_check temporarily, to prevent mismatch errors when fetching
   modify_stanza 'sha256' ':no_check' "${cask_file}"
@@ -365,6 +373,10 @@ while [[ "${1}" ]]; do
       ;;
     -v | --cask-version)
       given_cask_version="${2}"
+      shift
+      ;;
+    -s | --cask-sha)
+      given_cask_sha="${2}"
       shift
       ;;
     -u | --cask-url)
@@ -533,7 +545,7 @@ for cask in "${@}"; do
   if is_version_latest "${cask_file}"; then
     modify_stanza 'sha256' ':no_check' "${cask_file}"
   else
-    sha_change "${cask_file}"
+    sha_change "${cask_file}" "${given_cask_sha}"
   fi
 
   # Check if everything is alright, else abort
