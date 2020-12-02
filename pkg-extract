@@ -51,6 +51,24 @@ function try_overwrite {
   fi
 }
 
+function is_pkg_archive {
+  local -r input_path="${1}"
+
+  [[ "$(file --brief --mime-type "${input_path}")" == 'application/x-xar' ]]
+}
+
+function is_pkg_dir {
+  local -r input_path="${1}"
+
+  [[ "${input_path##*.}" == 'pkg' && "$(file --brief --mime-type "${input_path}")" == 'inode/directory' ]]
+}
+
+function is_mpkg {
+  local -r input_path="${1}"
+
+  [[ "${input_path##*.}" == 'mpkg' && "$(file --brief --mime-type "${input_path}")" == 'inode/directory' ]]
+}
+
 function remove_pkg_extension {
   sed -E 's/\.m?pkg$//' <<< "${1}"
 }
@@ -97,17 +115,36 @@ while [[ "${1}" ]]; do
 done
 set -- "${args[@]}"
 
+if [[ "${#}" -ne 1 ]]; then
+  usage
+  exit 1
+fi
+
 readonly input_pkg="${1}"
 readonly extract_dir="$(mktemp -d)/extracted_pkg"
 readonly output_dir="$(get_output_path '' "${input_pkg}" "$(remove_pkg_extension "${given_output_path}")")"
 try_overwrite 'false' "${output_dir}" # If target directory exists, exit
 
-if [[ "${#}" -ne 1 || "$(file --brief --mime-type "${input_pkg}")" != 'application/x-xar' ]]; then
-  usage
-  exit 1
+# If mpkg, run script in all pkgs found inside
+if is_mpkg "${input_pkg}"; then
+  mkdir -p "${output_dir}"
+
+  while IFS= read -r -d '' pkg; do
+    "${0}" --output-dir "${output_dir}/$(basename "$(remove_pkg_extension "${pkg}")")" "${pkg}"
+  done < <(find "${input_pkg}" -iname '*.pkg' -print0)
+
+  exit
 fi
 
-pkgutil --expand "${input_pkg}" "${extract_dir}"
+# Begin pkg extraction
+if is_pkg_archive "${input_pkg}"; then
+  pkgutil --expand "${input_pkg}" "${extract_dir}"
+elif is_pkg_dir "${input_pkg}"; then
+  cp -R "${input_pkg}/" "${extract_dir}"
+else
+  echo 'Input does not seem like a valid .pkg' >&2
+  exit 1
+fi
 
 while IFS= read -r -d '' payload; do
   payload_extract_dir="$(mktemp -d)"
