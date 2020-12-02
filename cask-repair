@@ -232,11 +232,11 @@ function sha_change {
   # Set sha256 as :no_check temporarily, to prevent mismatch errors when fetching
   modify_stanza 'sha256' ':no_check' "${cask_file}"
 
-  if ! brew cask fetch --force "${cask_file}"; then
+  if ! brew fetch --cask --force "${cask_file}"; then
     clean
     abort "There was an error fetching ${cask_file}. Please check your connection and try again."
   fi
-  downloaded_file=$(HOMEBREW_NO_COLOR=1 brew cask fetch "${cask_file}" 2>/dev/null | tail -1 | sed 's/==> Success! Downloaded to -> //')
+  downloaded_file=$(HOMEBREW_NO_COLOR=1 brew fetch --cask "${cask_file}" 2>/dev/null | tail -1 | sed 's/==> Success! Downloaded to -> //')
   package_sha=$(shasum --algorithm 256 "${downloaded_file}" | awk '{ print $1 }')
 
   modify_stanza 'sha256' "\"${package_sha}\"" "${cask_file}"
