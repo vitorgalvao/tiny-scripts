@@ -236,7 +236,7 @@ function sha_change {
     clean
     abort "There was an error fetching ${cask_file}. Please check your connection and try again."
   fi
-  package_sha=$(HOMEBREW_NO_COLOR=1 brew fetch --cask "${cask_file}" 2>/dev/null | tail -1 | sed 's/SHA256: //')
+  package_sha="$(HOMEBREW_NO_COLOR=1 brew fetch --cask "${cask_file}" 2>/dev/null | tail -1 | sed 's/SHA256: //')"
 
   modify_stanza 'sha256' "\"${package_sha}\"" "${cask_file}"
 }
