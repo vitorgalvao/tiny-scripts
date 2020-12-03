@@ -215,7 +215,7 @@ function has_appcast {
 }
 
 function sha_change {
-  local cask_sha_deliberatedly_unchecked downloaded_file package_sha cask_file given_sha
+  local cask_sha_deliberatedly_unchecked package_sha cask_file given_sha
 
   cask_file="${1}"
   given_sha="${2}"
@@ -236,8 +236,7 @@ function sha_change {
     clean
     abort "There was an error fetching ${cask_file}. Please check your connection and try again."
   fi
-  downloaded_file=$(HOMEBREW_NO_COLOR=1 brew fetch --cask "${cask_file}" 2>/dev/null | tail -1 | sed 's/==> Success! Downloaded to -> //')
-  package_sha=$(shasum --algorithm 256 "${downloaded_file}" | awk '{ print $1 }')
+  package_sha=$(HOMEBREW_NO_COLOR=1 brew fetch --cask "${cask_file}" 2>/dev/null | tail -1 | sed 's/SHA256: //')
 
   modify_stanza 'sha256' "\"${package_sha}\"" "${cask_file}"
 }
