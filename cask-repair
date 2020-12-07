@@ -232,11 +232,11 @@ function sha_change {
   # Set sha256 as :no_check temporarily, to prevent mismatch errors when fetching
   modify_stanza 'sha256' ':no_check' "${cask_file}"
 
-  if ! brew fetch --cask --force "${cask_file}"; then
+  if ! brew fetch --force "${cask_file}"; then
     clean
     abort "There was an error fetching ${cask_file}. Please check your connection and try again."
   fi
-  package_sha="$(HOMEBREW_NO_COLOR=1 brew fetch --cask "${cask_file}" 2>/dev/null | tail -1 | sed 's/SHA256: //')"
+  package_sha="$(HOMEBREW_NO_COLOR=1 brew fetch "${cask_file}" 2>/dev/null | tail -1 | sed 's/SHA256: //')"
 
   modify_stanza 'sha256' "\"${package_sha}\"" "${cask_file}"
 }
@@ -475,7 +475,7 @@ for cask in "${@}"; do
   git rev-parse --verify "${cask_branch}" &>/dev/null && git checkout "${cask_branch}" master --quiet || git checkout -b "${cask_branch}" master --quiet # Create branch or checkout if it already exists
 
   # Open home and appcast
-  [[ "${show_home}" == 'true' ]] && brew cask home "${cask_file}"
+  [[ "${show_home}" == 'true' ]] && brew home "${cask_file}"
 
   if has_appcast "${cask_file}"; then
     cask_appcast_url="$(appcast_url "${cask_file}")"
@@ -551,11 +551,11 @@ for cask in "${@}"; do
   [[ -z "${cask_updated}" ]] && cask_updated='false'
   until [[ "${cask_updated}" =~ ^[yne]$ ]]; do
     # fix style errors and check for style and audit errors
-    style_message=$(brew cask style --fix "${cask_file}" 2>/dev/null)
+    style_message=$(brew style --fix "${cask_file}" 2>/dev/null)
     style_result="${?}"
     [[ "${style_result}" -ne 0 ]] && add_warning error "${style_message}"
 
-    audit_message=$(brew cask audit "${cask_file}" 2>/dev/null)
+    audit_message=$(brew audit "${cask_file}" 2>/dev/null)
     audit_result="${?}"
     [[ "${audit_result}" -ne 0 ]] && add_warning error "${audit_message}"
 
@@ -611,7 +611,7 @@ for cask in "${@}"; do
     git commit "${cask_file}" --message "${commit_message}" --quiet
   fi
 
-  pr_message="${commit_message}\n\n**Important:** *Do not tick a checkbox if you haven’t performed its action.* Honesty is indispensable for a smooth review process.\n\nAfter making all changes to a cask, verify:\n\n- [x] \`brew cask audit --download {{cask_file}}\` is error-free.\n- [x] \`brew cask style --fix {{cask_file}}\` left no offenses.\n- [ ] There are no [open pull requests](https://github.com/Homebrew/homebrew-cask/pulls) for the same update.\n- [ ] The submission is for [a stable version](https://github.com/Homebrew/homebrew-cask/blob/master/doc/development/adding_a_cask.md#stable-versions) or [documented exception](https://github.com/Homebrew/homebrew-cask/blob/master/doc/development/adding_a_cask.md#but-there-is-no-stable-version).\n\nCreated with [\`cask-repair\`](https://github.com/Homebrew/homebrew-cask/blob/master/CONTRIBUTING.md#updating-a-cask)."
+  pr_message="${commit_message}\n\n**Important:** *Do not tick a checkbox if you haven’t performed its action.* Honesty is indispensable for a smooth review process.\n\nAfter making all changes to a cask, verify:\n\n- [ ] The submission is for [a stable version](https://github.com/Homebrew/homebrew-cask/blob/master/doc/development/adding_a_cask.md#stable-versions) or [documented exception](https://github.com/Homebrew/homebrew-cask/blob/master/doc/development/adding_a_cask.md#but-there-is-no-stable-version).\n- [x] \`brew audit --cask {{cask_file}}\` is error-free.\n- [x] \`brew style --fix {{cask_file}}\` reports no offenses."
   [[ -n "${issue_to_close}" ]] && pr_message+="\n\nCloses #${issue_to_close}."
   [[ -n "${extra_message}" ]] && pr_message+="\n\n${extra_message}"
   submit_pr_from="${github_username}:${cask_branch}"
@@ -638,7 +638,7 @@ for cask in "${@}"; do
       success_message 'Updating cask locally…'
       brew reinstall "${cask_file}"
     else
-      echo -e "\nYou can upgrade the cask right now from your personal branch:\n  brew cask reinstall https://raw.githubusercontent.com/${github_username}/$(current_tap)/${cask_branch}/Casks/${cask_name}.rb"
+      echo -e "\nYou can upgrade the cask right now from your personal branch:\n  brew reinstall https://raw.githubusercontent.com/${github_username}/$(current_tap)/${cask_branch}/Casks/${cask_name}.rb"
     fi
 
     clean
