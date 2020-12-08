@@ -215,13 +215,15 @@ function has_appcast {
 }
 
 function sha_change {
-  local cask_sha_deliberatedly_unchecked package_sha cask_file given_sha
+  local package_sha cask_file given_sha
 
   cask_file="${1}"
   given_sha="${2}"
 
-  cask_sha_deliberatedly_unchecked="$(grep 'sha256 :no_check # required as upstream package is updated in-place' "${cask_file}")"
-  [[ -n "${cask_sha_deliberatedly_unchecked}" ]] && return # Abort function if cask deliberately uses :no_check with a version
+  # If there is no checksum despite the cask being versioned, assume it is on purpose
+  if [[ "$(brew cask _stanza sha256 "${cask_file}")" == ':no_check' ]] && ! is_version_latest "${cask_file}"; then
+    return
+  fi
 
   # If a sha256 was given, use that instead of fetching
   if [[ -n "${given_sha}" ]]; then
@@ -502,7 +504,7 @@ for cask in "${@}"; do
       continue
     fi
 
-    [[ -z "${given_cask_version}" ]] && given_cask_version=$(brew cask _stanza version "${cask_file}")
+    [[ -z "${given_cask_version}" ]] && given_cask_version="${old_cask_version}"
   fi
 
   if [[ "${given_cask_version}" == ':latest' || "${given_cask_version}" == 'latest' ]]; then # Allow both ':latest' and 'latest' to be given
