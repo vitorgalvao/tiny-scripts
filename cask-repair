@@ -536,7 +536,7 @@ for cask in "${@}"; do
 
     [[ "${cask_url}" =~ (github.com|bitbucket.org) ]] && cask_url_status='200' # If the download URL is from github or bitbucket, fake the status code
 
-    if [[ "${cask_url_status}" != '200' ]]; then
+    if [[ "${cask_url_status}" != '200' ]] && [[ -z "${updated_blindly}" ]]; then
       [[ -z "${cask_url_status}" ]] && add_warning warning 'you need to use a valid URL' || add_warning warning "url is probably incorrect, as a non-200 (OK) HTTP response code was returned (${cask_url_status})"
     fi
   fi
