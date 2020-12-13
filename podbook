@@ -177,7 +177,7 @@ function extract_mime {
   local file_name file_mime
   readonly file_name="${1}"
 
-  readonly file_mime="$(file --mime-type "${file_name}" | sed 's/.*: //')"
+  readonly file_mime="$(file --mime-type --brief "${file_name}")"
   echo -n "${file_mime}"
 }
 
