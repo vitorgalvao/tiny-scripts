@@ -32,9 +32,6 @@ Facilitate installing Linux on a USB stick, from macOS
 ### lossless-compress
 Losslessly compress files
 
-### lovecolor
-Get color palette from colourlovers and format it to use in processing
-
 ### macspoof
 Spoof the MAC address
 
