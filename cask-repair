@@ -1,7 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
-export readonly MACOS_VERSION='11' # Latest macOS version, so commands like `fetch` are not dependent on the contributor’s OS
+declare -rx MACOS_VERSION='11' # Latest macOS version, so commands like `fetch` are not dependent on the contributor’s OS
 readonly submit_pr_to='homebrew:master'
 readonly caskroom_origin_remote_regex='(https://|(ssh://)?git@)github.com[/:]Homebrew/homebrew-cask'
 readonly caskroom_taps=(cask cask-versions cask-fonts cask-drivers)
