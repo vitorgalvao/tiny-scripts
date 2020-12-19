@@ -39,39 +39,10 @@ function get_github_token {
   fi
 
   # If we get here, there was no token set and we need to request one
-  echo 'We need to create a new GitHub token to continue the script.' >&2
+  echo 'A GitHub token is required. Create one with the "repo" scope at https://github.com/settings/tokens/new' >&2
 
-  local -r machine_name="$(hostname -s)"
-
-  local github_username github_password
-  read -rp "Github username: " github_username
-  read -rsp "Github password (never stored): " github_password
-  echo >&2
-
-  local -r request=(curl --silent 'https://api.github.com/authorizations' --user "${github_username}:${github_password}" --data "{\"scopes\":[\"repo\"],\"note\":\"${program} for ${USER} on ${machine_name}\"}")
-
-  local response="$("${request[@]}")"
-
-  while grep --quiet 'Must specify two-factor authentication OTP code.' <<< "${response}"; do
-    read -rp '2FA code: ' otp
-    response="$("${request[@]}" --header "X-GitHub-OTP: ${otp}")"
-  done
-
-  if ! grep --quiet '"token"' <<< "${response}"; then
-    echo -e "\n${response}" >&2
-    exit 1
-  fi
-
-  github_token="$(grep 'token' <<< "${response}" | head -1 | cut -d'"' -f4)"
-
-  if [[ "${operating_system}" == 'Darwin' ]]; then
-    security add-generic-password -s "${program} github token" -a "${github_username}" -w "${github_token}"
-  else
-    mkdir -p "$(basename "${token_file}")"
-    echo "${github_password}" > "${token_file}"
-  fi
-
-  echo "${github_token}"
+  read -rp 'Insert token > '
+  echo "${REPLY}"
 }
 
 function merge_pr {
