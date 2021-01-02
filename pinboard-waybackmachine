@@ -5,6 +5,8 @@ readonly program="$(basename "${0}")"
 # Instructions
 function usage {
   echo "
+    Add to the Wayback Machine links saved to a pinboard account.
+
     Usage:
       ${program} [options]
 
@@ -28,17 +30,17 @@ while [[ "${1}" ]]; do
       exit 0
       ;;
     -i | --include-unread)
-      keep_unread='true'
+      readonly keep_unread='true'
       ;;
     -t | --token)
-      token="${2}"
+      readonly token="${2}"
       shift
       ;;
     -a | --ask-for-token)
-      ask_for_token='true'
+      readonly ask_for_token='true'
       ;;
     -s | --save-token)
-      set_keychain_token='true'
+      readonly set_keychain_token='true'
       ;;
     --)
       shift
@@ -66,7 +68,7 @@ if [[ -n "${ask_for_token}" ]]; then
 fi
 
 # If no token given, look for it in the Keychain
-[[ -z "${token}" ]] && token="$(security find-generic-password -s 'Pinboard API Token' -w)"
+[[ -z "${token}" ]] && readonly token="$(security find-generic-password -s 'Pinboard API Token' -w)"
 
 # Exit if no token was set
 if [[ -z "${token}" ]]; then
@@ -88,11 +90,21 @@ if [[ -n "${set_keychain_token}" ]]; then
 fi
 
 # Get all your pinboard links
-if [[ "${keep_unread}" ]]; then
-  links="$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | cut -d '"' -f 2 | sed '1d')"
-else
-  links="$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | grep --invert-match 'toread="yes"' | cut -d '"' -f 2 | sed '1d')"
-fi
+readonly links="$(
+  all="$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post')"
+
+  after_unread="$(
+    if [[ "${keep_unread}" ]]; then
+      echo "${all}"
+      return
+    fi
+
+    grep --invert-match 'toread="yes"' <<< "${all}"
+  )"
+
+  # Final output
+  cut -d '"' -f 2 <<< "${after_unread}" | sed '1d'
+)"
 
 link_countdown="$(wc -l <<< "${links}" | tr -d ' ')"
 
