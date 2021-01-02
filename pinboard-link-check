@@ -6,16 +6,20 @@ readonly browser_headers=(--header 'User-Agent: Mozilla/5.0 (Macintosh; Intel Ma
 # Instructions
 function usage {
   echo "
+    Check the status code of links saved to a pinboard account.
+
+    By default, unread bookmarks and bookmarks with a 'pinboard-link-check-ignore' tag are ignored.
+
     Usage:
       ${program} [options]
 
     'token' options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
 
     Options:
-      -r, --redirect-log      If set, links with 301 (Moved permanently) will be on their own log.
+      -r, --redirect-log      If set, links with 301 (Moved permanently) will be on their own log. Pairs well with the 'pinboard-url-update' script.
       -l, --log-dir <dir>     Directory to save logs to. Defaults to the home directory.
       -i, --include-unread    Also check unread bookmarks.
-      -g, --ignore <list>     Comma-separated list of lines to ignore (delete) from log.
+      -g, --include-ignored   Do not ignore links with a 'pinboard-link-check-ignore' tag
       -t, --token <token>     Your Pinboard API token.
       -a, --ask-for-token     Ask for your Pinboard API token on start.
       -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only).
@@ -37,28 +41,28 @@ while [[ "${1}" ]]; do
       exit 0
       ;;
     -r | --redirect-log)
-      redirect_log='true'
+      readonly redirect_log='true'
       ;;
     -l | --log-dir)
-      log_dir="${2}"
+      readonly log_dir="${2}"
       shift
       ;;
     -i | --include-unread)
-      keep_unread='true'
+      readonly keep_unread='true'
       ;;
-    -g | --ignore)
-      ignore_list_comma="${2}"
+    -g | --include-ignored)
+      readonly do_not_ignore="${2}"
       shift
       ;;
     -t | --token)
-      token="${2}"
+      readonly token="${2}"
       shift
       ;;
     -a | --ask-for-token)
-      ask_for_token='true'
+      readonly ask_for_token='true'
       ;;
     -s | --save-token)
-      set_keychain_token='true'
+      readonly set_keychain_token='true'
       ;;
     --)
       shift
@@ -78,9 +82,9 @@ done
 set -- "${args[@]}"
 
 # Location for log files
-[[ -z "${log_dir}" ]] && log_dir="${HOME}"
-log_file="${log_dir}/pinboardlinkcheck.log"
-[[ -n "${redirect_log}" ]] && redirect_log_file="${log_dir}/pinboardlinkcheck-redirects.log"
+[[ -z "${log_dir}" ]] && readonly log_dir="${HOME}"
+readonly log_file="${log_dir}/pinboardlinkcheck.log"
+[[ -n "${redirect_log}" ]] && readonly redirect_log_file="${log_dir}/pinboardlinkcheck-redirects.log"
 
 # Ask for api token, if option is set
 if [[ -n "${ask_for_token}" ]]; then
@@ -91,7 +95,7 @@ if [[ -n "${ask_for_token}" ]]; then
 fi
 
 # If no token given, look for it in the Keychain
-[[ -z "${token}" ]] && token="$(security find-generic-password -s 'Pinboard API Token' -w)"
+[[ -z "${token}" ]] && readonly token="$(security find-generic-password -s 'Pinboard API Token' -w)"
 
 # Exit if no token was set
 if [[ -z "${token}" ]]; then
@@ -113,11 +117,30 @@ if [[ -n "${set_keychain_token}" ]]; then
 fi
 
 # Get all your pinboard links
-if [[ "${keep_unread}" ]]; then
-  links="$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | cut -d '"' -f 2 | sed '1d')"
-else
-  links="$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post' | grep --invert-match 'toread="yes"' | cut -d '"' -f 2 | sed '1d')"
-fi
+readonly links="$(
+  all="$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post')"
+
+  after_ignores="$(
+    if [[ "${do_not_ignore}" ]]; then
+      echo "${all}"
+      return
+    fi
+
+    grep --extended-regexp --invert-match 'tag=".*?pinboard-link-check-ignore.*?"' <<< "${all}"
+  )"
+
+  after_unread="$(
+    if [[ "${keep_unread}" ]]; then
+      echo "${after_ignores}"
+      return
+    fi
+
+    grep --invert-match 'toread="yes"' <<< "${after_ignores}"
+  )"
+
+  # Final output
+  cut -d '"' -f 2 <<< "${after_unread}" | sed '1d'
+)"
 
 link_countdown="$(wc -l <<< "${links}" | tr -d ' ')"
 
@@ -145,27 +168,18 @@ done
 sed -i '' '/^200/d' "${log_file}"
 
 # Order links by status code
-ordered_links=$(sort "${log_file}")
+readonly ordered_links=$(sort "${log_file}")
 echo "${ordered_links}" > "${log_file}"
 
 # Move 301 links to redirect log, if specified
 if [[ -n "${redirect_log}" ]]; then
-  redirectlinks="$(grep '^301' "${log_file}" | sed 's/^301 //')"
+  readonly redirect_links="$(grep '^301' "${log_file}" | sed 's/^301 //')"
 
-  for page in ${redirectlinks}; do
+  for page in ${redirect_links}; do
     redirect_url="$(curl --silent "${browser_headers[@]}" --write-out '%{redirect_url}' --output /dev/null "${page}")"
     echo "${page} → ${redirect_url}" | tee -a "${redirect_log_file}"
   done
 
   # Remove 301s from the main log
   sed -i '' '/^301/d' "${log_file}"
-fi
-
-# Remove ignored lines, if specified
-if [[ -n "${ignore_list_comma}" ]]; then
-  IFS=, read -r -a ignore_list_array <<< "${ignore_list_comma}"
-
-  for element in "${ignore_list_array[@]}"; do
-    sed -i '' "\|${element}|d" "${log_file}"
-  done
 fi
