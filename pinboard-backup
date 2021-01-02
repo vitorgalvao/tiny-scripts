@@ -5,18 +5,20 @@ readonly program="$(basename "${0}")"
 # Instructions
 function usage {
   echo "
+    Backup all bookmarks from a pinboard account.
+
     Usage:
       ${program} [options]
 
     'token' options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
 
     Options:
-      -j, --json              Export as JSON (default is XML).
-      -o, --output <file>     File to export to (defaults to saving in your home).
-      -t, --token <token>     Your Pinboard API token.
-      -a, --ask-for-token     Ask for your Pinboard API token on start.
-      -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only).
-      -h, --help              Show this message.
+      -x, --xml             Export as XML (default is JSON).
+      -o, --output <file>   File to export to (defaults to saving in your home).
+      -t, --token <token>   Your Pinboard API token.
+      -a, --ask-for-token   Ask for your Pinboard API token on start.
+      -s, --save-token      Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only).
+      -h, --help            Show this message.
   " | sed -E 's/^ {4}//'
 }
 
@@ -28,22 +30,22 @@ while [[ "${1}" ]]; do
       usage
       exit 0
       ;;
-    -j | --json)
-      export_format='json'
+    -x | --xml)
+      readonly export_format='xml'
       ;;
     -o | --output)
-      output_file="${2}"
+      readonly output_file="${2}"
       shift
       ;;
     -t | --token)
-      token="${2}"
+      readonly token="${2}"
       shift
       ;;
     -a | --ask-for-token)
-      ask_for_token='true'
+      readonly ask_for_token='true'
       ;;
     -s | --save-token)
-      set_keychain_token='true'
+      readonly set_keychain_token='true'
       ;;
     --)
       shift
@@ -63,8 +65,8 @@ done
 set -- "${args[@]}"
 
 # Defaults for unset variables
-[[ -z "${export_format}" ]] && export_format='xml'
-[[ -z "${output_file}" ]] && output_file="${HOME}/pinboardbackup.${export_format}"
+[[ -z "${export_format}" ]] && readonly export_format='json'
+[[ -z "${output_file}" ]] && readonly output_file="${HOME}/pinboardbackup.${export_format}"
 
 # Ask for api token, if option is set
 if [[ -n "${ask_for_token}" ]]; then
@@ -75,7 +77,7 @@ if [[ -n "${ask_for_token}" ]]; then
 fi
 
 # If no token given, look for it in the Keychain
-[[ -z "${token}" ]] && token="$(security find-generic-password -s 'Pinboard API Token' -w)"
+[[ -z "${token}" ]] && readonly token="$(security find-generic-password -s 'Pinboard API Token' -w)"
 
 # Exit if no token was set
 if [[ -z "${token}" ]]; then
@@ -102,7 +104,7 @@ if [[ ! -f "${output_file}" ]]; then
   touch "${output_file}"
 fi
 
-last_update="$(curl --silent "https://api.pinboard.in/v1/posts/update?auth_token=${token}" | grep 'update time' | sed -E 's/.*"(.*)".*/\1/')"
+readonly last_update="$(curl --silent "https://api.pinboard.in/v1/posts/update?auth_token=${token}" | grep 'update time' | sed -E 's/.*"(.*)".*/\1/')"
 
 if head -1 "${output_file}" | grep --quiet "${last_update}"; then
   echo 'All bookmarks saved (no change since last backup).'
