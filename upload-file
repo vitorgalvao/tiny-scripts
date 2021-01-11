@@ -1,7 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
-readonly hosts=('0x0.st' 'bayfiles.com' 'anonfile.com' 'megaupload.is' 'forumfiles.com')
+readonly hosts=('0x0.st' 'arxius.io' 'bayfiles.com' 'anonfile.com' 'megaupload.is' 'forumfiles.com')
 readonly default_host="${hosts[0]}"
 
 function ascii_basename {
@@ -104,8 +104,6 @@ fi
 readonly escaped_file_path="${file_path//\"/\\\"}"
 
 # Upload
-readonly file_name=$(ascii_basename "${file_path}")
-
 if [[ -n "${UPLOAD_FILE_TO}" ]]; then
   if is_string_in_array "${UPLOAD_FILE_TO}" "${hosts[@]}"; then
     readonly upload_host="${UPLOAD_FILE_TO}"
@@ -118,7 +116,7 @@ else
   readonly upload_host="${default_host}"
 fi
 
-if [[ "${upload_host}" == '0x0.st' ]]; then
+if [[ "${upload_host}" == '0x0.st' || "${upload_host}" == 'arxius.io' ]]; then
   readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://${upload_host}")"
 else
   readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://api.${upload_host}/upload" | ruby -r 'json' -e 'data = JSON.parse(gets); abort "There was an error uploading" if data["status"] == false; puts data["data"]["file"]["url"]["full"]')"
