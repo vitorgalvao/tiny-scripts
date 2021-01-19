@@ -40,16 +40,16 @@ def shallow?(repo)
 end
 
 # Run
+HBC_TAPS = Pathname.new(Open3.capture2('brew', '--repository', 'homebrew/cask').first).dirname
+
 ARGV.each do |cask_name|
-  cask_path = Pathname(Open3.capture2('brew', '--prefix').first.strip)
-              .join('Homebrew/Library/Taps/homebrew')
-              .glob("homebrew-cask*/Casks/#{cask_name}.rb").first
+  cask_path = HBC_TAPS.glob("homebrew-cask*/Casks/#{cask_name}.rb").first
 
   abort 'Did not find any cask locally named ' + cask_name if cask_path.nil?
 
   puts cask_name
 
-  analytics_dir = Pathname('/tmp').join('cask-analytics')
+  analytics_dir = Pathname.new('/tmp').join('cask-analytics')
   analytics_dir.mkpath
 
   %w[30 90 365].each do |days|
