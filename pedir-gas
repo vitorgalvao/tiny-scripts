@@ -49,7 +49,11 @@ Default_cmd = [
 ]
 
 # Delivery details
-Details_file = Pathname.new(ENV['HOME']).join('.config/pontoazul')
+Details_file = Pathname.new(ENV['HOME']).join('.config/pontoazul/info')
+
+# Bottles info
+Bottles_array = %w[pluma12k butano13k propano11k propano45k]
+Bottles_string = Bottles_array.join(', ')
 
 # Abort if file with info is missing
 unless Details_file.exist?
@@ -69,6 +73,7 @@ unless Details_file.exist?
     ...
   CONFIG
 
+  Details_file.dirname.mkpath
   Details_file.write(Empty_config)
 
   abort "Foi criado um ficheiro em '#{Details_file}'. Preenche-o com os dados necessários."
@@ -78,9 +83,6 @@ end
 Request_data = YAML.load_file(Details_file).transform_values { |v| CGI.escape(v) }
 
 # Check if 'Garrafas' has a valid value
-Bottles_array = %w[pluma12k butano13k propano11k propano45k]
-Bottles_string = Bottles_array.join(', ')
-
 unless Bottles_array.include? Request_data['Garrafas']
   abort "'Garrafas' is wrong. Its value needs to be one of: #{Bottles_string}."
 end
