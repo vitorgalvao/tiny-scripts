@@ -11,8 +11,8 @@ require 'pathname'
 ARGV.push('--help') if ARGV.empty?
 
 options = {}
-OptionParser.new do |opt|
-  opt.banner = <<~BANNER
+OptionParser.new do |parser|
+  parser.banner = <<~BANNER
     Show analytics information for casks in the main taps.
 
     Usage:
@@ -21,15 +21,11 @@ OptionParser.new do |opt|
     Options:
   BANNER
 
-  opt.on('-a', '--no-age', 'Do not show when cask was added (faster output).') do
-    options[:suppress_age] = true
-  end
-
-  opt.on('-h', '--help', 'Show this help.') do
-    puts opt
-    exit 0
-  end
-end.parse!
+  parser.on(
+    '-a', '--no-age',
+    'Do not show when cask was added (faster output).'
+  )
+end.parse!(into: options)
 
 # Helpers
 def shallow?(repo)
@@ -75,7 +71,7 @@ ARGV.each do |cask_name|
 
   cask_tap_dir = cask_path.dirname.dirname
 
-  unless options[:suppress_age]
+  unless options[:'no-age']
     if shallow?(cask_tap_dir)
       system('git', '-C', cask_tap_dir.to_path, 'fetch', '--unshallow')
     end
