@@ -17,11 +17,6 @@ OptionParser.new do |opt|
     Usage:
       #{File.basename($PROGRAM_NAME)} <quantidade> <em quantos dias> <hora>
   BANNER
-
-  opt.on('-h', '--help', 'Show this help.') do
-    puts opt
-    exit 0
-  end
 end.parse!
 
 # Arguments
