@@ -10,8 +10,8 @@ require 'yaml'
 # Options
 ARGV.push('--help') if ARGV.empty?
 
-OptionParser.new do |opt|
-  opt.banner = <<~BANNER
+OptionParser.new do |parser|
+  parser.banner = <<~BANNER
     Pedir garrafas de gás à Drogaria Ponto Azul
 
     Usage:
