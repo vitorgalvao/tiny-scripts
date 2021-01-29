@@ -81,8 +81,8 @@ end
 # Options
 ARGV.push('--help') if ARGV.empty?
 
-OptionParser.new do |opt|
-  opt.banner = <<~BANNER
+OptionParser.new do |parser|
+  parser.banner = <<~BANNER
     Enable, disable, toggle, and show status of Do Not Disturb on macOS.
 
     Settings may take a few seconds to visually come into effect.
