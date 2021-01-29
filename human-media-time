@@ -7,29 +7,26 @@ require 'optparse'
 ARGV.push('--help') if ARGV.empty?
 
 options = {}
-OptionParser.new do |opt|
-  opt.banner = <<~EOS
+OptionParser.new do |parser|
+  parser.banner = <<~BANNER
     Calculate and present total running time of media files in a human-readable way
 
     Usage:
       #{File.basename($PROGRAM_NAME)} [options] <path...>
 
     Options:
-  EOS
+  BANNER
 
-  opt.on('-u <s|d|h|m>', '--unit', 'Output a whole number of the total time rounded to the unit.') do |unit|
-    options[:unit] = unit
-  end
+  parser.on(
+    '-u <s|d|h|m>', '--unit', %w[s d h m],
+    'Output a whole number of the total time rounded to the unit.'
+  )
 
-  opt.on('-p <s|d|h|m>', '--precision', 'Output human-readable result rounded and truncated to the chosen unit. Values of zero are ommited.') do |unit|
-    options[:precision] = unit
-  end
-
-  opt.on('-h', '--help', 'Show this help.') do
-    puts opt
-    exit 0
-  end
-end.parse!
+  parser.on(
+    '-p <s|d|h|m>', '--precision', %w[s d h m],
+    'Output human-readable result rounded and truncated to the chosen unit. Values of zero are ommited.'
+  )
+end.parse!(into: options)
 
 # Parse time values
 total_time = {} # Each unit has the total value of everything
