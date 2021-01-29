@@ -19,7 +19,7 @@ end
 ARGV.push('--help') if ARGV.empty?
 
 options = {}
-OptionParser.new do |opt|
+OptionParser.new do |parser|
   opt.banner = <<~BANNER
     Substitute URLs of Pinboard bookmarks. Interacts with the files produced by "pinboardlinkcheck": text file, each line following the pattern 'old_url → new_url'.
 
@@ -31,17 +31,17 @@ OptionParser.new do |opt|
     Options:
   BANNER
 
-  opt.on(
+  parser.on(
     '-t <token>', '--token',
     'Your Pinboard API token.'
   )
 
-  opt.on(
+  parser.on(
     '-a', '--ask-for-token',
     'Ask for your Pinboard API token on start.'
   )
 
-  opt.on(
+  parser.on(
     '-s', '--save-token',
     'Save Pinboard API token to Keychain and exit (macOS-only). Use with "--token" or "--ask-for-token".'
   )
