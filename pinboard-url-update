@@ -31,29 +31,27 @@ OptionParser.new do |opt|
     Options:
   BANNER
 
-  opt.on('-t <token>', '--token <token>', 'Your Pinboard API token.') do |t|
-    options[:token] = t
-  end
+  opt.on(
+    '-t <token>', '--token',
+    'Your Pinboard API token.'
+  )
 
-  opt.on('-a', '--ask-for-token', 'Ask for your Pinboard API token on start.') do
-    options[:ask_for_token] = true
-  end
+  opt.on(
+    '-a', '--ask-for-token',
+    'Ask for your Pinboard API token on start.'
+  )
 
-  opt.on('-s', '--save-token', 'Save Pinboard API token to Keychain and exit (macOS-only). Use with "--token" or "--ask-for-token".') do
-    options[:save_token] = true
-  end
-
-  opt.on('-h', '--help', 'Show this help.') do
-    puts opt
-    exit 0
-  end
-end.parse!
+  opt.on(
+    '-s', '--save-token',
+    'Save Pinboard API token to Keychain and exit (macOS-only). Use with "--token" or "--ask-for-token".'
+  )
+end.parse!(into: options)
 
 # Deal with token options
 pinboard_token =
   if options[:token]
     options[:token]
-  elsif options[:ask_for_token]
+  elsif options[:'ask-for-token']
     puts <<~EOS
       Please insert your api token (will not be echoed)
       You can get it at https://pinboard.in/settings/password
@@ -68,7 +66,7 @@ pinboard_token =
 abort 'Cannot continue without a Pinboard token.' if pinboard_token.empty?
 abort 'The Pinboard API token appears to be incorrect. Alternatively, Pinboard’s servers might be down.' if URI.open("https://api.pinboard.in/v1/user/api_token/?auth_token=#{pinboard_token}").nil?
 
-system('security', 'add-generic-password', '-a', pinboard_token.split(':').first, '-s', 'Pinboard API Token', '-w', pinboard_token) if options[:save_token]
+system('security', 'add-generic-password', '-a', pinboard_token.split(':').first, '-s', 'Pinboard API Token', '-w', pinboard_token) if options[:'save-token']
 
 # Load file
 links_file = ARGV[0]
