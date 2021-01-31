@@ -2,6 +2,12 @@
 
 readonly program="$(basename "${0}")"
 
+# Default values
+readonly max_duration='40' # Maxium allowed duration for iPhone ringtones
+duration="${max_duration}"
+cut_start='00:00:00'
+fade_duration='1'
+
 function depends_on {
   local -r all_deps=("${@}")
   local missing_deps=()
@@ -55,7 +61,8 @@ function usage {
       ${program} [-d <duration>] [-s <time>] [-o <output_file>] <input_file>
 
     Options:
-      -d <number>, --duration <number>   Duration (in seconds) of the output file. Maximum is 40 seconds.
+      -d <number>, --duration <number>   Duration (in seconds) of the output file. Maximum is "${max_duration}".
+      -f, --no-fade                      Duration of audio fade out at the end. Default is ${fade_duration}.
       -o <file>, --output-file <file>    File to output to. Default is with same name on current directory.
       -O, --overwrite                    Create intermediary directories and overwrite output.
       -s <time>, --start <time>          Start time from when to start cutting, in the form xx:xx:xx
@@ -75,6 +82,10 @@ while [[ "${1}" ]]; do
       duration="${2}"
       shift
       ;;
+    -f | --fade-out)
+      fade_duration="${2}";
+      shift
+      ;;
     -o | --output-file)
       given_output_path="${2}"
       shift
@@ -83,7 +94,7 @@ while [[ "${1}" ]]; do
       readonly overwrite='true'
       ;;
     -s | --start)
-      start="${2}"
+      cut_start="${2}"
       shift
       ;;
     --)
@@ -114,7 +125,6 @@ if [[ "${#}" -ne 1 || ! -f "${input_file}" ]]; then
   exit 1
 fi
 
-[[ -z "${duration}" || "${duration}" -gt 40 ]] && duration='40'
-[[ -z "${start}" ]] && start='00:00:00'
+[[ "${duration}" -gt "${max_duration}" ]] && duration="${max_duration}"
 
-ffmpeg -i "${input_file}" -vn -acodec aac -f mp4 -ss "${start}" -t "${duration}" "${output_file}"
+ffmpeg -i "${input_file}" -af "afade=t=out:st=$(bc <<< "${duration} - ${fade_duration}"):d=${fade_duration}" -vn -acodec aac -f mp4 -ss "${cut_start}" -t "${duration}" "${output_file}"
