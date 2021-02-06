@@ -1,5 +1,29 @@
 #!/bin/bash
 
+function usage {
+  echo "
+    Spoof the MAC address
+
+    Usage:
+      ${program} run
+
+    The argument 'run' is necessary to prevent running the script by mistake.
+
+    Options:
+      -h, --help   Show this help.
+  " | sed -E 's/^ {4}//'
+}
+
+if [[ "${1}" =~ ^(-h|--help)$ ]]; then
+  usage
+  exit 0
+fi
+
+if [[ "${1}" != 'run' ]]; then
+  usage
+  exit 1
+fi
+
 # Get device and network
 readonly wifi_device="$(networksetup -listnetworkserviceorder | grep 'Hardware Port: Wi-Fi' | sed -E 's/.*Device: (.+)\).*/\1/')"
 readonly wifi_network="$(networksetup -getairportnetwork "${wifi_device}" | sed 's/.*: //')"
