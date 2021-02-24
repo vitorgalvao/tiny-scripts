@@ -4,6 +4,12 @@ readonly program="$(basename "${0}")"
 readonly hosts=('0x0.st' 'arxius.io' 'bayfiles.com' 'anonfile.com' 'megaupload.is' 'forumfiles.com')
 readonly default_host="${hosts[0]}"
 
+# Create and cleanup temporary directories
+readonly tmp_dir="$(mktemp -d)"
+readonly tmp_zip_dir="$(mktemp -d)/archive"
+mkdir "${tmp_zip_dir}"
+trap 'rm -rf "${tmp_dir}" "${tmp_zip_dir}"' EXIT
+
 function ascii_basename {
   basename "${1}" | sed -e 's/[^a-zA-Z0-9._-]/-/g'
 }
@@ -80,9 +86,7 @@ done
 
 # If acting on multiple files or a software bundle, first copy them to a directory
 if [[ "${#}" -gt 1 || -d "${1}/Contents" ]]; then
-  readonly tmp_zip_dir="$(mktemp -d)/archive"
-  mkdir "${tmp_zip_dir}"
-  cp -R "${@}" "${tmp_zip_dir}"
+  cp -r "${@}" "${tmp_zip_dir}"
   readonly given_file="${tmp_zip_dir}"
 else
   readonly given_file="${1}"
@@ -90,7 +94,6 @@ fi
 
 # Make zip if acting on a directory
 if [[ -d "${given_file}" ]]; then
-  readonly tmp_dir="$(mktemp -d)"
   readonly dir_name="$(ascii_basename "${given_file}")"
   readonly zip_file="${tmp_dir}/${dir_name}.zip"
   DITTONORSRC=1 ditto -ck "${given_file}" "${zip_file}"
