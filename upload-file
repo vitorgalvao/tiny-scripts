@@ -78,8 +78,8 @@ for path in "${@}"; do
   fi
 done
 
-# If acting on multiple files, first copy them to a directory
-if [[ "${#}" -gt 1 ]]; then
+# If acting on multiple files or a software bundle, first copy them to a directory
+if [[ "${#}" -gt 1 || -d "${1}/Contents" ]]; then
   readonly tmp_zip_dir="$(mktemp -d)/archive"
   mkdir "${tmp_zip_dir}"
   cp -R "${@}" "${tmp_zip_dir}"
