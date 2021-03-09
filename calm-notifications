@@ -8,6 +8,18 @@ require 'pathname'
 require 'time'
 
 # Helpers
+def consider_control_center
+  check_file = Pathname.new('/tmp/calm-notifications-control-center-check.txt')
+  return if check_file.exist?
+
+  check_file.write(
+    'The first time after boot that DND is programatically turned off, ' \
+    'the interface doesn’t update until Control Center is restarted. ' \
+    'This file exists to confirm that has been done.'
+  )
+  system('/usr/bin/killall', 'ControlCenter')
+end
+
 def grab_dnd_xml
   prefs_file = Pathname.new(ENV['HOME']).join('Library/Preferences/com.apple.ncprefs.plist')
 
@@ -71,6 +83,7 @@ def disable_dnd
   xml.xpath('//key[text()="userPref"]').remove
 
   commit_status(xml)
+  consider_control_center
 end
 
 def toggle_dnd
