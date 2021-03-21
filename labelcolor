@@ -34,7 +34,6 @@ done
 
 if [[ -z "${color_index}" ]]; then
   echo "Please pick a valid color."
-  usage
   exit 1
 fi
 

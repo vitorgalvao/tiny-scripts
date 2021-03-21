@@ -73,7 +73,6 @@ fi
 # Exit if no token was set
 if [[ -z "${token}" ]]; then
   echo 'Cannot continue without a Pinboard token.'
-  usage
   exit 1
 fi
 

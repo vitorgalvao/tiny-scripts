@@ -99,7 +99,6 @@ try_overwrite "${overwrite:-false}" "${output_file}"
 
 if [[ "${#}" -ne 1 || ! -d "${input_app}" || "${input_app}" != *'.app' ]]; then
   echo 'An app bundle needs to be given as input' >&2
-  usage
   exit 1
 fi
 

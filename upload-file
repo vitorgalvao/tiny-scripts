@@ -112,7 +112,6 @@ if [[ -n "${UPLOAD_FILE_TO}" ]]; then
     readonly upload_host="${UPLOAD_FILE_TO}"
   else
     echo "Invalid upload host: ${UPLOAD_FILE_TO}" >&2
-    usage
     exit 1
   fi
 else
