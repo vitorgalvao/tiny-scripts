@@ -40,7 +40,16 @@ function get_github_token {
   echo 'A GitHub token is required. Create one with the "repo" scope at https://github.com/settings/tokens/new' >&2
 
   read -rp 'Insert token > '
-  echo "${REPLY}"
+  github_token="${REPLY}"
+
+  if [[ "${operating_system}" == 'Darwin' ]]; then
+    security add-generic-password -s "${program} github token" -a "${program}" -w "${github_token}"
+  else
+    mkdir -p "$(dirname "${token_file}")"
+    echo "${github_password}" > "${token_file}"
+  fi
+
+  echo "${github_token}"
 }
 
 function approve_pr {
