@@ -119,7 +119,7 @@ else
 fi
 
 if [[ "${upload_host}" == 'transfer.sh' ]]; then
-   readonly url="$(curl ---globoff --progress-bar --upload-file-globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}/")"
+   readonly url="$(curl --globoff --progress-bar --upload-file-globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}/")"
 elif [[ "${upload_host}" == '0x0.st' || "${upload_host}" == 'arxius.io' ]]; then
   readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://${upload_host}")"
 else
