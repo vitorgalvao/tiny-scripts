@@ -1,7 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
-readonly hosts=('transfer.sh' '0x0.st' 'arxius.io' 'bayfiles.com' 'anonfile.com' 'megaupload.is' 'forumfiles.com')
+readonly hosts=('transfer.sh' '0x0.st' 'bayfiles.com' 'anonfile.com' 'megaupload.is' 'forumfiles.com')
 readonly default_host="${hosts[0]}"
 
 # Create and cleanup temporary directories
@@ -120,7 +120,7 @@ fi
 
 if [[ "${upload_host}" == 'transfer.sh' ]]; then
    readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}/")"
-elif [[ "${upload_host}" == '0x0.st' || "${upload_host}" == 'arxius.io' ]]; then
+elif [[ "${upload_host}" == '0x0.st' ]]; then
   readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://${upload_host}")"
 else
   readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://api.${upload_host}/upload" | ruby -r 'json' -e 'data = JSON.parse(gets); abort "There was an error uploading" if data["status"] == false; puts data["data"]["file"]["url"]["full"]')"
