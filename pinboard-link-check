@@ -1,7 +1,6 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
-readonly browser_headers=(--header 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36')
 
 # Instructions
 function usage {
@@ -149,7 +148,7 @@ for page in ${links} ; do
   echo -n "[${link_countdown}] "
   ((link_countdown--))
 
-  status="$(curl --silent "${browser_headers[@]}" --write-out '%{http_code}' --output /dev/null "${page}")"
+  status="$(curl --silent --write-out '%{http_code}' --output /dev/null "${page}")"
 
   if [[ "${status:0:1}" == '2' ]]; then
     good "${status}" "${page}"
@@ -176,7 +175,7 @@ if [[ -n "${redirect_log}" ]]; then
   readonly redirect_links="$(grep '^301' "${log_file}" | sed 's/^301 //')"
 
   for page in ${redirect_links}; do
-    redirect_url="$(curl --silent "${browser_headers[@]}" --write-out '%{redirect_url}' --output /dev/null "${page}")"
+    redirect_url="$(curl --silent --write-out '%{redirect_url}' --output /dev/null "${page}")"
     echo "${page} → ${redirect_url}" | tee -a "${redirect_log_file}"
   done
 
