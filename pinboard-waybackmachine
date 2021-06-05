@@ -1,116 +1,90 @@
-#!/bin/bash
+#!/usr/bin/env ruby
 
-readonly program="$(basename "${0}")"
+require 'cgi'
+require 'date'
+require 'json'
+require 'net/http'
+require 'open3'
+require 'optparse'
+require 'uri'
 
-# Instructions
-function usage {
-  echo "
+# Options
+ARGV.push('--help') unless ARGV.include?('run')
+
+options = {}
+OptionParser.new do |parser|
+  parser.banner = <<~BANNER
     Add to the Wayback Machine links saved to a pinboard account.
 
     Usage:
-      ${program} [options]
+      #{File.basename($PROGRAM_NAME)} [options] run
+
+    The argument 'run' is necessary to prevent running the script by mistake.
 
     'token' options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
 
     Options:
-      -i, --include-unread    Also save unread bookmarks.
-      -t, --token <token>     Your Pinboard API token.
-      -a, --ask-for-token     Ask for your Pinboard API token on start.
-      -s, --save-token        Save Pinboard API token to Keychain and exit. Use with '--token' or '--ask-for-token' (macOS-only).
-      -h, --help              Show this message.
-  " | sed -E 's/^ {4}//'
+  BANNER
+
+  parser.on(
+    '-t <token>', '--token',
+    'Your Pinboard API token.'
+  )
+
+  parser.on(
+    '-a', '--ask-for-token',
+    'Ask for your Pinboard API token on start.'
+  )
+
+  parser.on(
+    '-s', '--save-token',
+    'Save Pinboard API token to Keychain and exit (macOS-only). Use with "--token" or "--ask-for-token".'
+  )
+end.parse!(into: options)
+
+# Deal with token options
+Pinboard_token = lambda {
+  return options[:token] if options[:token]
+
+  if options[:'ask-for-token']
+    puts <<~TOKEN_MESSAGE
+      Please insert your api token (will not be echoed)
+      You can get it at https://pinboard.in/settings/password
+    TOKEN_MESSAGE
+    print '> '
+
+    return gets.chomp
+  end
+
+  Open3.capture2('security', 'find-generic-password', '-s', 'Pinboard API Token', '-w').first.strip
+}.call
+
+abort 'Cannot continue without a Pinboard token.' if Pinboard_token.empty?
+abort 'The Pinboard API token appears to be incorrect. Alternatively, Pinboard’s servers might be down.' if Net::HTTP.get(URI.parse("https://api.pinboard.in/v1/user/api_token/?auth_token=#{Pinboard_token}")).nil?
+
+system('security', 'add-generic-password', '-a', Pinboard_token.split(':').first, '-s', 'Pinboard API Token', '-w', Pinboard_token) if options[:'save-token']
+
+# Main
+All_links = JSON.parse(Net::HTTP.get(URI.parse(
+  "https://api.pinboard.in/v1/posts/all?auth_token=#{Pinboard_token}&format=json"
+))).reject { _1['toread'] == 'yes' }.map { _1['href'] }
+
+Bookmarks_count = All_links.count
+
+All_links.each_with_index { |link, index|
+  snapshots = JSON.parse(Net::HTTP.get(URI.parse(
+    "https://archive.org/wayback/available?url=#{CGI.escape(link)}"
+  )))['archived_snapshots']
+
+  # Wait a second to avoid rate limiting
+  sleep(1)
+
+  # Only save links never backed up or last backed up over 180 days (6 months) ago
+  if snapshots.empty? || (Date.today - Date.parse(snapshots['closest']['timestamp'])).to_i > 180
+    puts "[Saving…] #{link}"
+    Net::HTTP.get(URI.parse("https://web.archive.org/save/#{link}"))
+    next
+  end
+
+  puts "[#{Bookmarks_count - index}] #{link}"
 }
-
-# Options
-args=()
-while [[ "${1}" ]]; do
-  case "${1}" in
-    -h | --help)
-      usage
-      exit 0
-      ;;
-    -i | --include-unread)
-      readonly keep_unread='true'
-      ;;
-    -t | --token)
-      readonly token="${2}"
-      shift
-      ;;
-    -a | --ask-for-token)
-      readonly ask_for_token='true'
-      ;;
-    -s | --save-token)
-      readonly set_keychain_token='true'
-      ;;
-    --)
-      shift
-      args+=("${@}")
-      break
-      ;;
-    -*)
-      echo "Unrecognised option: ${1}"
-      exit 1
-      ;;
-    *)
-      args+=("${1}")
-      ;;
-  esac
-  shift
-done
-set -- "${args[@]}"
-
-# Ask for api token, if option is set
-if [[ -n "${ask_for_token}" ]]; then
-  echo 'Please insert your api token (will not be echoed)'
-  echo 'You can get it at https://pinboard.in/settings/password'
-  read -rsp '> ' token
-  echo
-fi
-
-# If no token given, look for it in the Keychain
-[[ -z "${token}" ]] && readonly token="$(security find-generic-password -s 'Pinboard API Token' -w)"
-
-# Exit if no token was set
-if [[ -z "${token}" ]]; then
-  echo 'Cannot continue without a Pinboard token.'
-  exit 1
-fi
-
-# Check if token is correct
-if ! curl --fail --silent "https://api.pinboard.in/v1/user/api_token/?auth_token=${token}" > /dev/null; then
-  echo "The Pinboard API token appears to be incorrect. Alternatively, Pinboard’s servers might be down." >&2
-  exit 1
-fi
-
-# Save token to Keychain
-if [[ -n "${set_keychain_token}" ]]; then
-  security add-generic-password -a "${token%:*}" -s 'Pinboard API Token' -w "${token}"
-  exit 0
-fi
-
-# Get all your pinboard links
-readonly links="$(
-  all="$(curl --silent "https://api.pinboard.in/v1/posts/all?auth_token=${token}" | grep '^<post')"
-
-  after_unread="$(
-    if [[ "${keep_unread}" ]]; then
-      echo "${all}"
-      return
-    fi
-
-    grep --invert-match 'toread="yes"' <<< "${all}"
-  )"
-
-  # Final output
-  cut -d '"' -f 2 <<< "${after_unread}" | sed '1d'
-)"
-
-link_countdown="$(wc -l <<< "${links}" | tr -d ' ')"
-
-# Check each link individually
-for page in ${links} ; do
-  echo "[${link_countdown}] Archiving ${page}…"
-  ((link_countdown--))
-
-  curl --location --silent --output /dev/null "https://web.archive.org/save/${page}"
-done
