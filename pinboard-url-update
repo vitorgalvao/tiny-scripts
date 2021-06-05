@@ -2,7 +2,7 @@
 
 require 'cgi'
 require 'json'
-require 'open-uri'
+require 'net/http'
 require 'open3'
 require 'optparse'
 
@@ -48,34 +48,37 @@ OptionParser.new do |parser|
 end.parse!(into: options)
 
 # Deal with token options
-pinboard_token =
-  if options[:token]
-    options[:token]
-  elsif options[:'ask-for-token']
-    puts <<~EOS
+Pinboard_token = lambda {
+  return options[:token] if options[:token]
+
+  if options[:'ask-for-token']
+    puts <<~TOKEN_MESSAGE
       Please insert your api token (will not be echoed)
       You can get it at https://pinboard.in/settings/password
-    EOS
+    TOKEN_MESSAGE
     print '> '
 
-    gets.chomp
-  else
-    Open3.capture2('security', 'find-generic-password', '-s', 'Pinboard API Token', '-w').first.strip
+    return gets.chomp
   end
 
-abort 'Cannot continue without a Pinboard token.' if pinboard_token.empty?
-abort 'The Pinboard API token appears to be incorrect. Alternatively, Pinboard’s servers might be down.' if URI.open("https://api.pinboard.in/v1/user/api_token/?auth_token=#{pinboard_token}").nil?
+  Open3.capture2('security', 'find-generic-password', '-s', 'Pinboard API Token', '-w').first.strip
+}.call
 
-system('security', 'add-generic-password', '-a', pinboard_token.split(':').first, '-s', 'Pinboard API Token', '-w', pinboard_token) if options[:'save-token']
+abort 'Cannot continue without a Pinboard token.' if Pinboard_token.empty?
+abort 'The Pinboard API token appears to be incorrect. Alternatively, Pinboard’s servers might be down.' if Net::HTTP.get(URI.parse("https://api.pinboard.in/v1/user/api_token/?auth_token=#{Pinboard_token}")).nil?
+
+system('security', 'add-generic-password', '-a', Pinboard_token.split(':').first, '-s', 'Pinboard API Token', '-w', Pinboard_token) if options[:'save-token']
 
 # Load file
-links_file = ARGV[0]
-abort 'You need to provide the path to a file.' if !File.file?(links_file)
+Links_file = ARGV[0]
+abort 'You need to provide the path to a file.' if !File.file?(Links_file)
 
 # Update bookmarks
-all_bookmarks = JSON.parse(URI.open("https://api.pinboard.in/v1/posts/all?auth_token=#{pinboard_token}&format=json").read)
+All_bookmarks = JSON.parse(Net::HTTP.get(URI.parse(
+  "https://api.pinboard.in/v1/posts/all?auth_token=#{Pinboard_token}&format=json"
+)))
 
-File.readlines(links_file).each do |line|
+File.readlines(Links_file).each do |line|
   urls = line.split('→').map(&:strip)
   old_url = urls[0]
   new_url = urls[1]
@@ -85,7 +88,7 @@ File.readlines(links_file).each do |line|
     next
   end
 
-  bhash = all_bookmarks.detect { |hash| hash['href'] == old_url }
+  bhash = All_bookmarks.detect { |hash| hash['href'] == old_url }
 
   if bhash.nil?
     fail_message(old_url, 'Did not find URL in account.')
@@ -95,13 +98,13 @@ File.readlines(links_file).each do |line|
   bhash['href'] = new_url
   bhash.transform_values! { |v| CGI.escape(v) }
 
-  add_bookmark_result = JSON.parse(URI.open("https://api.pinboard.in/v1/posts/add?url=#{bhash['href']}&description=#{bhash['description']}&extended=#{bhash['extended']}&tags=#{bhash['tags']}&dt=#{bhash['time']}&shared=#{bhash['shared']}&toread=#{bhash['toread']}&auth_token=#{pinboard_token}&format=json").read)['result_code']
+  add_bookmark_result = JSON.parse(Net::HTTP.get(URI.parse("https://api.pinboard.in/v1/posts/add?url=#{bhash['href']}&description=#{bhash['description']}&extended=#{bhash['extended']}&tags=#{bhash['tags']}&dt=#{bhash['time']}&shared=#{bhash['shared']}&toread=#{bhash['toread']}&auth_token=#{pinboard_token}&format=json")))['result_code']
   if add_bookmark_result != 'done'
     fail_message 'add updated', result
     next
   end
 
-  del_bookmark_result = JSON.parse(URI.open("https://api.pinboard.in/v1/posts/delete?url=#{CGI.escape(old_url)}&auth_token=#{pinboard_token}&format=json").read)['result_code']
+  del_bookmark_result = JSON.parse(Net::HTTP.get(URI.parse("https://api.pinboard.in/v1/posts/delete?url=#{CGI.escape(old_url)}&auth_token=#{pinboard_token}&format=json")))['result_code']
 
   if del_bookmark_result != 'done'
     fail_message 'remove old', result
