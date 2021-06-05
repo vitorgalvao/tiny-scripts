@@ -59,6 +59,9 @@ Substitute URLs of [pinboard](https://pinboard.in/) bookmarks
 ### pinboardwaybackmachine
 Add to the [wayback machine](https://archive.org/web/) links saved in your [pinboard](https://pinboard.in/) account
 
+### pingpong
+Stitch a video with its reversed version, for continuous loops
+
 ### pkg-extract
 Extract pkg files in a logical hierarchy
 

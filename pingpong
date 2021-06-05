@@ -1,0 +1,90 @@
+#!/bin/zsh
+
+readonly program="$(basename "${0}")"
+
+function depends_on {
+  local -r all_deps=("${@}")
+  local missing_deps=()
+
+  for dep in "${all_deps[@]}"; do
+    command -v "${dep}" &>/dev/null || missing_deps+=("${dep}")
+  done
+
+  if [[ "${#missing_deps[@]}" -gt 0 ]]; then
+    echo 'Missing required tools:' >&2
+    printf '  %s\n' "${missing_deps[@]}" >&2
+    exit 1
+  fi
+}
+
+function get_output_path_ext {
+  local -r ext="${1}"
+  local -r input_path="${2}"
+  local output_path="${3}"
+
+  if [[ -n "${output_path}" ]]; then
+    [[ "${output_path##*.}" == "${ext}" ]] && echo "${output_path}" || echo "${output_path}${ext}"
+  else
+    output_path="${input_path%.*}${ext}"
+
+    while [[ -e "${output_path}" ]]; do
+      output_path="${output_path%.*}_$(date -u +'%Y.%m.%d.%H%M%S')${ext}"
+    done
+
+    echo "${output_path}"
+  fi
+}
+
+function usage {
+  echo "
+    Stitch a video with its reversed version, for continuous loops
+
+    Usage:
+      ${program} [options] <file>
+
+    Options:
+      -o, --output-file <file>               File to output to. Default is saving next to the input file with same name and date.
+      -h, --help                             Show this help.
+  " | sed -E 's/^ {4}//'
+}
+
+args=()
+while [[ "${1}" ]]; do
+  case "${1}" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -o | --output-file)
+      readonly given_output_path="${2}"
+      shift
+      ;;
+    --)
+      shift
+      args+=("${@}")
+      break
+      ;;
+    -*)
+      echo "Unrecognised option: ${1}"
+      exit 1
+      ;;
+    *)
+      args+=("${1}")
+      ;;
+  esac
+  shift
+done
+set -- "${args[@]}"
+
+if [[ "${#}" -eq 0 ]]; then
+  usage
+  exit 1
+fi
+
+readonly input_file="${1}"
+readonly input_file_ext="$([[ "${input_file}" == *.* ]] && echo ".${input_file##*.}" || echo '')"
+readonly output_file="$(get_output_path_ext "${input_file_ext}" "${input_file}" "${given_output_path}")"
+
+depends_on 'ffmpeg'
+
+ffmpeg -i "${input_file}" -an -filter_complex "[0]reverse[r];[0][r]concat" "${output_file}"
