@@ -98,13 +98,13 @@ File.readlines(Links_file).each do |line|
   bhash['href'] = new_url
   bhash.transform_values! { |v| CGI.escape(v) }
 
-  add_bookmark_result = JSON.parse(Net::HTTP.get(URI.parse("https://api.pinboard.in/v1/posts/add?url=#{bhash['href']}&description=#{bhash['description']}&extended=#{bhash['extended']}&tags=#{bhash['tags']}&dt=#{bhash['time']}&shared=#{bhash['shared']}&toread=#{bhash['toread']}&auth_token=#{pinboard_token}&format=json")))['result_code']
+  add_bookmark_result = JSON.parse(Net::HTTP.get(URI.parse("https://api.pinboard.in/v1/posts/add?url=#{bhash['href']}&description=#{bhash['description']}&extended=#{bhash['extended']}&tags=#{bhash['tags']}&dt=#{bhash['time']}&shared=#{bhash['shared']}&toread=#{bhash['toread']}&auth_token=#{Pinboard_token}&format=json")))['result_code']
   if add_bookmark_result != 'done'
     fail_message 'add updated', result
     next
   end
 
-  del_bookmark_result = JSON.parse(Net::HTTP.get(URI.parse("https://api.pinboard.in/v1/posts/delete?url=#{CGI.escape(old_url)}&auth_token=#{pinboard_token}&format=json")))['result_code']
+  del_bookmark_result = JSON.parse(Net::HTTP.get(URI.parse("https://api.pinboard.in/v1/posts/delete?url=#{CGI.escape(old_url)}&auth_token=#{Pinboard_token}&format=json")))['result_code']
 
   if del_bookmark_result != 'done'
     fail_message 'remove old', result
