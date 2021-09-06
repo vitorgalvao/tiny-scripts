@@ -10,7 +10,7 @@ function usage {
     Usage:
       ${program} [options]
 
-    'token' options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
+    'token' options are compatible between pinboard-backup, pinboard-delete-unread, pinboard-link-check, pinboard-url-update, pinboard-waybackmachine
 
     Options:
       -x, --xml             Export as XML (default is JSON).

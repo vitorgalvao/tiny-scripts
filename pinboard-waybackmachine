@@ -21,7 +21,7 @@ OptionParser.new do |parser|
 
     The argument 'run' is necessary to prevent running the script by mistake.
 
-    'token' options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
+    'token' options are compatible between pinboard-backup, pinboard-delete-unread, pinboard-link-check, pinboard-url-update, pinboard-waybackmachine
 
     Options:
   BANNER

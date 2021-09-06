@@ -26,7 +26,7 @@ OptionParser.new do |parser|
     Usage:
       #{File.basename($PROGRAM_NAME)} [options] <file>
 
-    'token' options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
+    'token' options are compatible between pinboard-backup, pinboard-delete-unread, pinboard-link-check, pinboard-url-update, pinboard-waybackmachine
 
     Options:
   BANNER
@@ -100,16 +100,16 @@ File.readlines(Links_file).each do |line|
 
   add_bookmark_result = JSON.parse(Net::HTTP.get(URI.parse("https://api.pinboard.in/v1/posts/add?url=#{bhash['href']}&description=#{bhash['description']}&extended=#{bhash['extended']}&tags=#{bhash['tags']}&dt=#{bhash['time']}&shared=#{bhash['shared']}&toread=#{bhash['toread']}&auth_token=#{Pinboard_token}&format=json")))['result_code']
   if add_bookmark_result != 'done'
-    fail_message 'add updated', result
+    fail_message("(Adding) #{new_url}", result)
     next
   end
 
   del_bookmark_result = JSON.parse(Net::HTTP.get(URI.parse("https://api.pinboard.in/v1/posts/delete?url=#{CGI.escape(old_url)}&auth_token=#{Pinboard_token}&format=json")))['result_code']
 
   if del_bookmark_result != 'done'
-    fail_message 'remove old', result
+    fail_message("(Removing) #{old_url}", result)
     next
   end
 
-  success_message line
+  success_message(line)
 end

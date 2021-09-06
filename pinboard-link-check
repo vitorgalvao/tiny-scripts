@@ -12,7 +12,7 @@ function usage {
     Usage:
       ${program} [options]
 
-    'token' options are compatible between pinboardbackup, pinboardlinkcheck, pinboardurlupdate, pinboardwaybackmachine
+    'token' options are compatible between pinboard-backup, pinboard-delete-unread, pinboard-link-check, pinboard-url-update, pinboard-waybackmachine
 
     Options:
       -r, --redirect-log      If set, links with 301 (Moved permanently) will be on their own log. Pairs well with the 'pinboard-url-update' script.
