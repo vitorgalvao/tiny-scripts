@@ -1,0 +1,100 @@
+#!/usr/bin/env ruby
+
+require 'cgi'
+require 'date'
+require 'json'
+require 'net/http'
+require 'open3'
+require 'optparse'
+
+def fail_message(url, message)
+  warn "\e[31m•\e[0m #{url}"
+  warn "⮑  #{message}"
+end
+
+def success_message(message)
+  puts "\e[32m•\e[0m #{message}"
+end
+
+# Options
+ARGV.push('--help') if ARGV.empty?
+
+options = {}
+OptionParser.new do |parser|
+  parser.banner = <<~BANNER
+    Delete Pinboard unread bookmarks older than X days. Give 'all' as an argument to delete all unread bookmarks.
+
+    Usage:
+      #{File.basename($PROGRAM_NAME)} [options] <days>
+
+    'token' options are compatible between pinboard-backup, pinboard-delete-unread, pinboard-link-check, pinboard-url-update, pinboard-waybackmachine
+
+    Options:
+  BANNER
+
+  parser.on(
+    '-t <token>', '--token',
+    'Your Pinboard API token.'
+  )
+
+  parser.on(
+    '-a', '--ask-for-token',
+    'Ask for your Pinboard API token on start.'
+  )
+
+  parser.on(
+    '-s', '--save-token',
+    'Save Pinboard API token to Keychain and exit (macOS-only). Use with "--token" or "--ask-for-token".'
+  )
+end.parse!(into: options)
+
+# Deal with token options
+Pinboard_token = lambda {
+  return options[:token] if options[:token]
+
+  if options[:'ask-for-token']
+    puts <<~TOKEN_MESSAGE
+      Please insert your api token (will not be echoed)
+      You can get it at https://pinboard.in/settings/password
+    TOKEN_MESSAGE
+    print '> '
+
+    return gets.chomp
+  end
+
+  Open3.capture2('security', 'find-generic-password', '-s', 'Pinboard API Token', '-w').first.strip
+}.call
+
+abort 'Cannot continue without a Pinboard token.' if Pinboard_token.empty?
+abort 'The Pinboard API token appears to be incorrect. Alternatively, Pinboard’s servers might be down.' if Net::HTTP.get(URI.parse("https://api.pinboard.in/v1/user/api_token/?auth_token=#{Pinboard_token}")).nil?
+
+system('security', 'add-generic-password', '-a', Pinboard_token.split(':').first, '-s', 'Pinboard API Token', '-w', Pinboard_token) if options[:'save-token']
+
+# Delete old unread bookmarks
+abort "Number of days or 'all' required as argument" if ARGV.empty? || (ARGV[0] != 'all' && !ARGV[0].match?(/^\d+$/))
+
+Delete_all = ARGV[0] == 'all'
+Day_threshold = ARGV[0].to_i
+
+Unread_bookmarks = JSON.parse(Net::HTTP.get(URI.parse(
+  "https://api.pinboard.in/v1/posts/all?auth_token=#{Pinboard_token}&format=json&toread=yes"
+)))
+
+To_delete = lambda {
+  return Unread_bookmarks if Delete_all
+
+  Unread_bookmarks.select { |bookmark| (Date.today - Date.parse(bookmark['time'])).to_i > Day_threshold }
+}.call
+
+puts "Bookmarks to delete: #{To_delete.count}…"
+
+To_delete.each do |bookmark|
+  del_bookmark_result = JSON.parse(Net::HTTP.get(URI.parse("https://api.pinboard.in/v1/posts/delete?url=#{CGI.escape(bookmark['href'])}&auth_token=#{Pinboard_token}&format=json")))['result_code']
+
+  if del_bookmark_result != 'done'
+    fail_message(bookmark['href'], result)
+    next
+  end
+
+  success_message(bookmark['href'])
+end
