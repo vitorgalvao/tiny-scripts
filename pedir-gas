@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'cgi'
 require 'date'
@@ -6,6 +7,12 @@ require 'open3'
 require 'optparse'
 require 'pathname'
 require 'yaml'
+
+Defaults = {
+  quantity: 1,
+  in_days: 0, # Today
+  time: "#{(Time.now + 60 * 60 * 2).hour}:00" # In the next two hours
+}.freeze
 
 # Options
 ARGV.push('--help') if ARGV.empty?
@@ -16,13 +23,25 @@ OptionParser.new do |parser|
 
     Usage:
       #{File.basename($PROGRAM_NAME)} <quantidade> <em quantos dias> <hora>
+      #{File.basename($PROGRAM_NAME)} default
+
+    Valores pré-definidos (quando "default"):
+      Quantidade: #{Defaults[:quantity]}
+      Em quantos dias: #{Defaults[:in_days]}
+      Hora: #{Defaults[:time]}
   BANNER
 end.parse!
 
 # Arguments
-Bottle_quantity = CGI.escape(ARGV[0])
-Delivery_date = CGI.escape((Date.today + ARGV[1].to_i).strftime('%m/%d/%Y'))
-Delivery_time = CGI.escape(ARGV[2])
+if ARGV[0] == 'default'
+  Bottle_quantity = CGI.escape(Defaults[:quantity].to_s)
+  Delivery_date = CGI.escape((Date.today + Defaults[:in_days]).strftime('%m/%d/%Y'))
+  Delivery_time = CGI.escape(Defaults[:time])
+else
+  Bottle_quantity = CGI.escape(ARGV[0])
+  Delivery_date = CGI.escape((Date.today + ARGV[1].to_i).strftime('%m/%d/%Y'))
+  Delivery_time = CGI.escape(ARGV[2])
+end
 
 # Constants
 Default_cmd = [
