@@ -96,7 +96,7 @@ ARGV.push('--help') if ARGV.empty?
 
 OptionParser.new do |parser|
   parser.banner = <<~BANNER
-    Enable, disable, toggle, and show status of Do Not Disturb on macOS.
+    Enable, disable, toggle, and show status of Do Not Disturb on macOS Big Sur.
 
     Settings may take a few seconds to visually come into effect.
 
@@ -106,6 +106,10 @@ OptionParser.new do |parser|
 end.parse!
 
 # Main
+if Open3.capture2('/usr/bin/sw_vers', '-productVersion').first.split('.').first != '11'
+  abort 'This script only works on macOS Big Sur. For Monterey and above, use the Shortcuts command line tool.'
+end
+
 case ARGV[0]
 when 'status'
   status_dnd
