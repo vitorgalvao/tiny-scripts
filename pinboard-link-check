@@ -138,7 +138,7 @@ readonly links="$(
   )"
 
   # Final output
-  cut -d '"' -f 2 <<< "${after_unread}" | sed '1d'
+  cut -d '"' -f 2 <<< "${after_unread}" | sed '1d' | perl -MHTML::Entities -ne 'print decode_entities($_)'
 )"
 
 link_countdown="$(wc -l <<< "${links}" | tr -d ' ')"
