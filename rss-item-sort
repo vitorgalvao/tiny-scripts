@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+
+require 'rss'
+require 'open3'
+require 'optparse'
+require 'time'
+
+# Options
+ARGV.push('--help') if ARGV.empty?
+
+options = {}
+OptionParser.new do |parser|
+  parser.banner = <<~BANNER
+    Sort RSS items by number in title and upload the result to temporary hosting
+
+    Usage:
+      #{File.basename($PROGRAM_NAME)} [options] <url>
+
+    Options:
+  BANNER
+
+  parser.on(
+    '-d', '--do-not-upload',
+    'Do not upload resulting RSS file'
+  )
+end.parse!(into: options)
+
+# Main
+abort 'Argument needs to be a single URL' unless ARGV.count == 1 && ARGV[0].start_with?(%r{https?://})
+
+url = ARGV[0]
+date = Time.now
+feed = RSS::Parser.parse(Open3.capture2('curl', '--silent', url).first)
+reordered = feed.items.sort_by { |a| a.title.match(/ \d+/)[0].to_i }
+
+reordered.each_with_index do |item, index|
+  feed.items[index] = item
+  feed.items[index].pubDate = (date + index).rfc2822
+end
+
+puts feed
+
+exit 0 if options[:'do-not-upload']
+
+# Upload
+require 'tempfile'
+
+tmp = Tempfile.new
+File.write(tmp, feed)
+
+puts
+uploaded = Open3.capture2('/usr/bin/curl', '--globoff', '--progress-bar', '--form', "file=@#{tmp.path}", 'https://0x0.st/').first.strip
+
+Open3.capture2('/usr/bin/pbcopy', stdin_data: uploaded)
+puts "Copied: #{uploaded}"

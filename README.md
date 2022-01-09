@@ -74,6 +74,9 @@ Overlay a progress bar on videos or gifs
 ### ringtonemaker
 Convert a video or audio file to an iPhone ringtone
 
+### rss-item-sort
+Sort RSS items by number in title and upload the result to temporary hosting
+
 ### rtp-download
 Download videos from [RTP Play](https://www.rtp.pt/play/)
 
