@@ -1,7 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
-readonly formats=('jpg' 'png' 'gif' 'svg')
+readonly formats=('jpg' 'png' 'gif')
 
 function depends_on {
   local -r all_deps=("${@}")
@@ -41,7 +41,7 @@ if [[ "${1}" =~ ^(-h|--help)$ ]]; then
   exit 0
 fi
 
-depends_on 'jpegtran' 'optipng' 'gifsicle' 'svgcleaner'
+depends_on 'jpegtran' 'optipng' 'gifsicle'
 
 for image_file in "${@}"; do
   echo "Compressing ${image_file}…"
@@ -54,8 +54,6 @@ for image_file in "${@}"; do
     optipng -quiet "${image_file}"
   elif [[ "${file_type}" == 'gif' ]]; then
     gifsicle --optimize=3 --batch "${image_file}"
-  elif [[ "${file_type}" == 'svg+xml' ]]; then
-    svgcleaner --quiet "${image_file}" "${image_file}"
   else
     echo "'${file_type}' is not a supported image type."
   fi
