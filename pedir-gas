@@ -8,10 +8,10 @@ require 'optparse'
 require 'pathname'
 require 'yaml'
 
-Auto_values = {
+Defaults = {
   quantity: 1,
   in_days: 0, # Today
-  time: "#{(Time.now + 60 * 60 * 3).hour}:00" # In the next three hours
+  time: '18:00'
 }.freeze
 
 # Options
@@ -23,20 +23,20 @@ OptionParser.new do |parser|
 
     Usage:
       #{File.basename($PROGRAM_NAME)} <quantidade> <em quantos dias> <hora>
-      #{File.basename($PROGRAM_NAME)} auto
+      #{File.basename($PROGRAM_NAME)} default
 
-    Valores automáticos (quando "auto"):
-      Quantidade: #{Auto_values[:quantity]}
-      Em quantos dias: #{Auto_values[:in_days]}
-      Hora: #{Auto_values[:time]}
+    Valores pré-definidos (quando "default"):
+      Quantidade: #{Defaults[:quantity]}
+      Em quantos dias: #{Defaults[:in_days]}
+      Hora: #{Defaults[:time]}
   BANNER
 end.parse!
 
 # Arguments
-if ARGV[0] == 'auto'
-  Bottle_quantity = CGI.escape(Auto_values[:quantity].to_s)
-  Delivery_date = CGI.escape((Date.today + Auto_values[:in_days]).strftime('%m/%d/%Y'))
-  Delivery_time = CGI.escape(Auto_values[:time])
+if ARGV[0] == 'default'
+  Bottle_quantity = CGI.escape(Defaults[:quantity].to_s)
+  Delivery_date = CGI.escape((Date.today + Defaults[:in_days]).strftime('%m/%d/%Y'))
+  Delivery_time = CGI.escape(Defaults[:time])
 else
   Bottle_quantity = CGI.escape(ARGV[0])
   Delivery_date = CGI.escape((Date.today + ARGV[1].to_i).strftime('%m/%d/%Y'))
