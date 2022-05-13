@@ -5,9 +5,6 @@ The easiest way to get these is via [the Homebrew tap](https://github.com/vitorg
 ### app-icon-extract
 Extract app bundle icon as png
 
-### calm-notifications
-Enable, disable, toggle, and show status of Do Not Disturb on macOS Big Sur
-
 ### cask-analytics
 Show analytics information for casks in the main taps
 
