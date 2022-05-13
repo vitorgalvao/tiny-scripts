@@ -32,9 +32,6 @@ Facilitate installing Linux on a USB stick, from macOS
 ### lossless-compress
 Losslessly compress files
 
-### macspoof
-Spoof the MAC address
-
 ### makeicns
 Make an icns file from a png
 
