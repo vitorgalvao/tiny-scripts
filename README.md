@@ -83,9 +83,6 @@ Download videos from [RTP Play](https://www.rtp.pt/play/)
 ### seren
 Rename files in a numerical sequence
 
-### strong-password
-Get a strong password by leveraging multiple sources
-
 ### upload-file
 Upload paths, with support for several file hosts
 
