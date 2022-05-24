@@ -150,7 +150,17 @@ while IFS= read -r -d '' payload; do
   payload_extract_dir="$(mktemp -d)"
   cd "${payload_extract_dir}" || exit 1
 
-  /usr/bin/gzip --decompress --suffix '' --stdout "${payload}" | /usr/bin/cpio -i --preserve-modification-time 2> /dev/null
+  if [[ "$(head -c 4 "${payload}")" == 'pbzx' ]]; then
+    # Depends on pbzx
+    if ! command -v 'pbzx' > /dev/null; then
+      echo '"pbzx" is required to unpack this payload!'
+      exit 1
+    fi
+
+    pbzx -n "${payload}" | /usr/bin/cpio -i --preserve-modification-time 2> /dev/null
+  else   
+    /usr/bin/gzip --decompress --suffix '' --stdout "${payload}" | /usr/bin/cpio -i --preserve-modification-time 2> /dev/null
+  fi
 
   cd "$(dirname "${payload}")" || exit 1
   rm "${payload}"
