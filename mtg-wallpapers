@@ -85,10 +85,10 @@ fi
 cd "${given_directory}" || exit 1
 
 # Download wallpapers
-readonly wallpaper_urls="$(curl --silent 'https://magic.wizards.com/en/articles/media/wallpapers' | grep "download.*${wallpaper_size}" | sed -E 's/.*href="([^"]*).*/\1/')"
+readonly wallpaper_urls="$(curl --silent 'https://magic.wizards.com/en/news' | grep --extended-regexp "href=\"//.*?${wallpaper_size}_wallpaper.jpg" | sed -E "s/.*href=\"([^\"]*${wallpaper_size}_wallpaper.jpg)\".*/\1/")"
 
 # Download new wallpapers
 for wallpaper_url in ${wallpaper_urls}; do
   echo Downloading "$(basename "${wallpaper_url}")…"
-  curl --silent --remote-name "${wallpaper_url}"
+  curl --silent --remote-name "http:${wallpaper_url}"
 done
