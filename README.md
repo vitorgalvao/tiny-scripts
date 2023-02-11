@@ -41,21 +41,6 @@ Download Magic: The Gathering wallpapers
 ### pedir-gas
 Ask for gas delivery from drogaria Ponto Azul
 
-### pinboard-delete-unread
-Delete [pinboard](https://pinboard.in/) unread bookmarks older than X days
-
-### pinboard-backup
-Backup all bookmarks in your [pinboard](https://pinboard.in/) account
-
-### pinboard-link-check
-Check the status code of links saved in your [pinboard](https://pinboard.in/) account
-
-### pinboard-url-update
-Substitute URLs of [pinboard](https://pinboard.in/) bookmarks
-
-### pinboard-waybackmachine
-Add to the [wayback machine](https://archive.org/web/) links saved in your [pinboard](https://pinboard.in/) account
-
 ### pingpong
 Stitch a video with its reversed version, for continuous loops
 
