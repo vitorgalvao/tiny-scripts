@@ -433,7 +433,7 @@ done
 set -- "${args[@]}"
 
 # DEPRECATION MESSAGE
-warning_message '`cask-repair` is deprecated. I will accept PRs to fix bugs, but spending more time on it is difficult to justify. I recommend using `brew bump-cask-pr`. It doesn’t do as much in niche cases, but it does more in other slightly more relevant cases. It covers the vast majority os bump needs better. It ships in Homebrew, so there’s nothing to install. Do `brew bump-cask-pr --help` to see how to use it.'
+warning_message '`cask-repair` is deprecated. I will accept PRs to fix bugs, but spending more time on it is difficult to justify. I recommend using `brew bump-cask-pr`. It doesn’t do as much in niche cases, but it does more in other slightly more relevant cases. It covers the vast majority of bump needs better. It ships with Homebrew so there’s nothing to install. Do `brew bump-cask-pr --help` to see how to use it.'
 
 # Exit if no argument or more than one argument was given
 if [[ -z "${1}" && "${can_run_without_arguments}" != 'true' ]]; then
