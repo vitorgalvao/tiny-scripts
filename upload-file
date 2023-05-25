@@ -24,6 +24,16 @@ function is_string_in_array {
   return 1
 }
 
+function kopimi_parse {
+  local -r json="$(< /dev/stdin)"
+
+  osascript -l JavaScript -e 'function run(argv) {
+    const data = JSON.parse(argv[0])
+    if (!data["status"]) { return "There was an error uploading" }
+    return data["data"]["file"]["url"]["full"]
+  }' "${json}"
+}
+
 function usage {
   echo "
     Upload files and directories to a file hosting service.
@@ -127,7 +137,7 @@ elif [[ "${upload_host}" == 'litterbox.catbox.moe' ]]; then
 elif [[ "${upload_host}" == *'bashupload.com' ]]; then
   readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}/" | grep '^wget' | sed 's/^wget //')"
 else
-  readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://api.${upload_host}/upload" | ruby -r 'json' -e 'data = JSON.parse(gets); abort "There was an error uploading" if data["status"] == false; puts data["data"]["file"]["url"]["full"]')"
+  readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://api.${upload_host}/upload" | kopimi_parse)"
 fi
 
 echo -n "${url}" | pbcopy
