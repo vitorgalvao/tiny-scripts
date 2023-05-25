@@ -1,7 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
-readonly hosts=('transfer.sh' '0x0.st' 'litterbox.catbox.moe' 'bashupload.com' 'bayfiles.com' 'anonfile.com' 'megaupload.is' 'forumfiles.com')
+readonly hosts=('0x0.st' 'litterbox.catbox.moe' 'transfer.archivete.am' 'free.keep.sh' 'oshi.at' 'bayfiles.com' 'anonfile.com' 'rapidshare.nu' 'forumfiles.com')
 readonly default_host="${hosts[0]}"
 
 # Create and cleanup temporary directories
@@ -128,14 +128,16 @@ else
   readonly upload_host="${default_host}"
 fi
 
-if [[ "${upload_host}" == 'transfer.sh' ]]; then
-   readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}/")"
-elif [[ "${upload_host}" == '0x0.st' ]]; then
+if [[ "${upload_host}" == '0x0.st' ]]; then
   readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://${upload_host}")"
 elif [[ "${upload_host}" == 'litterbox.catbox.moe' ]]; then
   readonly url="$(curl --globoff --progress-bar --form 'reqtype=fileupload' --form 'time=72h' --form "fileToUpload=@\"${escaped_file_path}\"" "https://${upload_host}/resources/internals/api.php")"
-elif [[ "${upload_host}" == *'bashupload.com' ]]; then
-  readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}/" | grep '^wget' | sed 's/^wget //')"
+elif [[ "${upload_host}" == 'transfer.archivete.am' ]]; then
+  readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}")"
+elif [[ "${upload_host}" == 'free.keep.sh' ]]; then
+  readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}")"
+elif [[ "${upload_host}" == 'oshi.at' ]]; then
+  readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}" | grep ' \[Download\]' | sed 's/ \[Download\].*//')"
 else
   readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://api.${upload_host}/upload" | kopimi_parse)"
 fi
