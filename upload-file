@@ -1,7 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
-readonly hosts=('0x0.st' 'litterbox.catbox.moe' 'transfer.archivete.am' 'free.keep.sh' 'oshi.at' 'bayfiles.com' 'anonfile.com' 'rapidshare.nu' 'forumfiles.com')
+readonly hosts=('0x0.st' 'litterbox.catbox.moe' 'transfer.sh' 'transfer.archivete.am' 'free.keep.sh' 'oshi.at' 'bayfiles.com' 'anonfile.com' 'rapidshare.nu' 'forumfiles.com')
 readonly default_host="${hosts[0]}"
 
 # Create and cleanup temporary directories
@@ -132,6 +132,8 @@ if [[ "${upload_host}" == '0x0.st' ]]; then
   readonly url="$(curl --globoff --progress-bar --form "file=@\"${escaped_file_path}\"" "https://${upload_host}")"
 elif [[ "${upload_host}" == 'litterbox.catbox.moe' ]]; then
   readonly url="$(curl --globoff --progress-bar --form 'reqtype=fileupload' --form 'time=72h' --form "fileToUpload=@\"${escaped_file_path}\"" "https://${upload_host}/resources/internals/api.php")"
+elif [[ "${upload_host}" == 'transfer.sh' ]]; then
+  readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}")"
 elif [[ "${upload_host}" == 'transfer.archivete.am' ]]; then
   readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}")"
 elif [[ "${upload_host}" == 'free.keep.sh' ]]; then
