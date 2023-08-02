@@ -1,7 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
-readonly hosts=('0x0.st' 'litterbox.catbox.moe' 'transfer.sh' 'transfer.archivete.am' 'free.keep.sh' 'oshi.at' 'bayfiles.com' 'anonfile.com' 'rapidshare.nu' 'forumfiles.com')
+readonly hosts=('0x0.st' 'litterbox.catbox.moe' 'transfer.sh' 'transfer.archivete.am' 'pixeldrain.com' 'free.keep.sh' 'oshi.at' 'bayfiles.com' 'anonfile.com' 'rapidshare.nu' 'forumfiles.com')
 readonly default_host="${hosts[0]}"
 
 # Create and cleanup temporary directories
@@ -31,6 +31,16 @@ function kopimi_parse {
     const data = JSON.parse(argv[0])
     if (!data["status"]) { return "There was an error uploading" }
     return data["data"]["file"]["url"]["full"]
+  }' "${json}"
+}
+
+function pixeldrain_parse {
+  local -r json="$(< /dev/stdin)"
+
+  osascript -l JavaScript -e 'function run(argv) {
+    const data = JSON.parse(argv[0])
+    if (data["success"] === false) { return data["message"] }
+    return "https://pixeldrain.com/u/" + data["id"]
   }' "${json}"
 }
 
@@ -136,6 +146,8 @@ elif [[ "${upload_host}" == 'transfer.sh' ]]; then
   readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}")"
 elif [[ "${upload_host}" == 'transfer.archivete.am' ]]; then
   readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}")"
+elif [[ "${upload_host}" == 'pixeldrain.com' ]]; then
+  readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}/api/file/" | pixeldrain_parse)"
 elif [[ "${upload_host}" == 'free.keep.sh' ]]; then
   readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}")"
 elif [[ "${upload_host}" == 'oshi.at' ]]; then
