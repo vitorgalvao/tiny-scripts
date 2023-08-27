@@ -62,7 +62,7 @@ function usage {
 
     Options:
       -d <number>, --duration <number>   Duration (in seconds) of the output file. Maximum is "${max_duration}".
-      -f, --no-fade                      Duration of audio fade out at the end. Default is ${fade_duration}.
+      -f, --fade-out <number>            Duration of audio fade out at the end. Default is ${fade_duration}.
       -o <file>, --output-file <file>    File to output to. Default is with same name on current directory.
       -O, --overwrite                    Create intermediary directories and overwrite output.
       -s <time>, --start <time>          Start time from when to start cutting, in the form xx:xx:xx
