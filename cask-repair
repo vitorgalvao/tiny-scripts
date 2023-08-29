@@ -56,7 +56,7 @@ function push_failure_message {
 }
 
 function require_hub {
-  if ! command -v 'hub' &>/dev/null; then
+  if ! hash 'hub' 2> /dev/null; then
     warning_message '`hub` was not found. Installing it…'
     brew install hub
   fi
