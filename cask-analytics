@@ -39,7 +39,7 @@ end
 HBC_TAPS = Pathname.new(Open3.capture2('brew', '--repository', 'homebrew/cask').first).dirname
 
 ARGV.each do |cask_name|
-  cask_path = HBC_TAPS.glob("homebrew-cask*/Casks/#{cask_name}.rb").first
+  cask_path = HBC_TAPS.glob("homebrew-cask*/Casks/#{cask_name[0]}/#{cask_name}.rb").first
 
   abort 'Did not find any cask locally named ' + cask_name if cask_path.nil?
 
@@ -80,7 +80,8 @@ ARGV.each do |cask_name|
       Open3.capture2(
         'git', '-C', cask_tap_dir.to_path,
         'log', '--diff-filter=A',
-        '--max-count=1', '--format=%aI', cask_path.to_path
+        '--follow', '--max-count=1',
+        '--format=%aI', cask_path.to_path
       ).first.strip
     )
 
