@@ -44,9 +44,6 @@ Ask for gas delivery from drogaria Ponto Azul
 ### pingpong
 Stitch a video with its reversed version, for continuous loops
 
-### pkg-extract
-Extract pkg files in a logical hierarchy
-
 ### podbook
 Generate a podcast RSS feed for audiobooks
 
