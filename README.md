@@ -23,11 +23,8 @@ Make animated gifs from a video file
 ### human-media-time
 Calculate and present total running time of media files in a human-readable way
 
-### labelcolor
-Change label color of files in macOS
-
 ### linux-usb
-Facilitate installing Linux on a USB stick, from macOS
+Create bootable Linux USB sticks from ISOs on macOS
 
 ### lossless-compress
 Losslessly compress files
