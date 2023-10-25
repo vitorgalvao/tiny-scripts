@@ -11,12 +11,6 @@ Show analytics information for casks in the main taps
 ### cask-repair
 Quickly repair outdated/broken Casks from homebrew-cask
 
-### cli-approve-button
-Accept [GitHub](https://github.com/) pull requests via the review button API
-
-### cli-merge-button
-Merge [GitHub](https://github.com/) pull requests via the merge button API
-
 ### gfv (gif from video)
 Make animated gifs from a video file
 
@@ -34,9 +28,6 @@ Make an icns file from a png
 
 ### mtg-wallpapers
 Download Magic: The Gathering wallpapers
-
-### pedir-gas
-Ask for gas delivery from drogaria Ponto Azul
 
 ### photo-date-rename
 Rename image files to the date and time they were taken
