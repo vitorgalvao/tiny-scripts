@@ -38,6 +38,9 @@ Download Magic: The Gathering wallpapers
 ### pedir-gas
 Ask for gas delivery from drogaria Ponto Azul
 
+### photo-date-rename
+Rename image files to the date and time they were taken
+
 ### pingpong
 Stitch a video with its reversed version, for continuous loops
 
