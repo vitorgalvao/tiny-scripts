@@ -9,10 +9,11 @@ ARGV.push('--help') if ARGV.empty?
 options = {}
 OptionParser.new do |parser|
   parser.banner = <<~BANNER
-    Calculate and present total running time of media files in a human-readable way
+    Calculate and present total running time of media files in a human-readable way.
+    Options are mutually exclusive.
 
     Usage:
-      #{File.basename($PROGRAM_NAME)} [options] <path...>
+      #{File.basename($PROGRAM_NAME)} [options] <file...>
 
     Options:
   BANNER
@@ -24,7 +25,7 @@ OptionParser.new do |parser|
 
   parser.on(
     '-p <s|d|h|m>', '--precision', %w[s d h m],
-    'Output human-readable result rounded and truncated to the chosen unit. Values of zero are ommited.'
+    'Output human-readable result rounded and truncated to the chosen unit. Values of zero are ommited unless there is only one.'
   )
 end.parse!(into: options)
 
@@ -32,62 +33,73 @@ end.parse!(into: options)
 total_time = {} # Each unit has the total value of everything
 split_time = {} # Each unit has its corresponding value with the others discounted
 
-ms_total = ARGV.map { |file| Open3.capture2('mediainfo', '--Output=General;%Duration%,', file).first.split(',').map(&:to_i) }.flatten.reduce(0, :+)
+seconds_total = ARGV.map { |file|
+  Open3.capture2(
+    'ffprobe',
+    '-loglevel', 'quiet',
+    '-output_format', 'csv=p=0',
+    '-show_entries', 'format=duration',
+    file
+  ).first.to_f
+}.reduce(0, :+)
 
 # Building the hashes in this order simplifies the 'reduce' later on
-total_time['d'] = (ms_total.to_f / (1000 * 60 * 60 * 24))
-total_time['h'] = (ms_total.to_f / (1000 * 60 * 60))
-total_time['m'] = (ms_total.to_f / (1000 * 60))
-total_time['s'] = (ms_total.to_f / 1000)
+total_time['d'] = seconds_total / (60 * 60 * 24)
+total_time['h'] = seconds_total / (60 * 60)
+total_time['m'] = seconds_total / (60)
+total_time['s'] = seconds_total
 
 split_time['d'] = total_time['d'] % 365
 split_time['h'] = total_time['h'] % 24
 split_time['m'] = total_time['m'] % 60
 split_time['s'] = total_time['s'] % 60
 
-def unit_time(precision_unit, input_hash)
-  input_hash[precision_unit].round
-end
-
-def human_time(precision_unit, input_hash)
-  # The split_times hash includes floats, so here is where we round the values we want and discard the ones we do not
-
-  time_hash = {}
-
-  input_hash.keys.each do |unit|
-    if unit == precision_unit
-      time_hash[unit] = input_hash[unit].round
-      break # Since we already reached our desired precision, all further keys can be ignored
-    end
-
-    time_hash[unit] = input_hash[unit].to_i
-  end
-
-  # Normalise rare cases where rounding precision would give an underisable result
-  # Without this, a starting point of '1d 23h 50m 53s' rounded to hours would result in '1d 24h' instead of '2d'
-  if time_hash['s'] == 60
-    time_hash['m'] += 1
-    time_hash.delete('s')
-  end
-
-  if time_hash['m'] == 60
-    time_hash['h'] += 1
-    time_hash.delete('m')
-  end
-
-  if time_hash['h'] == 24
-    time_hash['d'] += 1
-    time_hash.delete('h')
-  end
-
-  time_hash.reject! { |_, value| value.zero? } # Eliminate zeros
-  time_hash.reduce('') { |string, (key, value)| string + "#{value}#{key} " }.strip
-end
-
+# Output unit
 if options[:unit]
-  puts unit_time(options[:unit], total_time)
+  puts total_time[options[:unit]].round
   exit 0
 end
 
-options[:precision] = 's' if options[:precision].nil? # If no precision is given, assume seconds
-puts human_time(options[:precision], split_time)
+# If no precision is given, assume seconds
+options[:precision] = 's' if options[:precision].nil?
+
+# The split_times hash includes floats, so here is where we round the values we want and discard the ones we do not
+time_hash = {}
+
+split_time.keys.each do |unit|
+  if unit == options[:precision]
+    time_hash[unit] = split_time[unit].round
+    break # Since we already reached our desired precision, all further keys can be ignored
+  end
+
+  time_hash[unit] = split_time[unit].to_i
+end
+
+# Normalise rare cases where rounding precision would give an underisable result
+# Without this, a starting point of '1d 23h 50m 53s' rounded to hours would result in '1d 24h' instead of '2d'
+if time_hash['s'] == 60
+  time_hash['m'] += 1
+  time_hash.delete('s')
+end
+
+if time_hash['m'] == 60
+  time_hash['h'] += 1
+  time_hash.delete('m')
+end
+
+if time_hash['h'] == 24
+  time_hash['d'] += 1
+  time_hash.delete('h')
+end
+
+# Eliminate zeros
+time_hash.reject! { |_, value| value.zero? }
+
+# Output when all zeroes
+if time_hash.empty?
+  puts "0#{options[:precision]}"
+  exit 0
+end
+
+# Output human-readable format
+puts time_hash.reduce('') { |string, (key, value)| "#{string}#{value}#{key} " }.strip
