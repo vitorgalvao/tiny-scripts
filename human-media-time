@@ -2,6 +2,7 @@
 
 require 'open3'
 require 'optparse'
+require 'pathname'
 
 # Options
 ARGV.push('--help') if ARGV.empty?
@@ -29,17 +30,26 @@ OptionParser.new do |parser|
   )
 end.parse!(into: options)
 
+input_files = ARGV.map { |arg|
+  init_path = Pathname.new(arg)
+
+  next nil unless init_path.exist?
+  next init_path if init_path.file?
+  next init_path.glob('**/*').select(&:file?) if init_path.directory?
+  next nil
+}.flatten.compact
+
 # Parse time values
 total_time = {} # Each unit has the total value of everything
 split_time = {} # Each unit has its corresponding value with the others discounted
 
-seconds_total = ARGV.map { |file|
+seconds_total = input_files.map { |file|
   Open3.capture2(
     'ffprobe',
     '-loglevel', 'quiet',
     '-output_format', 'csv=p=0',
     '-show_entries', 'format=duration',
-    file
+    file.to_path
   ).first.to_f
 }.reduce(0, :+)
 
