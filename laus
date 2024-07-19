@@ -1,0 +1,97 @@
+#!/bin/zsh
+
+readonly program="$(basename "${0}")"
+
+function usage {
+  echo "
+    Shortcuts for launchctl actions.
+
+    Usage:
+      ${program} [options] <action> <plist>
+
+    Actions:
+      Long Name   Alias   Description
+      -------------------------------
+      bootstrap   s       Load user job.
+      bootout     o       Unload user job.
+      kickstart   k       Run user job now.
+      reload      r       Run, in order: bootout, boostrap.
+      rekick      rk      Run, in order: bootout, bootstrap, kickstart.
+      disable     di      Disable user service (do not load on boot).
+      enable      en      Enable user service (activate on boot even if unloaded previously).
+      status      st      Print disabled services.
+      help        h       Show this help.
+
+    Options:
+      -h, --help   Show this help.
+  " | sed -E 's/^ {4}//'
+}
+
+# Options
+if [[ "${1}" =~ ^(-h|--help)$ ]]
+then
+  usage
+  exit 0
+fi
+
+if [[ "${#}" -ne 2 ]]
+then
+  usage
+  exit 1
+fi
+
+# Constants
+readonly action="${1}"
+readonly plist="$(realpath "${2}")"
+readonly bid="$(basename "${plist%.plist}")"
+
+# Check plist
+if ! [[ -f "${plist}" ]]
+then
+  echo "File does not exist: ${plist}" >&2
+  exit 1
+fi
+
+if ! [[ "$(dirname "${plist}")" == "${HOME}/Library/LaunchAgents" ]]
+then
+  echo 'Plist must be in ~/Library/LaunchAgents' >&2
+  exit 1
+fi
+
+# Actions
+case "${action}" in
+  bootstrap | s)
+    launchctl bootstrap "gui/$(id -u "${USER}")" "${plist}"
+    ;;
+  bootout | o)
+    launchctl bootout "gui/$(id -u "${USER}")" "${plist}"
+     ;;
+  kickstart | k)
+    launchctl kickstart "gui/$(id -u "${USER}")/${bid}"
+    ;;
+  reload | r)
+    launchctl bootout "gui/$(id -u "${USER}")" "${plist}"
+    launchctl bootstrap "gui/$(id -u "${USER}")" "${plist}"
+    ;;
+  rekick | rk)
+    launchctl bootout "gui/$(id -u "${USER}")" "${plist}"
+    launchctl bootstrap "gui/$(id -u "${USER}")" "${plist}"
+    launchctl kickstart "gui/$(id -u "${USER}")/${bid}"
+    ;;
+  disable | di)
+    launchctl disable "gui/$(id -u "${USER}")/${bid}"
+    ;;
+  enable | en)
+    launchctl enable "gui/$(id -u "${USER}")/${bid}"
+    ;;
+  status | st)
+    launchctl print-disabled "gui/$(id -u "${USER}")"
+    ;;
+  help | h)
+    usage
+    ;;
+  *)
+    echo "Unrecognised action: ${action}"
+    exit 1
+    ;;
+esac
