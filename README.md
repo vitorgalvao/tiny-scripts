@@ -11,6 +11,9 @@ Show analytics information for casks in the main taps
 ### cask-repair
 Quickly repair outdated/broken Casks from homebrew-cask
 
+### fork-delete
+Delete your GitHub forks where you do not have pending pull requests
+
 ### gfv (gif from video)
 Make animated gifs from a video file
 
