@@ -42,13 +42,13 @@ fi
 
 # Constants
 readonly action="${1}"
-readonly plist="$(realpath "${2}")"
+readonly plist="$(realpath -q "${2}")"
 readonly bid="$(basename "${plist%.plist}")"
 
 # Check plist
 if ! [[ -f "${plist}" ]]
 then
-  echo "File does not exist: ${plist}" >&2
+  echo "File does not exist: ${2}" >&2
   exit 1
 fi
 
