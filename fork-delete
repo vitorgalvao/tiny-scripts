@@ -6,9 +6,7 @@ function usage {
     Delete your GitHub forks where you do not have pending pull requests.
 
     Usage:
-      ${program} run
-
-    The argument 'run' is necessary to prevent running the script by mistake.
+      ${program}
 
     Options:
       -h, --help   Show this help.
@@ -20,12 +18,6 @@ if [[ "${1}" =~ ^(-h|--help)$ ]]
 then
   usage
   exit 0
-fi
-
-if [[ "${1}" != 'run' ]]
-then
-  usage
-  exit 1
 fi
 
 if ! hash 'gh' 2> /dev/null
