@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+readonly program="$(basename "${0}")"
+
 # Usage
 function usage {
   echo "
