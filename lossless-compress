@@ -51,7 +51,7 @@ for image_file in "${@}"; do
   if [[ "${file_type}" == 'jpeg' ]]; then
     jpegtran -copy none -optimize -progressive -outfile "${image_file}" "${image_file}"
   elif [[ "${file_type}" == 'png' ]]; then
-    optipng -quiet "${image_file}"
+    oxipng --quiet "${image_file}"
   elif [[ "${file_type}" == 'gif' ]]; then
     gifsicle --optimize=3 --batch "${image_file}"
   else
