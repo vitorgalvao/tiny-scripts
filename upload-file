@@ -1,7 +1,7 @@
 #!/bin/bash
 
 readonly program="$(basename "${0}")"
-readonly hosts=('0x0.st' 'litterbox.catbox.moe' 'transfer.sh' 'transfer.archivete.am' 'oshi.at')
+readonly hosts=('0x0.st' 'litterbox.catbox.moe' 'transfer.sh' 'transfer.archivete.am' 'filebin.net' 'oshi.at')
 readonly default_host="${hosts[0]}"
 
 # Create and cleanup temporary directories
@@ -126,6 +126,9 @@ elif [[ "${upload_host}" == 'transfer.sh' ]]; then
   readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}")"
 elif [[ "${upload_host}" == 'transfer.archivete.am' ]]; then
   readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}")"
+elif [[ "${upload_host}" == 'filebin.net' ]]; then
+  readonly url="https://${upload_host}/$(uuidgen)/$(uuidgen)"
+  curl --globoff --progress-bar --request 'POST' "${url}" --data-binary "@${file_path}" --output /dev/null
 elif [[ "${upload_host}" == 'oshi.at' ]]; then
   readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}" | grep ' \[Download\]' | sed 's/ \[Download\].*//')"
 fi
