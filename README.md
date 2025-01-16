@@ -20,9 +20,6 @@ Make animated gifs from a video file
 ### human-media-time
 Calculate and present total running time of media files in a human-readable way
 
-### laus
-Shortcuts for launchctl actions
-
 ### linux-usb
 Create bootable Linux USB sticks from ISOs on macOS
 
