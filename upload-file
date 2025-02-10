@@ -38,6 +38,7 @@ function usage {
 
     Options:
       -u, --upload-host <host>   File host to upload to. Defaults to ${default_host}.
+      -d, --dummy-text <text>    Does nothing but provides an anchor to detect execution from other processes.
       -h, --help                 Show this help.
   " | sed -E 's/^ {4}//'
 }
@@ -52,6 +53,9 @@ while [[ "${1}" ]]; do
       ;;
     -u | --upload-host)
       UPLOAD_FILE_TO="${2}"
+      shift
+      ;;
+    -d | --dummy-text)
       shift
       ;;
     --)
@@ -131,5 +135,6 @@ elif [[ "${upload_host}" == 'oshi.at' ]]; then
   readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}" | grep ' \[Download\]' | sed 's/ \[Download\].*//')"
 fi
 
-echo -n "${url}" | pbcopy
-echo "Copied to clipboard: ${url}"
+echo -n "${url}" | pbcopy # Copy without newline
+echo 'Copied to clipboard: ' >&2 # Informational message
+echo "${url}" # Output just URL to STDOUT so it can be piped or captured
