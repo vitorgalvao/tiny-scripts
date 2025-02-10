@@ -135,6 +135,14 @@ elif [[ "${upload_host}" == 'oshi.at' ]]; then
   readonly url="$(curl --globoff --progress-bar --upload-file "${file_path}" "https://${upload_host}" | grep ' \[Download\]' | sed 's/ \[Download\].*//')"
 fi
 
+# If URL does not start with correct scheme, something went wrong
+if [[ "${url}" != 'https://'* ]]; then
+  echo 'Upload failed' >&2
+  echo "${url}" >&2 # Server may have returned a message with information
+  exit 1
+fi
+
+# On success
 echo -n "${url}" | pbcopy # Copy without newline
 echo 'Copied to clipboard: ' >&2 # Informational message
 echo "${url}" # Output just URL to STDOUT so it can be piped or captured
