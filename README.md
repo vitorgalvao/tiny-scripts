@@ -47,9 +47,6 @@ Sort RSS items by number in title and upload the result to temporary hosting
 ### seren
 Rename files in a numerical sequence
 
-### upload-file
-Upload paths, with support for several file hosts
-
 ---
 
 #### License
