@@ -26,9 +26,6 @@ Losslessly compress files
 ### makeicns
 Make an icns file from a png
 
-### mtg-wallpapers
-Download Magic: The Gathering wallpapers
-
 ### photo-date-rename
 Rename image files to the date and time they were taken
 
