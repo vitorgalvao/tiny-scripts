@@ -30,6 +30,14 @@ OptionParser.new do |parser|
   )
 end.parse!(into: options)
 
+# Check for dependencies
+abort 'Missing "ffprobe" in PATH.' unless
+  ENV['PATH']
+  .split(File::PATH_SEPARATOR)
+  .map { |p| Pathname.new(p).join('ffprobe') }
+  .any? { |p| p.executable? && p.file? }
+
+# Gather files
 input_files = ARGV.map { |arg|
   init_path = Pathname.new(arg)
 
