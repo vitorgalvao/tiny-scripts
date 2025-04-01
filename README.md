@@ -23,9 +23,6 @@ Losslessly compress files
 ### makeicns
 Make an icns file from a png
 
-### photo-date-rename
-Rename image files to the date and time they were taken
-
 ### pingpong
 Stitch a video with its reversed version, for continuous loops
 
