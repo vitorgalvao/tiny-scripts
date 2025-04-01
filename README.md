@@ -38,9 +38,6 @@ Rename image files to the date and time they were taken
 ### pingpong
 Stitch a video with its reversed version, for continuous loops
 
-### podbook
-Generate a podcast RSS feed for audiobooks
-
 ### progressbar
 Overlay a progress bar on videos or gifs
 
