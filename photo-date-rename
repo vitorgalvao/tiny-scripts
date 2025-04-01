@@ -14,20 +14,13 @@ function usage {
     Options:
       -h, --help   Show this help.
   " | sed -E 's/^ {4}//'
+
+  exit "${1}"
 }
 
 # Checks
-if [[ "${1}" =~ ^(-h|--help)$ ]]
-then
-  usage
-  exit 0
-fi
-
-if [[ "${#}" -lt 1 ]]
-then
-  usage
-  exit 1
-fi
+[[ "${1}" =~ ^(-h|--help)$ ]] && usage 0
+[[ "${#}" -gt 0 ]] || usage 1
 
 if ! hash 'exiftool' 2> /dev/null
 then
