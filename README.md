@@ -41,9 +41,6 @@ Stitch a video with its reversed version, for continuous loops
 ### progressbar
 Overlay a progress bar on videos or gifs
 
-### ringtonemaker
-Convert a video or audio file to an iPhone ringtone
-
 ### rss-item-sort
 Sort RSS items by number in title and upload the result to temporary hosting
 
