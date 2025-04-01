@@ -41,7 +41,7 @@ if [[ "${1}" =~ ^(-h|--help)$ ]]; then
   exit 0
 fi
 
-depends_on 'jpegtran' 'optipng' 'gifsicle'
+depends_on 'jpegtran' 'oxipng' 'gifsicle'
 
 for image_file in "${@}"; do
   echo "Compressing ${image_file}…"
