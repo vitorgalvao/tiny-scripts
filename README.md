@@ -14,9 +14,6 @@ Quickly repair outdated/broken Casks from homebrew-cask
 ### gfv (gif from video)
 Make animated gifs from a video file
 
-### human-media-time
-Calculate and present total running time of media files in a human-readable way
-
 ### linux-usb
 Create bootable Linux USB sticks from ISOs on macOS
 
