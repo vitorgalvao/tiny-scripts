@@ -2,66 +2,37 @@
 
 readonly program="$(basename "${0}")"
 
-function get_output_path {
-  local -r ext="${1}"
-  local -r input_path="${2}"
-  local -r init_output_path="${3}"
-
-  if [[ -n "${init_output_path}" ]]; then
-    [[ "${init_output_path##*.}" == "${ext##*.}" ]] && echo "${init_output_path}" || echo "${init_output_path}${ext}"
-  else
-    echo "$(pwd -P)/$(basename "${input_path%.*}${ext}")"
-  fi
-}
-
-function try_overwrite {
-  local -r force="${1}"
-  local -r input_path="${2}"
-
-  if [[ "${force}" == 'true' ]]; then
-    mkdir -p "$(dirname "${input_path}")"
-    return 0
-  fi
-
-  if [[ ! -d "$(dirname "${input_path}")" ]]; then
-    echo "Cannot create '${input_path}'. Parent directory does not exist." >&2
-    exit 1
-  fi
-
-  if [[ -e "${input_path}" ]]; then
-    echo "Cannot write to '${input_path}'. Already exists." >&2
-    exit 1
-  fi
-}
-
 function usage {
   echo "
-    Make an icns file from a png.
+    Generate an icns icon from a png.
 
     Usage:
       ${program} [options] <file>
 
     Options:
-      -o, --output-file <file>   File to output to. Default is with same name on current directory.
-      -O, --overwrite            Create intermediary directories and overwrite output.
+      -i, --input <file>    File to convert.
+      -o, --output <file>   File to save.
       -h, --help                 Show this message.
   " | sed -E 's/^ {4}//'
+
+  exit "${1}"
 }
 
 # Options
 args=()
-while [[ "${1}" ]]; do
+while [[ "${1}" ]]
+do
   case "${1}" in
     -h | --help)
-      usage
-      exit 0
+      usage 0
       ;;
-    -o | --output-file)
-      readonly given_output_path="${2}"
+    -i | --input)
+      readonly input="$(realpath "${2}")"
       shift
       ;;
-    -O | --overwrite)
-      readonly overwrite='true'
+    -o | --output)
+      readonly output="${2%.icns}.icns" # Add extension if missing
+      shift
       ;;
     --)
       shift
@@ -80,25 +51,23 @@ while [[ "${1}" ]]; do
 done
 set -- "${args[@]}"
 
-readonly input_file="${1}"
+# Checks
+[[ -f "${input}" && -n "${output}" ]] || usage 1
+
+# Main
 readonly iconset="$(mktemp -d)"
-readonly output_file="$(get_output_path '.icns' "${input_file}" "${given_output_path}")"
-try_overwrite "${overwrite:-false}" "${output_file}"
 
-if [[ "${#}" -ne 1 || ! -f "${input_file}" ]]; then
-  usage
-  exit 1
-fi
-
-if [[ "$(mdls -raw -name 'kMDItemContentType' "${input_file}")" != 'public.png' ]]; then
+if [[ "$(/usr/bin/file --mime-type --brief "${input}")" != 'image/png' ]]
+then
   echo 'Image needs to be a png.' >&2
   exit 1
 fi
 
-for size in {16,32,64,128,256,512}; do
-  sips --resampleHeightWidth "${size}" "${size}" "${input_file}" --out "${iconset}/icon_${size}x${size}.png" &> /dev/null
-  sips --resampleHeightWidth "$((size * 2))" "$((size * 2))" "${input_file}" --out "${iconset}/icon_${size}x${size}@2x.png" &> /dev/null
+for size in {16,32,64,128,256,512}
+do
+  /usr/bin/sips --resampleHeightWidth "${size}" "${size}" "${input}" --out "${iconset}/icon_${size}x${size}.png" &> /dev/null
+  /usr/bin/sips --resampleHeightWidth "$((size * 2))" "$((size * 2))" "${input}" --out "${iconset}/icon_${size}x${size}@2x.png" &> /dev/null
 done
 
-mv "${iconset}" "${iconset}.iconset"
-iconutil --convert icns "${iconset}.iconset" --output "${output_file}"
+/bin/mv "${iconset}" "${iconset}.iconset"
+/usr/bin/iconutil --convert icns "${iconset}.iconset" --output "${output}"
